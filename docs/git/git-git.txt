@@ -1,0 +1,25 @@
+Creating a local repository for gitorious and pushing back to gitorious:
+
+$ git clone <url> <project>
+$ cd <project>
+# Git needs a file to commit.
+$ touch .gitignore
+$ git add .
+$ git remote add origin <url>
+$ git push origin master
+
+Fork a github repository on gitorious.
+
+$ git clone <gitorious-url>
+$ git remote add origin <gitorious-url>
+$ git remote add upstream <github-url>
+$ git pull upstream
+$ git push -u origin master
+
+Pulling / merging from an upstream git repo.
+
+$ git pull upstream
+$ git merge upstream
+# Resolve conflicts if needed
+$ git push master
+

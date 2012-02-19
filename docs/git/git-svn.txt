@@ -1,0 +1,9 @@
+A cheatsheet for my most commonly used commands with git-svn:
+
+git svn clone <svn-url> - self-explanatory.
+
+git svn rebase - pull and merge.
+
+git svn dcommit - kick out of local git/git repo into svn.
+
+git push - kick out of local git/svn into git repo.
