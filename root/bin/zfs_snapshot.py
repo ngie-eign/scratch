@@ -61,7 +61,7 @@ def create_snapshot(vdev, date_format):
                       snapshot.
     """
 
-    zfs('snapshot %s@%s' % (vdev, date_format, ), fake=1)
+    zfs('snapshot %s@%s' % (vdev, date_format, ))
 
 
 def destroy_snapshot(snapshot):
@@ -71,7 +71,7 @@ def destroy_snapshot(snapshot):
         snapshot: name of the snapshot to destroy.
     """
 
-    zfs('destroy %s' % (snapshot, ), fake=1)
+    zfs('destroy %s' % (snapshot, ))
 
 
 def list_vdevs():
@@ -126,7 +126,7 @@ def list_snapshots(vdev, recursive=True):
 
 def execute_snapshot_policy(vdev,
                             now,
-                            then,
+                            cutoff,
                             date_format,
                             recursive=True,
                             ):
@@ -148,26 +148,28 @@ def execute_snapshot_policy(vdev,
 
     snapshots = list_snapshots(vdev, recursive=recursive)
 
-    # Unmarshall the date strings and expire as necessary.
-
     def _find_expired_snapshots(snapshot):
         """Take a snapshot string, unmarshall the date, and determine if it's
            eligible for destruction.
+
+        :Parameters:
+           snapshot: snapshot name.
 
         :Returns:
            The name of the snapshot if expired; None otherwise.
         """
 
         try:
-            snapshot_time = time.strptime(snapshot, date_format)
-            if snapshot_time < then:
+            snapshot_time = time.strptime(snapshot,
+                                          '%s@%s' % (vdev, date_format, ))
+            if snapshot_time < time.struct_time(cutoff):
                 return snapshot
         except ValueError:
             pass
         return None
 
 
-    expired_snapshots = filter(None, map(_find_expired_snapshots, snapshots))
+    expired_snapshots = filter(_find_expired_snapshots, snapshots)
     for snapshot in sorted(expired_snapshots, reverse=True):
         # Destroy snapshots as needed, reverse order so the snapshots will
         # be destroyed in order.
@@ -243,10 +245,10 @@ def main(args):
                             'vdev; is "period" specific'),
                       type='int',
                       )
-    parser.add_option('-p', '--period',
+    parser.add_option('-p', '--snapshot-period',
                       action='callback',
                       callback=validate_period,
-                      default=0,
+                      default=3,
                       dest='period',
                       help=('period with which to manage snapshot policies '
                             'with.'),
