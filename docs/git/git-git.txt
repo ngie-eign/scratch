@@ -25,5 +25,4 @@ $ git push master
 
 How do I clone all remote branches with git?
 
-$ git remote update
-$ git pull --all
+$ git checkout -b <branch> remotes/origin/<branch>
