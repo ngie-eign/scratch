@@ -23,3 +23,7 @@ $ git merge upstream
 # Resolve conflicts if needed
 $ git push master
 
+How do I clone all remote branches with git?
+
+$ git remote update
+$ git pull --all
