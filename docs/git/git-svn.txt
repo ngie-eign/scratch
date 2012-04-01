@@ -7,3 +7,6 @@ git svn rebase - pull and merge.
 git svn dcommit - kick out of local git/git repo into svn.
 
 git push - kick out of local git/svn into git repo.
+
+http://viget.com/extend/effectively-using-git-with-subversion
+http://git.or.cz/course/svn.html
