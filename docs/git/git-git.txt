@@ -26,3 +26,6 @@ $ git push master
 How do I clone all remote branches with git?
 
 $ git checkout -b <branch> remotes/origin/<branch>
+
+http://book.git-scm.com/4_undoing_in_git_-_reset,_checkout_and_revert.html
+http://stackoverflow.com/questions/2389361/git-undo-a-merge
