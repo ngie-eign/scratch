@@ -16,17 +16,17 @@
 personal-name=
 
 # Sets domain part of From: and local addresses in outgoing mail.
-user-domain=ixsystems.com
+user-domain=gmail.com
 
 # List of SMTP servers for sending mail. If blank: Unix Alpine uses sendmail.
-smtp-server=mail.ixsystems.com:25/novalidate-cert
+smtp-server=mail.google.com:25/novalidate-cert
 
 # NNTP server for posting news. Also sets news-collections for news reading.
 nntp-server=
 
 # Path of (local or remote) INBOX, e.g. ={mail.somewhere.edu}inbox
 # Normal Unix default is the local INBOX (usually /usr/spool/mail/$USER).
-inbox-path={mail.ixsystems.com:993/novalidate-cert/ssl/user=gcooper@ixsystems.com}inbox
+inbox-path={mail.google.com:993/novalidate-cert/ssl/user=yanegomi@gmail.com}inbox
 
 # List of folder pairs; the first indicates a folder to archive, and the
 # second indicates the folder read messages in the first should
