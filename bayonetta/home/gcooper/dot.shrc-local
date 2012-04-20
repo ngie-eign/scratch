@@ -6,3 +6,5 @@ then
 	export SHELL=$BASH
 	exec $BASH -l
 fi
+
+export EDITOR="vim"
