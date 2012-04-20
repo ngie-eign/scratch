@@ -22,7 +22,7 @@ HOST!=	hostname | sed -E -e 's/\..*//g'
 DOTFILES!=	find ./${HOME}/dot.* ../${HOST}${HOME}/dot.* -maxdepth 0
 
 ${HOME}/.shrc: Makefile
-	(cat /usr/share/skel/dot.shrc; echo; echo '[ -f .shrc-local ] && . .shrc-local') > $@
+	(cat /usr/share/skel/dot.shrc; echo; echo '[ -f $$HOME/.shrc-local ] && . $$HOME/.shrc-local') > $@
 
 install-dotfiles: \
     ${HOME}/.shrc
