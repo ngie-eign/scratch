@@ -1,0 +1,8 @@
+BASH=/usr/local/bin/bash
+# Sanity check to make sure that things work with singleuser mode.
+if [ ${SHELL##*/} != $BASH -a -x $BASH ] && $BASH -c "true"
+then
+	# bash doesn't reset $SHELL if exec'ed.
+	export SHELL=$BASH
+	exec $BASH -l
+fi
