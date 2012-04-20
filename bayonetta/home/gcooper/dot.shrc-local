@@ -1,5 +1,3 @@
-export EDITOR="vim"
-
 BASH=/usr/local/bin/bash
 # Sanity check to make sure that things work with singleuser mode.
 if [ ${SHELL##*/} != $BASH -a -x $BASH ] && $BASH -c "true"
@@ -8,3 +6,5 @@ then
 	export SHELL=$BASH
 	exec $BASH -l
 fi
+
+export EDITOR="vim"
