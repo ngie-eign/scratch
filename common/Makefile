@@ -9,6 +9,8 @@
 
 # SECTION: FreeBSD customized overlay
 
+.MAIN: install
+
 HOST!=	hostname | sed -E -e 's/\..*//g'
 
 .if empty(HOST)
@@ -26,12 +28,11 @@ install-dotfiles: \
     ${HOME}/.shrc
 .for dir in ../${HOST}/ .
 .for ddir in / /usr/src
-	args="--exclude *PORTS*"; \
-	[ ${ddir} != "/usr/src" ] && args="$$args --exclude '*${HOME}*' --exclude '*/usr/src/*'"; \
-	tmpfile=/tmp/sentinel.$$$$; \
-	(tar $$args --exclude '*/dot.*' -cpf - -C ${dir} . && : > $$tmpfile) | \
-	tar -xpvf - -C ${ddir}; \
-	rm -f $$tmpfile
+	exclude="Makefile|PORTS|/dot\.*"; \
+	[ ${ddir} != "/usr/src" ] || \
+	    exclude="$$exclude|${HOME}|/usr/src/"; \
+	cd ${dir} && find . -type f | egrep -v "($$exclude)" | \
+	    cpio -dumpv ${ddir}
 .endfor
 .endfor
 .for dotfile in ${DOTFILES}
