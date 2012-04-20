@@ -30,7 +30,7 @@ install-dotfiles: \
 .for ddir in / /usr/src
 	exclude="Makefile|PORTS|/dot\.*"; \
 	[ ${ddir} != "/usr/src" ] || \
-	    exclude="$$exclude|${HOME}|/usr/src/"; \
+	    exclude="$$exclude|${HOME}|/usr/src/|-local\$$"; \
 	cd ${dir} && find . -type f | egrep -v "($$exclude)" | \
 	    cpio -dumpv ${ddir}
 .endfor
