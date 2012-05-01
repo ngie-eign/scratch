@@ -1,6 +1,3 @@
-CFLAGS+=	-fno-strict-aliasing -pipe
-CXXFLAGS+=	-fno-strict-aliasing -pipe
-
 .if defined(DEBUG_FLAGS) && !empty(DEBUG_FLAGS)
 # kern.pre.mk barfs on mii(4) and re(4) with newbus bitbanging issues if
 # -fno-inline is enabled on sys.
