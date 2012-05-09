@@ -38,7 +38,7 @@ ZFS = '/sbin/zfs'
 
 def zfs(arg_str, fake=False):
     """A command through zfs(8).
-    
+
     :Parameters:
         arg_str: a flat string with a list of arguments to pass to zfs(8),
                  e.g. -t snapshot.
@@ -49,7 +49,7 @@ def zfs(arg_str, fake=False):
         sys.stdout.write('Would execute: %s %s\n' % (ZFS, arg_str, ))
         sys.stdout.flush()
         return ''
-    return subprocess.check_output([ ZFS ] + shlex.split(arg_str))
+    return subprocess.check_output([ZFS] + shlex.split(arg_str))
 
 
 def create_snapshot(vdev, date_format):
@@ -76,7 +76,7 @@ def destroy_snapshot(snapshot):
 
 def list_vdevs():
     """Return all vdevs.
-    
+
     :Raises:
         ValueError: no vdevs could be found.
 
@@ -92,9 +92,10 @@ def list_vdevs():
 
 SNAPSHOTS_LIST = []
 
+
 def list_snapshots(vdev, recursive=True):
     """Get a list of ZFS snapshots for a given vdev
-    
+
     :Parameters:
         vdev:      a vdev to grab snapshots for.
         recursive: list snapshot(s) for the parent and child vdevs.
@@ -162,12 +163,11 @@ def execute_snapshot_policy(vdev,
         try:
             snapshot_time = time.strptime(snapshot,
                                           '%s@%s' % (vdev, date_format, ))
-            if snapshot_time < time.struct_time(cutoff):
+            if time.mktime(snapshot_time) < time.mktime(cutoff):
                 return snapshot
         except ValueError:
             pass
         return None
-
 
     expired_snapshots = filter(_find_expired_snapshots, snapshots)
     for snapshot in sorted(expired_snapshots, reverse=True):
@@ -181,7 +181,6 @@ def execute_snapshot_policy(vdev,
 def main(args):
     """main"""
 
-
     def validate_vdev(option, opt, value, parser):
         """Validate --vdev to ensure that the vdev provided exist(ed) at
            the time the script was executed.
@@ -192,7 +191,6 @@ def main(args):
                                             'exist' % (value, ))
         parser.values.vdevs.append(value)
 
-
     def validate_lifetime(option, opt, value, parser):
         """Validate --lifetime to ensure that it's > 0.
         """
@@ -201,7 +199,6 @@ def main(args):
             raise optparse.OptionValueError('Lifetime must be an integer '
                                             'value greater than 0')
         parser.values.lifetime = value
-
 
     def validate_period(option, opt, value, parser):
         """Validate --period to ensure that the value passed is valid."""
@@ -215,7 +212,6 @@ def main(args):
                                             (', '.join(mapping_names), ))
         parser.values.period = mapping_names.index(value)
 
-
     def validate_prefix(option, opt, value, parser):
         """Validate --prefix to ensure that it's """
 
@@ -224,12 +220,11 @@ def main(args):
                                             'non-zero length string')
         parser.values.prefix = value
 
-
     all_vdevs = list_vdevs()
 
     snapshot_mappings = [
         # Type, time.struct_time index, sane lifetime, date format qualifier
-        ('year',    0, 1,  'Y', ),
+        ('year',    0, 10, 'Y', ),
         ('Month',   1, 12, 'm', ),
         ('day',    -2, 30, 'd', ),
         ('hour',    3, 24, 'H', ),
@@ -283,11 +278,10 @@ def main(args):
                       type='string',
                       )
 
-
     opts, __ = parser.parse_args(args)
 
     date_format = SEPARATOR.join(['%' + snapshot_mappings[i][-1] for i in
-                                                      range(opts.period+1)])
+                                                      range(opts.period + 1)])
 
     snapshot_cutoff = list(time.localtime())
     struct_tm_offset = snapshot_mappings[opts.period][1]
@@ -313,7 +307,7 @@ def main(args):
                                                         all_vdevs)
     else:
         vdevs = all_vdevs
- 
+
     for vdev in sorted(vdevs, reverse=True):
 
         execute_snapshot_policy(vdev,
