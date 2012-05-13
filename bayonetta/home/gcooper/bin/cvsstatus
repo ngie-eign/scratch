@@ -1,0 +1,3 @@
+#!/bin/sh
+
+egrep "(^\? |Status: )" "$@" | grep -v Up-to-date
