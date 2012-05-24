@@ -4,7 +4,10 @@ if [ $SHELL != $BASH -a -x $BASH ] && $BASH -c "true"
 then
 	# bash doesn't reset $SHELL if exec'ed.
 	export SHELL=$BASH
-	exec $BASH -l
+	exec $BASH --rcfile $ENV
 fi
 
 export EDITOR="vim"
+export P4CLIENT="gcooper-bayonetta"
+export P4PORT="perforce.freebsd.org:1666"
+export P4USER="gcooper"
