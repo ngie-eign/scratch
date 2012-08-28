@@ -27,46 +27,60 @@ try:
     import Queue as queue
 except ImportError:
     import queue
+import select
 import socket
 import sys
 import threading
 
 
+CHILD_EXIT = False
 CHILD_QUEUE = None
 
 
 def waiter():
     """A waiter thread handler"""
 
-    while True:
+    while not CHILD_EXIT:
         try:
             child = CHILD_QUEUE.get()
+            print 'Waiting for kid', child
             os.waitpid(child, 0)
         except queue.Empty:
-            pass
+            print 'Queue empty..'
+        except OSError:
+            break
 
 
-def client_verify_handler(sock):
+def client_verify_handler(sock, read_length):
     """Client socket hash verification handler"""
 
+    print 'Using "verify" handler'
     read_buf = ''
     while True:
-        last_r = sock.recv()
-        if not last_r:
+        select.select([sock], [], [], 120)
+        buf = sock.recv(8192)
+        read_length -= len(buf)
+        if not buf or not read_length:
             break
-        read_buf += last_r
+        read_buf += buf
+    print 'Read %d characters' % (len(read_buf))
     read_buf = hashlib.sha256(read_buf).hexdigest()
+    print 'Sending hash:', read_buf
     sock.send(read_buf)
-    read_buf = sock.recv()
-    if read_buf != 'OK':
-        sys.exit(1)
+    read_buf = sock.recv(1024)
+    if read_buf == 'OK':
+        sys.stdout.write('Hashes matched\n')
+        sys.exit(0)
+    else:
+        sys.exit('Hashes did not match')
 
 
-def client_noverify_handler(sock):
+def client_noverify_handler(sock, read_length):
     """Client socket no-hash verification handler"""
 
+    print 'Using "noverify" handler'
     while True:
-        if not sock.recv():
+        if not sock.recv(8192):
             break
 
 
@@ -75,20 +89,23 @@ def conn_handler_bounded(sock, read_fd, read_length):
 
     buf = ''
     while True:
-        buf = read_fd.read(min(65536, read_length))
-        sock.send(read_fd.read(buf))
-        if not buf:
-            break
+        buf = read_fd.read(min(8192, read_length))
+        sock.send(buf)
         read_length -= len(buf)
+        if not buf or not read_length:
+            break
 
+    print 'Got %d characters' % (len(buf))
     buf = hashlib.sha256(buf).hexdigest()
-    buf2 = sock.recv()
+    print 'Expecting hash: %s' % (buf)
+    buf2 = sock.recv(1024).strip()
 
     if buf == buf2:
         sock.send('OK')
     else:
-        sys.stderr.write('BAD HASH (%s != %s)' % (buf, buf2))
-        sock.send('BAD HASH')
+        err_msg = 'BAD HASH (%s != %s)' % (buf, buf2)
+        sys.stderr.write(err_msg + '\n')
+        sock.send(err_msg)
 
 
 def conn_handler_unbounded(sock, read_fd, read_length):
@@ -107,50 +124,59 @@ def do_client(sock, host, port):
     rbuf = sock.recv(1024)
     parts = rbuf.split(' ', 1)
     if parts[0] != 'SEND' or len(parts) != 2:
-        sock.close()
         sys.exit('Invalid message received: %s' % rbuf)
+    read_length = int(parts[1])
     sock.send('OK')
-    if 0 < int(parts[1]):
-        client_verify_handler(sock)
+    if 0 < read_length:
+        client_verify_handler(sock, read_length)
     else:
-        client_noverify_handler(sock)
+        client_noverify_handler(sock, read_length)
 
 
 def do_server(sock, host, port, conn_handler, input_file, offset, read_length):
 
+    global CHILD_EXIT
+
     thr = threading.Thread(target=waiter)
     thr.start()
 
-    sock.bind((host, port))
-    sock.listen(100)
+    try:
+        sock.bind((host, port))
+        sock.listen(100)
 
-    while True:
-        inc_sock, __ = sock.accept()
+        while True:
+            inc_sock, __ = sock.accept()
 
-        child = os.fork()
-        if child:
-            inc_sock.close()
-        else:
-
-            exit_code = 1
-            inc_sock.send('SEND %d' % (read_length))
-            try:
-                if inc_sock.recv(1024) == 'OK':
-                    try:
-                        with open(input_file, 'rb') as fd:
-                            if 0 < offset:
-                                fd.seek(offset, os.SEEK_SET)
-                            conn_handler(inc_sock, fd, read_length)
-                    except socket.error:
-                        pass
-                    except IOError:
-                        exit_code = 0
-            finally:
+            child = os.fork()
+            if child:
                 inc_sock.close()
+            else:
 
-            os._exit(exit_code)
+                exit_code = 1
+                inc_sock.send('SEND %d' % (read_length))
+                try:
+                    if inc_sock.recv(1024) == 'OK':
+                        try:
+                            with open(input_file, 'rb') as fd:
+                                if 0 < offset:
+                                    fd.seek(offset, os.SEEK_SET)
+                                conn_handler(inc_sock, fd, read_length)
+                        except socket.error:
+                            pass
+                        except IOError:
+                            exit_code = 0
+                finally:
+                    inc_sock.close()
 
-        CHILD_QUEUE.put(child)
+                os._exit(exit_code)
+
+            CHILD_QUEUE.put(child)
+
+    except KeyboardInterrupt:
+        CHILD_EXIT = True
+        raise
+    finally:
+        CHILD_EXIT = True
 
 
 def main(argv):
@@ -170,7 +196,7 @@ def main(argv):
                                             'today'
                                             % (opt_s, socket.AF_UNSPEC,
                                                socket.AF_INET, socket.AF_INET6))
-        p.valuesock.address_family.push(int(val))
+        p.values.address_family = int(val)
 
 
     def port_cb(option, opt_s, val, p, *a, **kw):
@@ -182,7 +208,7 @@ def main(argv):
             raise optparse.OptionValueError('Value passed to %s must be an '
                                             'integer between %d and %d'
                                             % (opt_s, port_min, port_max))
-        p.valuesock.port = int(val)
+        p.values.port = int(val)
 
 
     usage = ('usage: %prog [options] -s inputfile\n'
@@ -192,7 +218,7 @@ def main(argv):
     parser.add_option('-A', '--address-family',
                       action='callback',
                       callback=address_family_cb,
-                      default=[socket.AF_INET],
+                      default=socket.AF_UNSPEC,
                       dest='address_family',
                       help='Address family to use when connecting/listening',
                       )
@@ -241,9 +267,11 @@ def main(argv):
                       )
 
     opts, args = parser.parse_args(args=argv)
-    if opts.server_mode and not args:
-        parser.error('You must provide an input file when running as a server')
-    input_file = args[0]
+    if opts.server_mode:
+        if not args:
+            parser.error('You must provide an input file when running as a '
+                         'server')
+        input_file = args[0]
 
     if 0 < opts.read_length:
         conn_handler = conn_handler_bounded
@@ -252,18 +280,30 @@ def main(argv):
 
     CHILD_QUEUE = queue.Queue()
 
+    if opts.host and opts.address_family != socket.AF_UNSPEC:
+        addr = socket.inet_pton(opts.address_family, opts.host)
+        sock = socket.socket(opts.address_family)
+    elif not opts.host:
+        addr = ''
+        sock = socket.socket()
+    else:
+        addr = opts.host
+        sock = socket.socket(opts.address_family)
 
-    sock = socket.socket(opts.address_family)
     if 0 < opts.rcvbuf_size:
         sock.setsockopt(socket.IPPROTO_IP, socket.SO_RCVBUF, opts.rcvbuf_size)
     if 0 < opts.sndbuf_size:
         sock.setsockopt(socket.IPPROTO_IP, socket.SO_SNDBUF, opts.sndbuf_size)
 
-    if opts.server_mode:
-        do_server(socks, opts.host, opts.port, conn_handler,
-                  input_file, opts.offset, opts.read_length)
-    else:
-        do_client(sock, opts.host, opts.port)
+    try:
+        if opts.server_mode:
+            do_server(sock, addr, opts.port, conn_handler,
+                      input_file, opts.offset, opts.read_length)
+        else:
+            do_client(sock, addr, opts.port)
+    finally:
+        sock.close()
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
