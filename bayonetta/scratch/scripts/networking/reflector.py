@@ -20,65 +20,44 @@ WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 Garrett Cooper, August 2012
 """
 
+import atexit
+import errno
 import hashlib
 import optparse
 import os
-try:
-    import Queue as queue
-except ImportError:
-    import queue
 import select
+import signal
 import socket
 import sys
-import threading
 
 
-CHILD_EXIT = False
-CHILD_QUEUE = None
-
-
-def waiter():
-    """A waiter thread handler"""
-
-    while not CHILD_EXIT:
-        try:
-            child = CHILD_QUEUE.get()
-            print 'Waiting for kid', child
-            os.waitpid(child, 0)
-        except queue.Empty:
-            print 'Queue empty..'
-        except OSError:
-            break
+EXIT = False
 
 
 def client_verify_handler(sock, read_length):
     """Client socket hash verification handler"""
 
-    print 'Using "verify" handler'
-    read_buf = ''
-    while True:
-        select.select([sock], [], [], 120)
-        buf = sock.recv(8192)
-        read_length -= len(buf)
-        if not buf or not read_length:
+    buf = ''
+    while len(buf) != read_length:
+        rbuf = sock.recv(min(read_length, read_length-len(buf)))
+        if not rbuf:
             break
-        read_buf += buf
-    print 'Read %d characters' % (len(read_buf))
-    read_buf = hashlib.sha256(read_buf).hexdigest()
-    print 'Sending hash:', read_buf
-    sock.send(read_buf)
-    read_buf = sock.recv(1024)
-    if read_buf == 'OK':
+        buf += rbuf
+
+    buf = hashlib.sha256(buf).hexdigest()
+    select.select([sock], [], [])
+
+    buf2 = sock.recv(1024)
+    if buf == buf2:
         sys.stdout.write('Hashes matched\n')
         sys.exit(0)
     else:
-        sys.exit('Hashes did not match')
+        sys.exit('Hashes did not match: `%s` != `%s`' % (buf, buf2))
 
 
 def client_noverify_handler(sock, read_length):
     """Client socket no-hash verification handler"""
 
-    print 'Using "noverify" handler'
     while True:
         if not sock.recv(8192):
             break
@@ -89,23 +68,13 @@ def conn_handler_bounded(sock, read_fd, read_length):
 
     buf = ''
     while True:
-        buf = read_fd.read(min(8192, read_length))
-        sock.send(buf)
-        read_length -= len(buf)
-        if not buf or not read_length:
+        buf += read_fd.read(min(8192, read_length-len(buf)))
+        sock.sendall(buf)
+        if read_length == len(buf):
             break
 
-    print 'Got %d characters' % (len(buf))
-    buf = hashlib.sha256(buf).hexdigest()
-    print 'Expecting hash: %s' % (buf)
-    buf2 = sock.recv(1024).strip()
-
-    if buf == buf2:
-        sock.send('OK')
-    else:
-        err_msg = 'BAD HASH (%s != %s)' % (buf, buf2)
-        sys.stderr.write(err_msg + '\n')
-        sock.send(err_msg)
+    buf2 = hashlib.sha256(buf).hexdigest()
+    sock.sendall(buf2)
 
 
 def conn_handler_unbounded(sock, read_fd, read_length):
@@ -127,66 +96,69 @@ def do_client(sock, host, port):
         sys.exit('Invalid message received: %s' % rbuf)
     read_length = int(parts[1])
     sock.send('OK')
+    sock.shutdown(socket.SHUT_WR)
     if 0 < read_length:
         client_verify_handler(sock, read_length)
     else:
         client_noverify_handler(sock, read_length)
 
 
+def server_exit():
+    global EXIT
+    EXIT = True
+
+
 def do_server(sock, host, port, conn_handler, input_file, offset, read_length):
 
-    global CHILD_EXIT
+    def server_sighandler(signo, stack):
+        server_exit()
 
-    thr = threading.Thread(target=waiter)
-    thr.start()
+    atexit.register(server_exit)
+    signal.signal(signal.SIGINT, server_sighandler)
+    signal.signal(signal.SIGTERM, server_sighandler)
+    signal.signal(signal.SIGCHLD, signal.SIG_IGN) 
 
-    try:
-        sock.bind((host, port))
-        sock.listen(100)
+    sock.bind((host, port))
+    sock.listen(100)
 
-        while True:
+    while not EXIT:
+
+        try:
             inc_sock, __ = sock.accept()
+        except socket.error, err:
+            if err.errno == errno.EINTR:
+                break
 
-            child = os.fork()
-            if child:
+        child = os.fork()
+        if child:
+            inc_sock.close()
+        else:
+
+            exit_code = 1
+            inc_sock.send('SEND %d' % (read_length))
+            try:
+                if inc_sock.recv(1024) == 'OK':
+                    try:
+                        with open(input_file, 'rb') as fd:
+                            if 0 < offset:
+                                fd.seek(offset, os.SEEK_SET)
+                            #inc_sock.shutdown(socket.SHUT_RD)
+                            conn_handler(inc_sock, fd, read_length)
+                    except socket.error:
+                        pass
+                    except IOError:
+                        exit_code = 0
+            finally:
                 inc_sock.close()
-            else:
 
-                exit_code = 1
-                inc_sock.send('SEND %d' % (read_length))
-                try:
-                    if inc_sock.recv(1024) == 'OK':
-                        try:
-                            with open(input_file, 'rb') as fd:
-                                if 0 < offset:
-                                    fd.seek(offset, os.SEEK_SET)
-                                conn_handler(inc_sock, fd, read_length)
-                        except socket.error:
-                            pass
-                        except IOError:
-                            exit_code = 0
-                finally:
-                    inc_sock.close()
-
-                os._exit(exit_code)
-
-            CHILD_QUEUE.put(child)
-
-    except KeyboardInterrupt:
-        CHILD_EXIT = True
-        raise
-    finally:
-        CHILD_EXIT = True
+            os._exit(exit_code)
 
 
 def main(argv):
     """Main"""
 
 
-    global CHILD_QUEUE
-
-
-    def address_family_cb(option, opt_s, val, p, *a, **kw):
+    def address_family_cb(option, opt_s, val, parser, *a, **kw):
         """--address-family handler"""
 
         if (not val.isdigit() or
@@ -196,10 +168,10 @@ def main(argv):
                                             'today'
                                             % (opt_s, socket.AF_UNSPEC,
                                                socket.AF_INET, socket.AF_INET6))
-        p.values.address_family = int(val)
+        parser.values.address_family = int(val)
 
 
-    def port_cb(option, opt_s, val, p, *a, **kw):
+    def port_cb(option, opt_s, val, parser, *a, **kw):
         """--port handler"""
 
         port_min = 1
@@ -208,7 +180,7 @@ def main(argv):
             raise optparse.OptionValueError('Value passed to %s must be an '
                                             'integer between %d and %d'
                                             % (opt_s, port_min, port_max))
-        p.values.port = int(val)
+        parser.values.port = int(val)
 
 
     usage = ('usage: %prog [options] -s inputfile\n'
@@ -277,8 +249,6 @@ def main(argv):
         conn_handler = conn_handler_bounded
     else:
         conn_handler = conn_handler_unbounded
-
-    CHILD_QUEUE = queue.Queue()
 
     if opts.host and opts.address_family != socket.AF_UNSPEC:
         addr = socket.inet_pton(opts.address_family, opts.host)
