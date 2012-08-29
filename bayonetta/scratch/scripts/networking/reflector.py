@@ -235,7 +235,7 @@ def main(argv):
     parser.add_option('-S', '--send-buffer-size',
                       default=-1,
                       dest='sndbuf_size',
-                      help='Receive buffer size for sockets',
+                      help='Send buffer size for sockets',
                       type='int',
                       )
 
