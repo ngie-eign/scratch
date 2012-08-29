@@ -89,6 +89,7 @@ def conn_handler_unbounded(sock, read_fd, read_length):
 
 
 def do_client(sock, host, port):
+    """Do client stuff"""
 
     sock.connect((host, port))
     rbuf = sock.recv(1024)
@@ -105,13 +106,16 @@ def do_client(sock, host, port):
 
 
 def server_exit():
+    """Common function for handling graceful server exits"""
     global EXIT
     EXIT = True
 
 
 def do_server(sock, host, port, conn_handler, input_file, offset, read_length):
+    """Do server stuff"""
 
     def server_sighandler(signo, stack):
+        """Signal handler for the server"""
         server_exit()
 
     atexit.register(server_exit)
