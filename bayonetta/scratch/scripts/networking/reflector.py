@@ -68,8 +68,9 @@ def conn_handler_bounded(sock, read_fd, read_length):
 
     buf = ''
     while True:
-        buf += read_fd.read(min(8192, read_length-len(buf)))
-        sock.sendall(buf)
+        rbuf = read_fd.read(min(8192, read_length-len(buf)))
+        sock.sendall(rbuf)
+        buf += rbuf
         if read_length == len(buf):
             break
 
