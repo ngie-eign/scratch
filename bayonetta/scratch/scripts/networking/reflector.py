@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Net reflector module with verification support
+Simple reflection module with verification support
 
 Copyright (c) 2012, EMC Corporation.
 All rights reserved.
@@ -25,7 +25,6 @@ import errno
 import hashlib
 import optparse
 import os
-import select
 import signal
 import socket
 import sys
@@ -45,14 +44,12 @@ def client_verify_handler(sock, read_length):
         buf += rbuf
 
     buf = hashlib.sha256(buf).hexdigest()
-    select.select([sock], [], [])
-
     buf2 = sock.recv(1024)
     if buf == buf2:
         sys.stdout.write('Hashes matched\n')
-        sys.exit(0)
     else:
-        sys.exit('Hashes did not match: `%s` != `%s`' % (buf, buf2))
+        sys.stderr.write('Hashes did not match: `%s` != `%s`\n' % (buf, buf2))
+        os._exit(1)
 
 
 def client_noverify_handler(sock, read_length):
@@ -88,17 +85,15 @@ def conn_handler_unbounded(sock, read_fd, read_length):
             return
 
 
-def do_client(sock, host, port):
+def do_client(sock, host, port, input_file, offset, read_length):
     """Do client stuff"""
 
     sock.connect((host, port))
-    rbuf = sock.recv(1024)
-    parts = rbuf.split(' ', 1)
-    if parts[0] != 'SEND' or len(parts) != 2:
-        sys.exit('Invalid message received: %s' % rbuf)
-    read_length = int(parts[1])
-    sock.send('OK')
-    sock.shutdown(socket.SHUT_WR)
+    sock.send('%s %d %d' % (input_file, offset, read_length))
+    rbuf = sock.recv(3)
+    if rbuf != 'OK':
+        sys.exit('Invalid message received: %s' % (rbuf))
+    sock.send('GO')
     if 0 < read_length:
         client_verify_handler(sock, read_length)
     else:
@@ -111,7 +106,7 @@ def server_exit():
     EXIT = True
 
 
-def do_server(sock, host, port, conn_handler, input_file, offset, read_length):
+def do_server(sock, host, port, read_length):
     """Do server stuff"""
 
     def server_sighandler(signo, stack):
@@ -139,20 +134,37 @@ def do_server(sock, host, port, conn_handler, input_file, offset, read_length):
             inc_sock.close()
         else:
 
-            exit_code = 1
-            inc_sock.send('SEND %d' % (read_length))
             try:
-                if inc_sock.recv(1024) == 'OK':
+                exit_code = 2
+                buf = inc_sock.recv(1024)
+                input_file, offset, req_length = buf.split()
+                offset = long(offset)
+                req_length = long(req_length)
+                if offset < 0:
+                    inc_sock.sendall('BADREQUEST: offset negative')
+                elif read_length != -1 and read_length < req_length:
+                    inc_sock.sendall('BADREQUEST: read length too long '
+                                     '(%d < %d)' % (read_length, req_length))
+                else:
+                    exit_code = 1
                     try:
                         with open(input_file, 'rb') as fd:
                             if 0 < offset:
                                 fd.seek(offset, os.SEEK_SET)
-                            #inc_sock.shutdown(socket.SHUT_RD)
-                            conn_handler(inc_sock, fd, read_length)
+                            inc_sock.sendall('OK')
+                            inc_sock.recv(2)
+                            if 0 < req_length:
+                                conn_handler_bounded(inc_sock, fd,
+                                                     req_length)
+                                exit_code = 0
+                            else:
+                                conn_handler_unbounded(inc_sock, fd,
+                                                       req_length)
+
                     except socket.error:
                         pass
-                    except IOError:
-                        exit_code = 0
+                    #except IOError:
+                    #    exit_code = 0
             finally:
                 inc_sock.close()
 
@@ -162,26 +174,29 @@ def do_server(sock, host, port, conn_handler, input_file, offset, read_length):
 def main(argv):
     """Main"""
 
+    af_supported_values_mapping = {
+        '4': socket.AF_INET,
+        '6': socket.AF_INET6,
+        '' : socket.AF_UNSPEC,
+    }
+    af_supported_values_s = '4, 6, or ""'
 
-    def address_family_cb(option, opt_s, val, parser, *a, **kw):
+    def address_family_cb(option, opt_s, val, parser):
         """--address-family handler"""
 
-        if (not val.isdigit() or
-            val not in (socket.AF_INET, socket.AF_INET6, socket.AF_UNSPEC)):
-            raise optparse.OptionValueError('%s only supports AF_UNSPEC (%d), '
-                                            'AF_INET (%d), and AF_INET6 (%d) '
-                                            'today'
-                                            % (opt_s, socket.AF_UNSPEC,
-                                               socket.AF_INET, socket.AF_INET6))
-        parser.values.address_family = int(val)
+        af = af_supported_values_mapping.get(val)
+        if af is None:
+            raise optparse.OptionValueError('%s only supports %s'
+                                            % (opt_s, af_supported_values_s))
+        parser.values.address_family = af
 
 
-    def port_cb(option, opt_s, val, parser, *a, **kw):
+    def port_cb(option, opt_s, val, parser):
         """--port handler"""
 
         port_min = 1
         port_max = 65535
-        if not val.isdigit() or int(val) not in range(1, port_max+1):
+        if int(val) not in range(1, port_max+1):
             raise optparse.OptionValueError('Value passed to %s must be an '
                                             'integer between %d and %d'
                                             % (opt_s, port_min, port_max))
@@ -197,7 +212,9 @@ def main(argv):
                       callback=address_family_cb,
                       default=socket.AF_UNSPEC,
                       dest='address_family',
-                      help='Address family to use when connecting/listening',
+                      help=('Address family to use when connecting/listening'
+                            '(%s)' % (af_supported_values_s)),
+                      type='int',
                       )
     parser.add_option('-H', '--host',
                       default='',
@@ -225,6 +242,7 @@ def main(argv):
                       default=12345,
                       dest='port',
                       help='Port to connect/bind to',
+                      type='int',
                       )
     parser.add_option('-R', '--receive-buffer-size',
                       default=-1,
@@ -245,15 +263,13 @@ def main(argv):
 
     opts, args = parser.parse_args(args=argv)
     if opts.server_mode:
+        if args:
+            parser.error('Spurious arguments: %s' % (' '.join(args)))
+    else:
         if not args:
             parser.error('You must provide an input file when running as a '
-                         'server')
+                         'client')
         input_file = args[0]
-
-    if 0 < opts.read_length:
-        conn_handler = conn_handler_bounded
-    else:
-        conn_handler = conn_handler_unbounded
 
     if opts.host and opts.address_family != socket.AF_UNSPEC:
         addr = socket.inet_pton(opts.address_family, opts.host)
@@ -263,7 +279,10 @@ def main(argv):
         sock = socket.socket()
     else:
         addr = opts.host
-        sock = socket.socket(opts.address_family)
+        if opts.address_family == socket.AF_UNSPEC:
+            sock = socket.socket()
+        else:
+            sock = socket.socket(opts.address_family)
 
     if 0 < opts.rcvbuf_size:
         sock.setsockopt(socket.IPPROTO_IP, socket.SO_RCVBUF, opts.rcvbuf_size)
@@ -272,10 +291,10 @@ def main(argv):
 
     try:
         if opts.server_mode:
-            do_server(sock, addr, opts.port, conn_handler,
-                      input_file, opts.offset, opts.read_length)
+            do_server(sock, addr, opts.port, opts.read_length)
         else:
-            do_client(sock, addr, opts.port)
+            do_client(sock, addr, opts.port, input_file, opts.offset,
+                      opts.read_length)
     finally:
         sock.close()
 
