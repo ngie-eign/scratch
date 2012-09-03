@@ -203,8 +203,8 @@ def main(argv):
         parser.values.port = int(val)
 
 
-    usage = ('usage: %prog [options] -s inputfile\n'
-             '       %prog [options]')
+    usage = ('usage: %prog [options] inputfile\n'
+             '       %prog [options] -s')
 
     parser = optparse.OptionParser(usage=usage)
     parser.add_option('-A', '--address-family',
