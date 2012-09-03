@@ -105,6 +105,7 @@ def do_client(sock, host, port, input_file, offset, read_length):
 
 def server_exit():
     """Common function for handling graceful server exits"""
+
     global EXIT
     EXIT = True
 
@@ -114,7 +115,9 @@ def do_server(sock, host, port, read_length):
 
     def server_sighandler(signo, stack):
         """Signal handler for the server"""
+
         server_exit()
+
 
     atexit.register(server_exit)
     signal.signal(signal.SIGINT, server_sighandler)
