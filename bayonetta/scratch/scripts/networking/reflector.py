@@ -33,8 +33,8 @@ import sys
 EXIT = False
 
 
-def client_verify_handler(sock, read_length):
-    """Client socket hash verification handler"""
+def client_handler(sock, read_length):
+    """Client handler"""
 
     buf = ''
     while len(buf) != read_length:
@@ -52,16 +52,8 @@ def client_verify_handler(sock, read_length):
         os._exit(1)
 
 
-def client_noverify_handler(sock, read_length):
-    """Client socket no-hash verification handler"""
-
-    while True:
-        if not sock.recv(8192):
-            break
-
-
-def conn_handler_bounded(sock, read_fd, read_length):
-    """Connection handler when read_length > 0"""
+def request_handler(sock, read_fd, read_length):
+    """Request handler"""
 
     buf = ''
     while True:
@@ -75,16 +67,6 @@ def conn_handler_bounded(sock, read_fd, read_length):
     sock.sendall(buf2)
 
 
-def conn_handler_unbounded(sock, read_fd, read_length):
-    """Connection handler when read_length < 0"""
-
-    while True:
-        try:
-            sock.send(read_fd.read(65536))
-        except socket.error:
-            return
-
-
 def do_client(sock, host, port, input_file, offset, read_length):
     """Do client stuff"""
 
@@ -94,10 +76,7 @@ def do_client(sock, host, port, input_file, offset, read_length):
     if rbuf != 'OK':
         sys.exit('Invalid message received: %s' % (rbuf))
     sock.send('GO')
-    if 0 < read_length:
-        client_verify_handler(sock, read_length)
-    else:
-        client_noverify_handler(sock, read_length)
+    client_handler(sock, read_length)
 
 
 def server_exit():
@@ -142,8 +121,10 @@ def do_server(sock, host, port, read_length):
                 req_length = long(req_length)
                 if offset < 0:
                     inc_sock.sendall('BADREQUEST: offset negative')
-                elif read_length != -1 and read_length < req_length:
-                    inc_sock.sendall('BADREQUEST: read length too long '
+                elif req_length <= 0:
+                    inc_sock.sendall('BADREQUEST: request length <= 0')
+                elif read_length < req_length:
+                    inc_sock.sendall('BADREQUEST: request length too long '
                                      '(%d < %d)' % (read_length, req_length))
                 else:
                     exit_code = 1
@@ -153,13 +134,8 @@ def do_server(sock, host, port, read_length):
                                 fd.seek(offset, os.SEEK_SET)
                             inc_sock.sendall('OK')
                             inc_sock.recv(2)
-                            if 0 < req_length:
-                                conn_handler_bounded(inc_sock, fd,
-                                                     req_length)
-                                exit_code = 0
-                            else:
-                                conn_handler_unbounded(inc_sock, fd,
-                                                       req_length)
+                            request_handler(inc_sock, fd, req_length)
+                            exit_code = 0
 
                     except socket.error:
                         pass
@@ -223,10 +199,9 @@ def main(argv):
                       type='str',
                       )
     parser.add_option('-l', '--length',
-                      default=-1,
+                      default=(256 * 1024),
                       dest='read_length',
-                      help=('Length of data to read back across the wire; -1 '
-                            'stands for unlimited'),
+                      help='Length of data to read back across the wire',
                       type='int',
                       )
     parser.add_option('-o', '--offset',
