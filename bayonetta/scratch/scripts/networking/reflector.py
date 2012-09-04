@@ -32,13 +32,14 @@ import sys
 
 EXIT = False
 
+TWOFIFTYSIXK = 256 * 1024
 
 def client_handler(sock, read_length):
     """Client handler"""
 
     buf = ''
     while len(buf) != read_length:
-        rbuf = sock.recv(min(read_length, read_length-len(buf)))
+        rbuf = sock.recv(min(TWOFIFTYSIXK, read_length-len(buf)))
         if not rbuf:
             break
         buf += rbuf
@@ -57,7 +58,7 @@ def request_handler(sock, read_fd, read_length):
 
     buf = ''
     while True:
-        rbuf = read_fd.read(min(8192, read_length-len(buf)))
+        rbuf = read_fd.read(min(TWOFIFTYSIXK, read_length-len(buf)))
         sock.sendall(rbuf)
         buf += rbuf
         if read_length == len(buf):
@@ -130,8 +131,7 @@ def do_server(sock, host, port, read_length):
                     exit_code = 1
                     try:
                         with open(input_file, 'rb') as fd:
-                            if 0 < offset:
-                                fd.seek(offset, os.SEEK_SET)
+                            fd.seek(offset, os.SEEK_SET)
                             inc_sock.sendall('OK')
                             inc_sock.recv(2)
                             request_handler(inc_sock, fd, req_length)
@@ -139,8 +139,8 @@ def do_server(sock, host, port, read_length):
 
                     except socket.error:
                         pass
-                    #except IOError:
-                    #    exit_code = 0
+                    except IOError:
+                        pass
             finally:
                 inc_sock.close()
 
