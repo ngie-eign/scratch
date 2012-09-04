@@ -167,16 +167,25 @@ def main(argv):
         parser.values.address_family = af
 
 
+    def length_cb(option, opt_s, val, parser):
+        """--length handler"""
+
+        if val <= 0:
+            raise optparse.OptionValueError('Value passed to %s must be '
+                                            'greater than 0' % (opt_s))
+        parser.values.length = val
+
+
     def port_cb(option, opt_s, val, parser):
         """--port handler"""
 
         port_min = 1
         port_max = 65535
-        if int(val) not in range(1, port_max+1):
+        if val not in range(1, port_max+1):
             raise optparse.OptionValueError('Value passed to %s must be an '
                                             'integer between %d and %d'
                                             % (opt_s, port_min, port_max))
-        parser.values.port = int(val)
+        parser.values.port = val
 
 
     usage = ('usage: %prog [options] inputfile\n'
@@ -190,7 +199,7 @@ def main(argv):
                       dest='address_family',
                       help=('Address family to use when connecting/listening'
                             '(%s)' % (af_supported_values_s)),
-                      type='int',
+                      type='str',
                       )
     parser.add_option('-H', '--host',
                       default='',
@@ -199,6 +208,8 @@ def main(argv):
                       type='str',
                       )
     parser.add_option('-l', '--length',
+                      action='callback',
+                      callback=length_cb,
                       default=(256 * 1024),
                       dest='read_length',
                       help='Length of data to read back across the wire',
