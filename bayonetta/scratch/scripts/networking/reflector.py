@@ -22,7 +22,6 @@ Garrett Cooper, August 2012
 
 import atexit
 import errno
-import hashlib
 import optparse
 import os
 import signal
@@ -32,40 +31,64 @@ import sys
 
 EXIT = False
 
-TWOFIFTYSIXK = 256 * 1024
+TWOMEG = 2 * 1024 * 1024
 
-def client_handler(sock, read_length):
+def client_handler(sock, req_length):
     """Client handler"""
 
-    buf = ''
-    while len(buf) != read_length:
-        rbuf = sock.recv(min(TWOFIFTYSIXK, read_length-len(buf)))
-        if not rbuf:
+    read_length = 0
+    while read_length < req_length:
+        buf = sock.recv(min(TWOMEG, req_length-read_length))
+        if not buf:
+            sys.stderr.write('EOF starting with chunk at: %d\n' % (read_length))
             break
-        buf += rbuf
+        sent = 0
+        while sent < len(buf):
+            sent += sock.send(buf[sent:])
+        read_length += sent
 
-    buf = hashlib.sha256(buf).hexdigest()
-    buf2 = sock.recv(1024)
-    if buf == buf2:
-        sys.stdout.write('Hashes matched\n')
+    if read_length == req_length:
+        sys.stdout.write('Requested data transmitted successfully\n')
+        exit_code = 0
     else:
-        sys.stderr.write('Hashes did not match: `%s` != `%s`\n' % (buf, buf2))
-        os._exit(1)
+        sys.stderr.write('Requested data not retransmitted completely (%d != '
+                         '%d)\n' % (read_length, req_length))
+        exit_code = 1
+    os._exit(exit_code)
 
 
-def request_handler(sock, read_fd, read_length):
+def request_handler(sock, read_fd, req_length):
     """Request handler"""
 
-    buf = ''
-    while True:
-        rbuf = read_fd.read(min(TWOFIFTYSIXK, read_length-len(buf)))
-        sock.sendall(rbuf)
-        buf += rbuf
-        if read_length == len(buf):
+    read_length = 0
+    while read_length < req_length:
+        buf = read_fd.read(min(TWOMEG, req_length-read_length))
+        sent = 0
+        while sent < len(buf):
+            sent += sock.send(buf[sent:])
+        rbuf = ''
+        rbuf_l = ''
+        while len(rbuf) < len(buf):
+            rbuf_l = sock.recv(len(buf))
+            if not rbuf_l:
+                break
+            rbuf += rbuf_l
+        if not rbuf:
+            sys.stderr.write('EOF starting with chunk at: %d\n' % (read_length))
             break
+        if buf != rbuf:
+            sys.stderr.write('Mismatch starting with chunk at: %d\n' % (read_length))
+            break
+        read_length += sent
 
-    buf2 = hashlib.sha256(buf).hexdigest()
-    sock.sendall(buf2)
+    if read_length == req_length:
+        sys.stdout.write('Data transmitted successfully\n')
+        exit_code = 0
+    else:
+        sys.stderr.write('Requested data not retransmitted completely (%d != '
+                         '%d)\n' % (read_length, req_length))
+        exit_code = 1
+    os._exit(exit_code)
 
 
 def do_client(sock, host, port, input_file, offset, read_length):
@@ -73,7 +96,7 @@ def do_client(sock, host, port, input_file, offset, read_length):
 
     sock.connect((host, port))
     sock.send('%s %d %d' % (input_file, offset, read_length))
-    rbuf = sock.recv(3)
+    rbuf = sock.recv(1024)
     if rbuf != 'OK':
         sys.exit('Invalid message received: %s' % (rbuf))
     sock.send('GO')
@@ -124,7 +147,9 @@ def do_server(sock, host, port, read_length):
                     inc_sock.sendall('BADREQUEST: offset negative')
                 elif req_length <= 0:
                     inc_sock.sendall('BADREQUEST: request length <= 0')
-                elif read_length < req_length:
+                elif (read_length < req_length or
+                      (os.path.isfile(input_file) and
+                       os.stat(input_file).st_size < req_length)):
                     inc_sock.sendall('BADREQUEST: request length too long '
                                      '(%d < %d)' % (read_length, req_length))
                 else:
