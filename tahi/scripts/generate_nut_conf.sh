@@ -28,3 +28,4 @@ cp $nut_def.sample $nut_def
 sed -E -i '' -e "s/^(HostName[[:space:]]+)[^[:space:]]+\$/\1$(hostname)/" $nut_def
 sed -E -i '' -e "s/^(Link0[[:space:]]+)fxp0+([[:space:]]+)[^[:space:]]+\$/\1$interface\2$macaddr/" $nut_def
 sed -E -i '' -e "s/^(Password[[:space:]]+)[^[:space:]]+\$/\1$password/" $nut_def
+sed -E -i '' -e "s/^(System[[:space:]]+)[^[:space:]]+\$/\1kame-freebsd/" $nut_def
