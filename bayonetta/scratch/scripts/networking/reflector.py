@@ -44,8 +44,13 @@ def client_handler(sock, req_length):
             break
         sent = 0
         while sent < len(buf):
-            sent += sock.send(buf[sent:])
+            sent_l = sock.send(buf[sent:])
+            if not sent_l:
+                break
+            sent += sent_l
         read_length += sent
+        if sent != len(buf):
+            break
 
     if read_length == req_length:
         sys.stdout.write('Requested data transmitted successfully\n')
@@ -60,6 +65,7 @@ def client_handler(sock, req_length):
 def request_handler(sock, read_fd, req_length):
     """Request handler"""
 
+    rl = (sock, )
     read_length = 0
     while read_length < req_length:
         buf = read_fd.read(min(TWOMEG, req_length-read_length))
@@ -88,7 +94,7 @@ def request_handler(sock, read_fd, req_length):
         sys.stderr.write('Requested data not retransmitted completely (%d != '
                          '%d)\n' % (read_length, req_length))
         exit_code = 1
-    os._exit(exit_code)
+    return exit_code
 
 
 def do_client(sock, host, port, input_file, offset, read_length):
@@ -136,7 +142,8 @@ def do_server(sock, host, port, read_length):
         if child:
             inc_sock.close()
         else:
-
+            #inc_sock.setsockopt(socket.IPPROTO_TCP, socket.SO_RCVTIMEO, 30)
+            #inc_sock.setsockopt(socket.IPPROTO_TCP, socket.SO_SNDTIMEO, 30)
             try:
                 exit_code = 2
                 buf = inc_sock.recv(1024)
@@ -154,18 +161,11 @@ def do_server(sock, host, port, read_length):
                                      '(%d < %d)' % (read_length, req_length))
                 else:
                     exit_code = 1
-                    try:
-                        with open(input_file, 'rb') as fd:
-                            fd.seek(offset, os.SEEK_SET)
-                            inc_sock.sendall('OK')
-                            inc_sock.recv(2)
-                            request_handler(inc_sock, fd, req_length)
-                            exit_code = 0
-
-                    except socket.error:
-                        pass
-                    except IOError:
-                        pass
+                    with open(input_file, 'rb') as fd:
+                        fd.seek(offset, os.SEEK_SET)
+                        inc_sock.sendall('OK')
+                        inc_sock.recv(2)
+                        exit_code = request_handler(inc_sock, fd, req_length)
             finally:
                 inc_sock.close()
 
