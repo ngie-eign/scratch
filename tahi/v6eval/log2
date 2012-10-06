@@ -1,0 +1,114 @@
+===>  Cleaning for v6eval-3.3.2
+===>   v6eval-3.3.2 depends on file: /usr/local/sbin/pkg - found
+===>  Extracting for v6eval-3.3.2
+=> SHA256 Checksum OK for v6eval-3.3.2.tar.gz.
+===>   v6eval-3.3.2 depends on file: /usr/local/bin/perl5.12.4 - found
+===>  Patching for v6eval-3.3.2
+===>   v6eval-3.3.2 depends on file: /usr/local/bin/perl5.12.4 - found
+===>  Applying extra patch /scratch/freebsd/ports/net/v6eval/files/extra-patch-lib-Cm-CmMain.cc
+===>   v6eval-3.3.2 depends on file: /usr/local/bin/perl5.12.4 - found
+===>  Configuring for v6eval-3.3.2
+===>  Building for v6eval-3.3.2
+===> lib (all)
+===> lib/Cm (all)
+Warning: Object directory not changed from original /scratch/freebsd/ports/net/v6eval/work/v6eval-3.3.2/lib/Cm
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmTypes.cc -o CmTypes.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c BtObject.cc -o BtObject.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c BtArray.cc -o BtArray.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c BtList.cc -o BtList.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c BtSet.cc -o BtSet.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmQueue.cc -o CmQueue.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmAgent.cc -o CmAgent.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmMain.cc -o CmMain.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmSocket.cc -o CmSocket.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmFdSet.cc -o CmFdSet.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmFdMasks.cc -o CmFdMasks.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmString.cc -o CmString.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c PerfCollect.cc -o PerfCollect.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c Timer.cc -o Timer.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmDispatch.cc -o CmDispatch.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmReceiver.cc -o CmReceiver.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c timeval.cc -o timeval.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmToken.cc -o CmToken.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmMatch.cc -o CmMatch.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -I. -I/usr/local/include -c CmLexer.cc -o CmLexer.o
+building static Cm library
+ranlib libCm.a
+===> lib/Pz (all)
+Warning: Object directory not changed from original /scratch/freebsd/ports/net/v6eval/work/v6eval-3.3.2/lib/Pz
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c DmObject.cc -o DmObject.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c ItPosition.cc -o ItPosition.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McAH.cc -o McAH.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McARP.cc -o McARP.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McAlgorithm.cc -o McAlgorithm.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McDHCPv6.cc -o McDHCPv6.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McDNS.cc -o McDNS.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McESP.cc -o McESP.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McEther.cc -o McEther.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McICMPv4.cc -o McICMPv4.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McICMPv6.cc -o McICMPv6.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McIGMP.cc -o McIGMP.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McIKE.cc -o McIKE.o
+McIKE.cc: In member function 'u_int32_t McISAKMP_Decrypted::calc_padlen(RControl&, OCTSTR, u_int32_t, bool&) const':
+McIKE.cc:385:38: warning: format '%d' expects argument of type 'int', but argument 3 has type 'long unsigned int' [-Wformat]
+McIKE.cc:395:36: warning: format '%d' expects argument of type 'int', but argument 3 has type 'long unsigned int' [-Wformat]
+McIKE.cc: In member function 'virtual WObject* MmSPI_onD::composeWm(WControl&, WObject*, const PObject*) const':
+McIKE.cc:2396:12: warning: variable 'size' set but not used [-Wunused-but-set-variable]
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McIPv4.cc -o McIPv4.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McIPv6.cc -o McIPv6.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McInit.cc -o McInit.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McMLDv2.cc -o McMLDv2.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McMobility.cc -o McMobility.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McNoNext.cc -o McNoNext.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McNull.cc -o McNull.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McObject.cc -o McObject.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McRIPng.cc -o McRIPng.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McRR.cc -o McRR.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McSIP.cc -o McSIP.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McSNMP.cc -o McSNMP.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McSub.cc -o McSub.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McTCP.cc -o McTCP.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McUDP.cc -o McUDP.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c McVRRP.cc -o McVRRP.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c MfAlgorithm.cc -o MfAlgorithm.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c MmChecksum.cc -o MmChecksum.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c MmData.cc -o MmData.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c MmHeader.cc -o MmHeader.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c MmObject.cc -o MmObject.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c MvArgCheck.cc -o MvArgCheck.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c MvFunction.cc -o MvFunction.o
+MvFunction.cc: In member function 'virtual bool MvHexStr::isHexStr(CSTR, u_int32_t) const':
+MvFunction.cc:356:19: warning: suggest parentheses around '&&' within '||' [-Wparentheses]
+MvFunction.cc:357:19: warning: suggest parentheses around '&&' within '||' [-Wparentheses]
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PAlgorithm.cc -o PAlgorithm.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PControl.cc -o PControl.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PObject.cc -o PObject.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PcObject.cc -o PcObject.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PlObject.cc -o PlObject.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PrItem.cc -o PrItem.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PvAction.cc -o PvAction.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PvAutoItem.cc -o PvAutoItem.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PvIfName.cc -o PvIfName.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PvName.cc -o PvName.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PvObject.cc -o PvObject.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c PvOctets.cc -o PvOctets.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c RObject.cc -o RObject.o
+g++46  -Wall -O2 -fno-strict-aliasing -O2 -fno-strict-aliasing -O0 -I../Cm -I. -I/usr/local/include -c WObject.cc -o WObject.o
+gcc46  -Wall -c /scratch/freebsd/ports/net/v6eval/work/v6eval-3.3.2/lib/Pz/crypto/rijndael/rijndael-alg-fst.c -o rijndael-alg-fst.o
+/scratch/freebsd/ports/net/v6eval/work/v6eval-3.3.2/lib/Pz/crypto/rijndael/rijndael-alg-fst.c:22:46: fatal error: crypto/rijndael/rijndael-alg-fst.h: No such file or directory
+compilation terminated.
+*** [rijndael-alg-fst.o] Error code 1
+
+Stop in /scratch/freebsd/ports/net/v6eval/work/v6eval-3.3.2/lib/Pz.
+*** [all] Error code 1
+
+Stop in /scratch/freebsd/ports/net/v6eval/work/v6eval-3.3.2/lib.
+*** [all] Error code 1
+
+Stop in /scratch/freebsd/ports/net/v6eval/work/v6eval-3.3.2.
+*** [do-build] Error code 1
+
+Stop in /scratch/freebsd/ports/net/v6eval.
+*** [/scratch/freebsd/ports/net/v6eval/work/.build_done.v6eval._usr_local] Error code 1
+
+Stop in /scratch/freebsd/ports/net/v6eval.
