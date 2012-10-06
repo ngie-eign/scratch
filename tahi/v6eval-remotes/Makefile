@@ -13,8 +13,8 @@ MASTER_SITES=	http://www.tahi.org/release/v6eval/
 MAINTAINER=	yanegomi@gmail.com
 COMMENT=	IPv6 Conformance Test Platform
 
-#RUN_DEPENDS=	${SITE_PERL}/Expect.pm:${PORTSDIR}/lang/p5-Expect \
-#		${LOCALBASE}/v6eval/bin/pktbuf:${PORTSDIR}/net/v6eval
+RUN_DEPENDS=	${SITE_PERL}/Expect.pm:${PORTSDIR}/lang/p5-Expect \
+		${LOCALBASE}/v6eval/bin/pktbuf:${PORTSDIR}/net/v6eval
 
 USE_PERL5=	yes
 NO_MANCOMPRESS=	yes
