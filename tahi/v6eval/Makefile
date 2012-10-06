@@ -35,6 +35,9 @@ RUN_DEPENDS+=	p5-Digest-MD5>=2.16:${PORTSDIR}/security/p5-Digest-MD5
 EXTRA_PATCHES+=	${FILESDIR}/extra-patch-lib-Cm-CmMain.cc
 .endif
 
+# See the TAHI FAQ -- this only really works on i386
+ONLY_FOR_ARCHS=	i386
+
 post-install:
 	@${CAT} ${PKGMESSAGE}
 
