@@ -135,11 +135,8 @@ v6eval/include/stdpacket.def
 @dirrmtry v6eval/etc
 @dirrm v6eval
 %%SITE_PERL%%/V6evalCommon.pm
-%%SITE_PERL%%/V6evalRemote.pm
 %%SITE_PERL%%/V6evalTool.pm
 %%SITE_PERL%%/%%PERL_ARCH%%/auto/V6evalCommon/.packlist
-%%SITE_PERL%%/%%PERL_ARCH%%/auto/V6evalRemote/.packlist
 %%SITE_PERL%%/%%PERL_ARCH%%/auto/V6evalTool/.packlist
 @dirrmtry %%SITE_PERL%%/%%PERL_ARCH%%/auto/V6evalCommon
-@dirrmtry %%SITE_PERL%%/%%PERL_ARCH%%/auto/V6evalRemote
 @dirrmtry %%SITE_PERL%%/%%PERL_ARCH%%/auto/V6evalTool
