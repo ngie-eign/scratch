@@ -29,26 +29,30 @@ run()
 	cp -Rf . $pdir
 }
 
-if ! make -f Makefile.test ipv6ready_p1_host >/dev/null 2>&1
+if ! make -f Makefile.test -n ipv6ready_p1_host >/dev/null 2>&1
 then
 	echo >&2 "${0##*/}: this must be run from Self_Test directory"
 	exit 1
 fi
 
-case "$1" in
-host|router|special)
-	type=$1
-	;;
-*)
-	cat >&2 <<EOF
-usage: ${0##*/}: [host|router|special]
+if [ $# -eq 0 ]
+then
+	type=host
+else
+	case "$1" in
+	host|router|special)
+		type=$1
+		;;
+	*)
+		cat >&2 <<EOF
+	usage: ${0##*/}: [host|router|special]
 
-Defaults to host.
+	Defaults to host.
 EOF
-	exit 1
-	;;
-esac
-
+		exit 1
+		;;
+	esac
+fi
 run "p1" "$type"
 if [ "$type" != "special" ]
 then
