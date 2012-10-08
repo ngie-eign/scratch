@@ -45,9 +45,9 @@ else
 		;;
 	*)
 		cat >&2 <<EOF
-	usage: ${0##*/}: [host|router|special]
+usage: ${0##*/}: [host|router|special]
 
-	Defaults to host.
+Defaults to host.
 EOF
 		exit 1
 		;;
