@@ -30,6 +30,4 @@ then
 	sed -i '' -e 's/cuad/cuau/g' $tn_def
 fi
 
-sed -E -i '' \
-    -e "s/^(Link0[[:space:]]+)de0+([[:space:]]+)[^[:space:]]+\$/\1$interface\2$macaddr/" \
-    $tn_def
+sed -E -i '' -e "/Link0/s/de0/$interface/" $tn_def
