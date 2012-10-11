@@ -1,0 +1,27 @@
+--- bin/remotes/freebsd-i386/route.rmt	2012-10-11 14:40:11.472039463 -0700
++++ bin/remotes/freebsd-i386/route.rmt	2012-10-11 14:40:29.703655622 -0700
+@@ -77,7 +77,7 @@
+ if($rOpt_addrfamily eq "inet6") {
+     if ($rOpt_if =~ /gif/) {
+ 	rCommand("$ROUTECMD $rOpt_cmd -$rOpt_addrfamily  $rOpt_prefix ".
+-		 "-prefixlen $rOpt_prefixlen ::1 -ifp $rOpt_if",
++		 "-prefixlen $rOpt_prefixlen ::1 -iface $rOpt_if",
+ 		 $rOpt_timeout)
+ 	    || goto error;
+     }
+@@ -93,13 +93,13 @@
+     }
+     else {
+ 	rCommand("$ROUTECMD $rOpt_cmd -$rOpt_addrfamily  $rOpt_prefix ".
+-		 "-prefixlen $rOpt_prefixlen $rOpt_gateway -ifp $rOpt_if",
++		 "-prefixlen $rOpt_prefixlen $rOpt_gateway -iface $rOpt_if",
+ 		 $rOpt_timeout)
+ 	    || goto error;
+     }
+ }elsif($rOpt_addrfamily eq "inet") {
+     rCommand("$ROUTECMD $rOpt_cmd -$rOpt_addrtype -$rOpt_addrfamily ".
+-	     "$rOpt_prefix $rOpt_gateway -ifp $rOpt_if ",
++	     "$rOpt_prefix $rOpt_gateway -iface $rOpt_if ",
+ 	     $rOpt_timeout)
+ 	|| goto error;
+ }
