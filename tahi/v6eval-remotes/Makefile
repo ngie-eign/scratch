@@ -18,10 +18,6 @@ RUN_DEPENDS=	${SITE_PERL}/Expect.pm:${PORTSDIR}/lang/p5-Expect \
 
 USE_PERL5=	yes
 NO_MANCOMPRESS=	yes
-#MAN1PREFIX=	${PREFIX}/v6eval
-#MAN3PREFIX=	${PREFIX}/lib/perl5/${PERL_VERSION}
-#MAN1=		pktctl.1.gz pktsend.1.gz
-#MAN3=		V6evalRemote.3 V6evalTool.3
 MAKE_JOBS_UNSAFE=	yes
 SUB_FILES=	pkg-message
 
