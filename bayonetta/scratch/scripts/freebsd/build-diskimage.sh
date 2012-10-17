@@ -184,9 +184,9 @@ net.inet.tcp.sendbuf_max=2097152
 net.inet.tcp.sendbuf_inc=8192
 net.inet.tcp.sendspace_max=2097152
 net.inet.tcp.sendspace_inc=16384
-net.inet6.ip6.forwarding=1
-net.inet6.ip6.accept_rtadv=1
-net.inet6.ip6.accept_forwarding=1
+#net.inet6.ip6.forwarding=1
+#net.inet6.ip6.accept_rtadv=1
+#net.inet6.ip6.accept_forwarding=1
 EOF2
 
     # Speed up baudrate
