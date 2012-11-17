@@ -348,7 +348,7 @@ Index: contrib/telnet/telnet/telnet.c
 +    strcpy(ComPortBaudRate, arg);
 +
 +    len = 10;
-+    if (len < NETROOM()) {
++    if (NETROOM() <= len) {
 +	ExitString("No room in buffer for baud rate.\n", 1);
 +	/*NOTREACHED*/
 +    }
