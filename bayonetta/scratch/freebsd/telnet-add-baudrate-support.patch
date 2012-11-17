@@ -322,7 +322,7 @@ Index: contrib/telnet/telnet/telnet.c
  #include <arpa/telnet.h>
  
  #include "ring.h"
-@@ -206,7 +207,45 @@
+@@ -206,7 +207,44 @@
   * is in disagreement as to what the current state should be.
   */
  
@@ -349,19 +349,18 @@ Index: contrib/telnet/telnet/telnet.c
 +
 +    len = 10;
 +    if (len < NETROOM()) {
-+	if (asprintf(&temp, "%c%c%c%c....%c%c", IAC, SB, TELOPT_COMPORT,
-+	    COMPORT_SET_BAUDRATE, IAC, SE) < 0) {
-+	    ExitString("Could not allocate memory for baud rate buffer\n", 1);
-+	    /* NOTREACHED */
-+	}
-+	baudrate = htonl(baudrate);
-+	memcpy(&temp[4], &baudrate, sizeof(baudrate));
-+	ring_supply_data(&netoring, temp, len);
-+	printsub('>', &temp[2], len-2);
-+    } else {
 +	ExitString("No room in buffer for baud rate.\n", 1);
 +	/*NOTREACHED*/
 +    }
++    if (asprintf(&temp, "%c%c%c%c....%c%c", IAC, SB, TELOPT_COMPORT,
++        COMPORT_SET_BAUDRATE, IAC, SE) < 0) {
++        ExitString("Could not allocate baud rate buffer\n", 1);
++        /* NOTREACHED */
++    }
++    baudrate = htonl(baudrate);
++    memcpy(&temp[4], &baudrate, sizeof(baudrate));
++    ring_supply_data(&netoring, temp, len);
++    printsub('>', &temp[2], len-2);
 +}
 +
 +void
