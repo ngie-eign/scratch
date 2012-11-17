@@ -4,3 +4,5 @@ createUser myuser
 # snmptrapd -M /usr/local/share/snmp/mibs:$HOME/.mibs -f -t -L e -x 0.0.0.0 -c /usr/local/etc/snmptrapd.conf
 
 snmpinform -v2c -c mycommunity myip '' SNMPv2-MIB::sysName.0 SNMPv2-MIB::sysName.0 s `hostname`
+
+snmpwalk -v2c -c mycommunity myip .1
