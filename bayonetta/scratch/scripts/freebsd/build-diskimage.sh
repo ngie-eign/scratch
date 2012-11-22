@@ -48,6 +48,7 @@ fi
 set -e
 
 : ${FBSD_BRANCH=releng/7.3}
+: ${NANO_ARCH=$(uname -p)}
 : ${TMPDIR=$(mktemp -d /tmp/tmp.XXXXXX)}
 _nanobsd_conf="$TMPDIR/nanobsd.conf"
 NANO_SRC="$TMPDIR/src"
@@ -58,11 +59,12 @@ cat > $_nanobsd_conf <<EOF
 #!/bin/sh
 
 NANO_RAM_TMPVARSIZE=$(( 1024 * 1024 / 2 ))
-FlashDevice generic 256m
+FlashDevice generic 768m
 MAKEOBJDIRPREFIX="$TMPDIR/obj"
 NANO_BOOT2CFG="-Dh"
 NANO_BOOTLOADER=boot/boot0
 NANO_IMAGES=1
+NANO_ARCH="$NANO_ARCH"
 NANO_LABEL="$NANO_LABEL"
 NANO_OBJ="$TMPDIR/nobj"
 NANO_SRC="$NANO_SRC"
@@ -124,7 +126,7 @@ WITHOUT_WPA_SUPPLICANT_EAPOL=
 "
 
 CONF_INSTALL="$CONF_BUILD
-WITHOUT_TOOLCHAIN=
+#WITHOUT_TOOLCHAIN=
 "
 
 setup_nanobsd_etc2() {
@@ -230,11 +232,11 @@ setup_serial() {
 # Allow USB devices 30 seconds to quiesce (only on 8.x).
 kern.cam.boot_delay="30000"
 comconsole_speed="115200"
-if_cxgb_enable="YES"
-if_cxgbe_enable="YES"
-if_em_enable="YES"
-if_igb_enable="YES"
-if_ix_enable="YES"
+if_cxgb_load="YES"
+if_cxgbe_load="YES"
+if_em_load="YES"
+if_igb_load="YES"
+ixgbe_load="YES"
 EOF2
 }
 customize_cmd setup_serial
