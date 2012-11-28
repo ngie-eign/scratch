@@ -24,6 +24,8 @@ run()
 	set +e
 	# Run the test.
 	make ipv6ready_${phase}_${type}
+	# Save the v6eval .def files for later.
+	cp /usr/local/v6eval/etc/*.def $pdir
 	# Shuffle the results around.
 	rm -Rf $pdir
 	cp -Rf . $pdir
