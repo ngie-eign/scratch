@@ -42,22 +42,28 @@ KERNCONFDIR=		/root
 
 MODULES_OVERRIDE=	cpuctl
 
-MODULES_OVERRIDE+=	opensolaris zfs
+# dtrace
+MODULES_OVERRIDE+=	cyclic dtrace
 
 MODULES_OVERRIDE+=	em re
 
+# geom/geli/etc
 MODULES_OVERRIDE+=	zlib crypto geom
 
-MODULES_OVERRIDE+=	linprocfs linsysfs linux nullfs procfs
+MODULES_OVERRIDE+=	linprocfs linsysfs linux
 
 # NFS.
 MODULES_OVERRIDE+=	krpc nfscl nfscommon nfs_common nfsclient nfsd nfslock
 MODULES_OVERRIDE+=	nfslockd nfsserver nfssvc
 
+MODULES_OVERRIDE+=	nullfs procfs
+
 MODULES_OVERRIDE+=	syscons/blank syscons/green
 
 # POSIX features.
 MODULES_OVERRIDE+=      aio mqueue sem
+
+MODULES_OVERRIDE+=	opensolaris zfs
 
 .endif
 
