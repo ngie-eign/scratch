@@ -1,1 +1,7 @@
 FreeBSD and POSIX compliance issues: http://lists.freebsd.org/pipermail/freebsd-standards/2010-April/001936.html
+
+Deleting partitions:
+
+sh -c 'set -x; for i in `cd /dev/; ls *p*`; do echo gpart delete -i ${i##*p} ${i%p*}; done'
+sh -c 'set -x; for i in `cd /dev/; ls ad*p*`; do echo gpart delete -i ${i##*p} ${i%p*}; done'
+sh -c 'set -x; for i in `cd /dev/; ls da[0-9]* | grep -v s`; do gpart destroy -F $i; done'
