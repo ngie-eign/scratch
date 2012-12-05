@@ -57,6 +57,7 @@ install-ports:
 	cd ${PORTSDIR}/${port}; \
 	if ${MAKE} check-already-installed; then \
 		echo "Building ${port}"; \
+		${MAKE} config-recursive; \
 		${MAKE} fetch-recursive; \
 	fi
 .endfor
