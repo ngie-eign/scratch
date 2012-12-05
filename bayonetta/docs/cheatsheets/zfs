@@ -1,3 +1,5 @@
 Copies, data protection, etc: https://blogs.oracle.com/relling/entry/zfs_copies_and_data_protection
 Exploring the ZFS ARC: http://www.cuddletech.com/blog/pivot/entry.php?id=979
 http://wiki.freebsd.org/ZFSTuningGuide
+Installing ZFS on FreeBSD 9.x: http://www.aisecure.net/2011/05/01/root-on-zfs-freebsd-current/
+swills's cheatsheet: http://people.freebsd.org/~swills/gptzfsroot.txt
