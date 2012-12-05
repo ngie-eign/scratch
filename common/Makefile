@@ -49,27 +49,23 @@ install-dotfiles: \
 
 PORTS!=		grep -hv '\#' ../${HOST}/PORTS PORTS
 
-# It's less annoying running config-recursive up front and the
-# fetch-recursive call up front is a weaksauce attempt at working around the
-# great firewall of EMC..
-.if defined(NO_PORTS)
+PORTSDIR?=	/usr/ports
+
 install-ports:
-	@:
-.else
-install-ports:
+.if !defined(NO_PORTS)
 .for port in ${PORTS}
-	@name=`${MAKE} -C /usr/ports/${port} package-name`; \
-	[ -d /var/db/pkg/$$name ] || \
-		(cd /usr/ports/${port} && \
-		 ${MAKE} config-recursive && \
-		 while ! ${MAKE} fetch-recursive; do : ; done)
+	cd ${PORTSDIR}/${port}; \
+	if ${MAKE} check-already-installed; then \
+		echo "Building ${port}"; \
+		${MAKE} fetch-recursive; \
+	fi
 .endfor
 .for port in ${PORTS}
-	@name=`${MAKE} -C /usr/ports/${port} package-name`; \
-	[ -d /var/db/pkg/$$name ] || \
-		(echo "Building ${port}"; \
-		 cd /usr/ports/${port} && \
-		 ${MAKE} clean all deinstall install clean)
+	cd ${PORTSDIR}/${port}; \
+	if ${MAKE} check-already-installed; then \
+		echo "Building ${port}"; \
+		${MAKE} clean all deinstall install clean; \
+	fi
 .endfor
 .endif
 
