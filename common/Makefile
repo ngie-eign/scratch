@@ -24,16 +24,12 @@ DOTFILES!=	find ./${HOME}/dot.* ../${HOST}${HOME}/dot.* -maxdepth 0
 ${HOME}/.shrc: Makefile
 	(cat /usr/share/skel/dot.shrc; echo; echo '[ -f $$HOME/.shrc-local ] && . $$HOME/.shrc-local') > $@
 
+EXCLUDE=	Makefile|PORTS|/dot\.*|${HOME}|/usr/src|-local\$$
 install-dotfiles: \
     ${HOME}/.shrc
 .for dir in ../${HOST}/ .
-.for ddir in / /usr/src
-	exclude="Makefile|PORTS|/dot\.*"; \
-	[ ${ddir} != "/usr/src" ] || \
-	    exclude="$$exclude|${HOME}|/usr/src/|-local\$$"; \
-	cd ${dir} && find . -type f | egrep -v "($$exclude)" | \
-	    cpio -dumpv ${ddir}
-.endfor
+	cd ${dir} && find . -type f | egrep -v "${EXCLUDE}" | \
+	    cpio -dumpv /
 .endfor
 .for dotfile in ${DOTFILES}
 .if exists(${dotfile}/)
