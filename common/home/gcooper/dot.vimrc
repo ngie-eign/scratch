@@ -138,4 +138,10 @@ nnoremap <c-e> :bn<cr>
 
 colorscheme tango
 
+function TrailingWhiteSpace()
+    highlight WhiteSpaceEOL term=reverse ctermbg=red guibg=red
+    match WhiteSpaceEOL /\s\+$/
+endfunction
+au BufNewFile,BufReadPost,WinEnter * call TrailingWhiteSpace()
+
 " vim: set fenc=utf-8 tw=80 sw=2 sts=2 et foldmethod=marker :
