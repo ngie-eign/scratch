@@ -1,0 +1,8 @@
+[user]
+	name = Garrett Cooper
+[alias]
+	pu = !"git fetch origin -v; git fetch upstream -v; git merge upstream master"
+[push]
+	default = matching
+[merge]
+	defaultToUpstream = 1
