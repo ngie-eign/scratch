@@ -14,7 +14,7 @@ do
 		parent_branch=master
 		;;
 	esac
-	git checkout $branch && git merge $parent_branch || exit 1
+	git checkout $branch && git merge --no-edit $parent_branch || exit 1
 done
 if [ -n "$branches" ]
 then
