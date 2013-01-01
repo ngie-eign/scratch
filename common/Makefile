@@ -51,16 +51,19 @@ install-ports:
 .if !defined(NO_PORTS)
 .for port in ${PORTS}
 	cd ${PORTSDIR}/${port}; \
-	if ${MAKE} check-already-installed; then \
-		${MAKE} config-recursive; \
-		${MAKE} fetch-recursive; \
+	if ${MAKE} check-already-installed >/dev/null; then \
+		${MAKE} config-recursive \
+		    -DDISABLE_VULNERABILITIES; \
+		${MAKE} fetch-recursive \
+		    -DDISABLE_VULNERABILITIES; \
 	fi
 .endfor
 .for port in ${PORTS}
 	cd ${PORTSDIR}/${port}; \
-	if ${MAKE} check-already-installed; then \
+	if ${MAKE} check-already-installed >/dev/null; then \
 		echo "Building ${port}"; \
-		${MAKE} clean all deinstall install clean; \
+		${MAKE} clean all deinstall install clean \
+		    -DDISABLE_VULNERABILITIES; \
 	fi
 .endfor
 .endif
