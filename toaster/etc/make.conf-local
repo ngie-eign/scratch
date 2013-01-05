@@ -1,0 +1,16 @@
+CFLAGS		+= -fno-strict-aliasing -pipe
+CXXFLAGS	+= -fno-strict-aliasing -pipe
+.if defined(DEBUG_FLAGS) && !empty(DEBUG_FLAGS)
+CFLAGS		+= -O0
+CXXFLAGS	+= -O0
+.else
+CFLAGS		+= -O2
+CXXFLAGS	+= -O2
+.endif
+
+CPUTYPE?=	prescott
+
+WITH_PKGNG=	yes
+
+# added by use.perl 2012-07-05 08:39:36
+PERL_VERSION=5.10.1

@@ -1,0 +1,15 @@
+.if defined(DEBUG_FLAGS) && !empty(DEBUG_FLAGS)
+# kern.pre.mk barfs on mii(4) and re(4) with newbus bitbanging issues if
+# -fno-inline is enabled on sys.
+.if !empty("${CURDIR:M*/sys*}")
+CFLAGS+=	-fno-inline
+CXXFLAGS+=	-fno-inline
+.endif
+.endif
+
+CPUTYPE?=	core2
+
+WITHOUT_CUPS=	yes
+WITHOUT_X11=	yes
+# added by use.perl 2011-11-28 20:59:30
+PERL_VERSION=5.12.4
