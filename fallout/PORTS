@@ -1,2 +1,4 @@
 net-mgmt/net-snmp
 security/nmap
+x11/xorg
+x11/nvidia-driver
