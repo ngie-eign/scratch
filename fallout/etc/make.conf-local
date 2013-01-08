@@ -9,7 +9,7 @@ CXXFLAGS+=	-fno-inline
 
 CPUTYPE?=	core2
 
+WITH_PKGNG=	yes
 WITHOUT_CUPS=	yes
-WITHOUT_X11=	yes
-# added by use.perl 2011-11-28 20:59:30
-PERL_VERSION=5.12.4
+
+WRKDIRPREFIX:=	/usr/obj
