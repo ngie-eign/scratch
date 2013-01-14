@@ -3,20 +3,21 @@
 set -e
 # Avoid the glob ;).
 git checkout master
+git pull
+git pu
 branches=$(git branch -l | grep -v master)
 for branch in $branches
 do
 	case "$branch" in
 	stable*)
-		parent_branch=origin/$branch
+		parent_branch=upstream/$branch
 		;;
 	*)
 		parent_branch=master
 		;;
 	esac
-	git checkout $branch && git merge --no-edit $parent_branch || exit 1
+	git checkout $branch && git pull &&
+	git merge --no-edit $parent_branch || exit 1
 done
-if [ -n "$branches" ]
-then
-	git push --all
-fi
+git checkout master
+git push --all
