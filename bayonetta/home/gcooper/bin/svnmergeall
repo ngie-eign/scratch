@@ -1,0 +1,4 @@
+#!/bin/sh
+
+set -eu
+svnmerge $1 $2 `svn mergeinfo --show-revs eligible $1 | sed -e 's/r//g'`
