@@ -8,6 +8,3 @@ then
 fi
 
 export EDITOR="vim"
-export P4CLIENT="gcooper-bayonetta"
-export P4PORT="perforce.freebsd.org:1666"
-export P4USER="gcooper"

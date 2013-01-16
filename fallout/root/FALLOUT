@@ -1,5 +1,5 @@
 cpu		HAMMER
-ident		BAYONETTA	
+ident		FALLOUT
 
 makeoptions	DEBUG=-g		# Build kernel with gdb(1) debug symbols
 
@@ -14,10 +14,10 @@ options 	INET6			# IPv6 communications protocols
 #options	HZ=100
 options 	FFS			# Berkeley Fast Filesystem
 options 	SOFTUPDATES		# Enable FFS soft updates support
-#options 	UFS_ACL			# Support for access control lists
+options 	UFS_ACL			# Support for access control lists
 #options 	UFS_DIRHASH		# Improve performance on big directories
 #options 	UFS_GJOURNAL		# Enable gjournal-based UFS journaling
-options 	MD_ROOT			# MD is a potential root device
+#options 	MD_ROOT			# MD is a potential root device
 #options 	NFSCLIENT		# Network Filesystem Client
 #options 	NFSSERVER		# Network Filesystem Server
 #options 	NFSLOCKD		# Network Lock Manager
@@ -84,10 +84,6 @@ device		atacore
 device		ataintel
 device		atapci
 
-# SCSI Controllers
-device		mfi		# LSI MegaRAID Firmware Interface driver. 
-options		MFI_DEBUG
-
 # SCSI peripherals
 device		scbus		# SCSI bus (required for SCSI)
 #device		ch		# SCSI media changers
@@ -147,3 +143,6 @@ device		umass		# Disks/Mass storage - Requires scbus and da
 device		ums		# Mouse
 device		ucom
 device		uplcom
+
+device		sound
+device		snd_emu10kx

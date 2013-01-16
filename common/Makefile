@@ -53,9 +53,9 @@ install-ports:
 	cd ${PORTSDIR}/${port}; \
 	if ${MAKE} check-already-installed >/dev/null; then \
 		${MAKE} config-recursive \
-		    -DDISABLE_VULNERABILITIES; \
+		    DISABLE_VULNERABILITIES=1; \
 		${MAKE} fetch-recursive \
-		    -DDISABLE_VULNERABILITIES; \
+		    DISABLE_VULNERABILITIES=1; \
 	fi
 .endfor
 .for port in ${PORTS}
@@ -63,7 +63,7 @@ install-ports:
 	if ${MAKE} check-already-installed >/dev/null; then \
 		echo "Building ${port}"; \
 		${MAKE} clean all deinstall install clean \
-		    -DDISABLE_VULNERABILITIES; \
+		    DISABLE_VULNERABILITIES=1; \
 	fi
 .endfor
 .endif
