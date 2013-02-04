@@ -20,4 +20,7 @@ do
 	git merge --no-edit $parent_branch || exit 1
 done
 git checkout master
-git push --all
+if ${AUTO_PUSH:-true}
+then
+	git push --all
+fi
