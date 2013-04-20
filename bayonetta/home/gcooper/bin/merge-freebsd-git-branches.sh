@@ -5,7 +5,7 @@ set -e
 git checkout master
 git pull
 git pu
-branches=$(git branch -l | grep -v master)
+branches=$(git branch -l | grep -v master || :)
 for branch in $branches
 do
 	case "$branch" in
