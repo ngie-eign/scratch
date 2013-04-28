@@ -1,9 +1,0 @@
-#!/bin/sh
-
-set -eu
-
-path=${1:-.}
-
-svn ci -F $path/commit $path
-rm $path/commit
-svn up $path

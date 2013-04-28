@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+"""
 
-import multiprocessing
+"""
+
 import platform
 import shlex
 import subprocess
@@ -30,7 +32,6 @@ class TestRunner(object):
 
         return p.stdout, p.stderr, p.returncode
 
-
     def eval(self, code):
         """Evaluate in a remote process
 
@@ -38,7 +39,8 @@ class TestRunner(object):
             code (str): a string that describes the code that will be executed
                         across the wire.
         :Returns:
-            is used defined based on the eval'ed code in ``code``.
+            user-defined based on the eval'ed code in ``code``.
         """
 
         eval(code)
+
