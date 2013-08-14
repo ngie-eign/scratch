@@ -77,12 +77,11 @@ device		smb
 device		ichsmb
 
 # ATA and ATAPI devices
-options		ATA_CAM
 device		ahci
-device		ataahci
-device		atacore
-device		ataintel
-device		atapci
+#device		ataahci
+#device		atacore
+#device		ataintel
+#device		atapci
 
 # SCSI Controllers
 device		mfi		# LSI MegaRAID Firmware Interface driver. 
@@ -97,8 +96,8 @@ device		cd		# CD
 device		pass		# Passthrough device (direct SCSI access)
 
 # atkbdc0 controls both the keyboard and the PS/2 mouse
-device		atkbdc		# AT keyboard controller
-device		atkbd		# AT keyboard
+#device		atkbdc		# AT keyboard controller
+#device		atkbd		# AT keyboard
 
 device		kbdmux		# keyboard multiplexer
 
