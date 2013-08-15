@@ -7,7 +7,7 @@ trap "git checkout $original_branch" EXIT
 git checkout master
 git pull
 git pu
-branches=$(git branch -l | grep -v master | sort -u || :)
+branches=$(git branch -l | grep -v master | sort -ru || :)
 for branch in $branches
 do
 	case "$branch" in
