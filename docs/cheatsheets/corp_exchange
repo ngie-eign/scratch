@@ -1,0 +1,4 @@
+1. Install radicale.
+2. Configure it according to documentation here:
+   http://radicale.org/user_documentation/#idconfiguring-the-server
+3. Point Lightning at the host/port for radicale.
