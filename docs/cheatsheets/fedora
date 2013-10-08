@@ -1,6 +1,10 @@
-Flash: http://fedoraproject.org/wiki/Flash
+Flash
+=====
 
-Ctrl-Alt-Del modification for LXDE:
+Read http://fedoraproject.org/wiki/Flash
+
+Ctrl-Alt-Del modification for LXDE
+==================================
 
 $ awk '/gcooper/ { if (p == 1) { p = 0; print } else { p=1; }} p == 1 { print }' .config/openbox/lxde-rc.xml 
   <!-- gcooper: lock screen with Ctrl+Alt+Del  -->
@@ -18,3 +22,20 @@ $ awk '/gcooper/ { if (p == 1) { p = 0; print } else { p=1; }} p == 1 { print }'
      </action>
   </keybind>
   <!-- gcooper: end Ctrl+Alt+Del customization -->
+
+Getting ACPI to work with Fedora 19 the way I want it to work
+=============================================================
+
+Prereqs:
+
+yum install -y acpid
+
+Todo items:
+
+- Shutting the lid should not suspend the laptop, it should just turn off the
+  display.
+- Set monitor up properly when docking/undocking the laptop (it seems to think
+  that the monitor to the left still exists after it's undocked). Querying
+  xrandr -q might be required.
+- Set monitor up properly when pressing the projector button (this seems
+  harder)? Pressing the button doesn't do anything today.
