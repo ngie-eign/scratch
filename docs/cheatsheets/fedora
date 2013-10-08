@@ -1,1 +1,20 @@
 Flash: http://fedoraproject.org/wiki/Flash
+
+Ctrl-Alt-Del modification for LXDE:
+
+$ awk '/gcooper/ { if (p == 1) { p = 0; print } else { p=1; }} p == 1 { print }' .config/openbox/lxde-rc.xml 
+  <!-- gcooper: lock screen with Ctrl+Alt+Del  -->
+  <!-- Launch Task Manager with Ctrl+Alt+Del -->
+  <!--
+  <keybind key="A-C-Delete">
+      <action name="Execute">
+          <command>lxtask</command>
+      </action>
+  </keybind>
+  -->
+  <keybind key="A-C-Delete">
+      <action name="Execute">
+          <command>xscreensaver-command -lock</command>
+     </action>
+  </keybind>
+  <!-- gcooper: end Ctrl+Alt+Del customization -->
