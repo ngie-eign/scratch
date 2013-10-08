@@ -1,0 +1,32 @@
+#!/bin/sh
+
+set -eu
+
+usage()
+{
+	cat <<EOF
+usage: ${0##*/} [-i iso-file]
+EOF
+}
+
+cli_start_args=
+while getopts 'i:' ch
+do
+	case "$ch" in
+	*i*)
+		cli_start_args="$cli_start_args -cdrom $OPTARG"
+		;;
+	*)
+		usage
+		;;
+	esac
+done
+shift $(( $OPTIND - 1 ))
+
+. ${0%/*}/defaults
+. $1/conf
+
+start_args="$cli_start_args $start_args"
+echo $start_args
+
+qemu-system-${architecture} -drive file=$disk_file $start_args
