@@ -1,0 +1,15 @@
+<keyboard>
+
+  <!-- ... -->
+
+  <keybind key="C-A-L">
+      <action name="Execute">
+          <command>xscreensaver-command -lock</command>
+     </action>
+  </keybind>
+
+  <!-- ... -->
+
+</keyboard>
+
+More info: http://askubuntu.com/questions/80145/how-can-i-lock-screen-on-lxde

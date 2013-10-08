@@ -1,0 +1,15 @@
+$ xrandr -q | grep ' connected'
+LVDS1 connected 1366x768+1680+0 (normal left inverted right x axis y axis) 309mm x 174mm
+VGA1 connected primary 1680x1050+0+0 (normal left inverted right x axis y axis) 474mm x 297mm
+$ cat /etc/X11/xorg.conf.d/01-dualhead-monitor.conf  
+Section "Monitor"
+	Identifier	"VGA1"
+	Option		"Primary" "true"
+EndSection
+
+Section "Monitor"
+	Identifier	"LVDS1"
+	Option		"RightOf" "LCD"
+EndSection
+
+More info: https://wiki.archlinux.org/index.php/Multihead (look for `--output').
