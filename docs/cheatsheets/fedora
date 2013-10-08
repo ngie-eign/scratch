@@ -39,3 +39,8 @@ Todo items:
   xrandr -q might be required.
 - Set monitor up properly when pressing the projector button (this seems
   harder)? Pressing the button doesn't do anything today.
+
+Setup NIC bonding
+=================
+
+
