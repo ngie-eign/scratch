@@ -1,0 +1,7 @@
+Release notes are here: http://www.broadcom.com/docs/linux_sta/README.txt
+Tarballs are linked here: http://www.broadcom.com/support/802.11/linux_sta.php
+
+Prereqs:
+
+yum install -y gcc kernel-devel
+
