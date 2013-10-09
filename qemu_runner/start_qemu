@@ -14,7 +14,7 @@ while getopts 'i:' ch
 do
 	case "$ch" in
 	*i*)
-		cli_start_args="$cli_start_args -cdrom $OPTARG"
+		cli_start_args="$cli_start_args -cdrom $OPTARG -boot once=d"
 		;;
 	*)
 		usage
