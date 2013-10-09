@@ -27,6 +27,5 @@ shift $(( $OPTIND - 1 ))
 . $1/conf
 
 start_args="$cli_start_args $start_args"
-echo $start_args
 
 qemu-system-${architecture} -drive file=$disk_file $start_args
