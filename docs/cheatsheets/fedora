@@ -30,10 +30,16 @@ Prereqs:
 
 yum install -y acpid
 
+Don't Suspend on Screen Close
+=============================
+
+# sed -i -e '/^#HandleLidSwitch/s/^#HandleLidSwitch.*/HandleLidSwitch=ignore/' /etc/systemd/logind.conf
+# systemctl restart systemd-logind.service
+
+https://ask.fedoraproject.org/question/9809/how-do-i-disable-suspend-when-my-laptop-is-plugged-in-and-closed/
+
 Todo items:
 
-- Shutting the lid should not suspend the laptop, it should just turn off the
-  display.
 - Set monitor up properly when docking/undocking the laptop (it seems to think
   that the monitor to the left still exists after it's undocked). Querying
   xrandr -q might be required.
