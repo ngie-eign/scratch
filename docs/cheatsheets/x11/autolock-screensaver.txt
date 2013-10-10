@@ -1,6 +1,6 @@
 1. Install xautolock/xlockmore:
 
-2. Add the following to .Xresources:
+2. Add the following to .Xdefaults:
 
 Xautolock.locker: xlock
 Xautolock.time:	5
