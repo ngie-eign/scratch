@@ -1,0 +1,11 @@
+1. Install xautolock/xlockmore:
+
+2. Add the following to .Xresources:
+
+Xautolock.locker: xlock
+Xautolock.time:	5
+Xlock.mode: blank
+
+Reference:
+
+http://lists.debian.org/debian-user/2012/07/msg02309.html
