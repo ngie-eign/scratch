@@ -31,6 +31,30 @@ build_network_args()
 	echo $network_args
 }
 
+readonly TAP=$VM_DIR/tap
+
+create_tap()
+{
+	local i tap
+
+	tap=$(get_tap)
+	if [ -z "$tap" ]
+	then
+		i=0
+		while ! /etc/qemu-ifup tap$i
+		do
+			: $(( i += 1 ))
+		done
+		tap=tap$i
+	fi
+	echo $tap > $TAP
+}
+
+get_tap()
+{
+	cat $TAP
+}
+
 usage()
 {
 	cat <<EOF
@@ -57,4 +81,6 @@ shift $(( $OPTIND - 1 ))
 
 start_args="$cli_start_args $(build_network_args) $start_args"
 
+create_tap
 $QEMU -drive file=$disk_file $start_args
+sudo /etc/qemu-ifdown $(get_tap)
