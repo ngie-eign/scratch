@@ -1,0 +1,7 @@
+Based on http://en.wikibooks.org/wiki/QEMU/Networking:
+
+User_Alias QEMUERS = gcooper
+
+Cmnd_Alias QEMU = /etc/qemu-ifup, /etc/qemu-ifdown
+
+QEMUERS ALL=(ALL) NOPASSWD: QEMU
