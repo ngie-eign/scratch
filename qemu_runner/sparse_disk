@@ -3,7 +3,7 @@
 set -eu
 
 . ${0%/*}/defaults
-. $1/conf
+. $VM_DIR/conf
 
 case "$(uname | tr '[:upper:]' '[:lower:]')" in
 *freebsd*)

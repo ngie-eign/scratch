@@ -53,7 +53,7 @@ done
 shift $(( $OPTIND - 1 ))
 
 . ${0%/*}/defaults
-. $1/conf
+. $VM_DIR/conf
 
 start_args="$cli_start_args $(build_network_args) $start_args"
 

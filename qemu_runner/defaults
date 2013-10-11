@@ -1,7 +1,9 @@
+readonly VM_DIR=${1:-$PWD}
+
 : ${architecture=x86_64}
 : ${network_interfaces=1}
 : ${nic_model=}
-: ${disk_file=$1/disk}
+: ${disk_file=$VM_DIR/disk}
 
 readonly QEMU="qemu-system-${architecture}"
 if [ -z "${nic_model:-}" ]
