@@ -2,6 +2,35 @@
 
 set -eu
 
+# Build network configuration arguments from the config file.
+#
+# It populates the commadn line for qemu with `-net nic[,...]`, etc. VMs can
+# specify per-NIC configuration via $nic_<n>_options, e.g. $nic_1_options for
+# NIC # 1. See man qemu for more details on what's accepted via `-net'.
+build_network_args()
+{
+	local i network_args nic_options
+
+	set +u
+
+	i=1
+	network_args="-net none"
+	while [ $i -le $network_interfaces ]
+	do
+		nic_options=$(eval echo \$nic_${i}_options)
+		if [ -n "$nic_options" ]
+		then
+			nic_options=",$nic_options"
+		fi
+		network_args="$network_args -net nic,model=${nic_model}${nic_options} -net user"
+
+		: $(( i += 1 ))
+	done
+
+	set -u
+	echo $network_args
+}
+
 usage()
 {
 	cat <<EOF
@@ -26,6 +55,6 @@ shift $(( $OPTIND - 1 ))
 . ${0%/*}/defaults
 . $1/conf
 
-start_args="$cli_start_args $start_args"
+start_args="$cli_start_args $(build_network_args) $start_args"
 
-qemu-system-${architecture} -drive file=$disk_file $start_args
+$QEMU -drive file=$disk_file $start_args
