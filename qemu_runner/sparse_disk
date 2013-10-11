@@ -5,14 +5,4 @@ set -eu
 . ${0%/*}/defaults
 . $VM_DIR/conf
 
-case "$(uname | tr '[:upper:]' '[:lower:]')" in
-*freebsd*)
-	disk_size="$(echo $disk_size | tr '[:upper:]' '[:lower:]')"
-	;;
-*linux*)
-	disk_size="$(echo $disk_size | tr '[:lower:]' '[:upper:]')"
-	;;
-esac
-args="conv=sparse bs=1 seek=$disk_size count=0"
-
-dd if=/dev/zero of=$disk_file $args
+qemu-img create -f qcow2 $disk_file $disk_size
