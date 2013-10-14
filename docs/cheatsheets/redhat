@@ -1,0 +1,5 @@
+eth0 not present issue (it's actually eth1!):
+http://www.envision-systems.com.au/blog/2012/09/21/fix-eth0-network-interface-when-cloning-redhat-centos-or-scientific-virtual-machines-using-oracle-virtualbox-or-vmware/
+
+Where's my package?!?!
+- http://fedoraproject.org/wiki/EPEL
