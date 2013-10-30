@@ -11,7 +11,7 @@ mailserver = 'mail.zonarsystems.com'
 password = getpass.getpass().strip().encode('utf-8')
 port = 587
 
-server = smtplib.SMTP(
+server = smtplib.SMTP_SSL(
     mailserver,
     port,
     timeout=10,
@@ -22,7 +22,7 @@ def em_obfuscate(username, domain):
     # Screw you spambots
     return '@'.join([username, domain]).encode('utf-8')
 
-sender = em_obfuscate('garrett.cooper', 'zonarsystems.com')
+sender = em_obfuscate(getpass.getuser(), 'zonarsystems.com')
 recipients = \
     map(lambda x: em_obfuscate(x[0], x[1]), [('yanegomi', 'gmail.com')])
 
@@ -40,7 +40,7 @@ while True:
             password,
         )
     except Exception as e:
-        print('Error logging into server: %s' % (str(e)))
+        print('Error logging into server: %r' % (repr(e)))
         time.sleep(10)
         continue
     try:
