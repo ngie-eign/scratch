@@ -24,7 +24,7 @@ def em_obfuscate(username, domain):
 
 sender = em_obfuscate('garrett.cooper', 'zonarsystems.com')
 recipients = \
-    map(lambda x: em_obfuscate(x[0], x[1]), [('yaneurabeya', 'gmail.com')])
+    map(lambda x: em_obfuscate(x[0], x[1]), [('yanegomi', 'gmail.com')])
 
 while True:
 
