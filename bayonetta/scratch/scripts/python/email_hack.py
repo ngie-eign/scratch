@@ -44,6 +44,8 @@ while True:
         time.sleep(10)
         continue
     try:
-        server.sendmail(sender, recipients, msg, _charset='utf-8')
+        res = server.sendmail(sender, recipients, msg, _charset='utf-8')
+        if res:
+            print('Error sending mail: %r' % (repr(res)))
     finally:
         server.quit()
