@@ -17,6 +17,7 @@ def req1(api_version):
     else:
         status = 'sadtrombone.com'
     d = {
+        'status': status,
         'time': time.clock(),
         'version': api_version,
         'my': 'precious...',
