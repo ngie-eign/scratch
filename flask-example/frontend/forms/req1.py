@@ -8,12 +8,14 @@ Garrett Cooper, October 2013
 import time
 from flask import jsonify
 
-from frontend.forms import app
-from frontend.forms.v1 import api_version
-from frontend.models.v1 import req1
+from frontend.forms import app, valid_api_version
 
-@app.route('/%d/req1' % (api_version))
-def req1():
+@app.route('/<int:api_version>/req1')
+def req1(api_version):
+    if valid_api_version(api_version):
+        status = 'aok'
+    else:
+        status = 'sadtrombone.com'
     d = {
         'time': time.clock(),
         'version': api_version,

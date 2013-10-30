@@ -9,11 +9,9 @@ import time
 from flask import jsonify, request
 
 from frontend.forms import app
-from frontend.forms.v1 import api_version
-from frontend.models.v1 import req2
 
-@app.route('/%d/req2' % (api_version))
-def req2():
+@app.route('/<int:api_version>/req2')
+def req2(api_version):
     d = {
         'time': time.clock(),
         'version': api_version,
