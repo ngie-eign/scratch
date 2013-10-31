@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+A dumb script that sits and punts emails across the wire in a while(1)
+manner. Best used with FIFOs.
+
+Sort of ripped from FreeNAS 8 (gui.system.common).
+
+Garrett Cooper, October 2013
+"""
 
 from email.mime.text import MIMEText
 from email.Utils import formatdate
