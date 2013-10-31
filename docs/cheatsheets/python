@@ -1,3 +1,9 @@
 http://stackoverflow.com/questions/4512085/simple-output-of-xml-from-python
 
 http://wiki.python.org/moin/EscapingXml
+
+Obfuscating email snippet:
+
+def em_obfuscate(username, domain):
+    # Screw you spambots
+        return '@'.join([username, domain]).encode('utf-8')
