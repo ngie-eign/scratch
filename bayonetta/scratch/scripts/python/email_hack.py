@@ -13,10 +13,12 @@ from email.Utils import formatdate
 import getpass
 import os
 import smtplib
+import socket
 import sys
 import time
 
-def do_email(mailserver, port, user, domain, password, recipients, message):
+def do_email(mailserver, port, user, domain, password, recipients, message,
+             subject):
     server = smtplib.SMTP(mailserver, port, timeout=10)
     try:
         #server.set_debuglevel(1)
@@ -47,22 +49,46 @@ def do_email(mailserver, port, user, domain, password, recipients, message):
         server.quit()
 
 def main():
-    if len(sys.argv) < 2:
-        sys.exit('usage: %s email...' % (os.path.basename(sys.argv[0]), ))
+    import optparse
 
-    user = os.environ.get('USER', getpass.getuser())
-    domain = os.environ.get('DOMAIN', 'zonarsystems.com')
+    parser = optparse.OptionParser()
+    parser.add_option('-d', default=socket.gethostname().split('.')[1:],
+                      dest='sender_domain',
+                      help=('domain name to use for sender email '
+                            '(default: %default)'),
+                      )
+    parser.add_option('-m', default='localhost',
+                      dest='mailserver',
+                      help='mailserver to use for relaying email',
+                      )
+    parser.add_option('-p', default=socket.getservbyname('smtp'),
+                      dest='port',
+                      type=int,
+                      help='port to connect to SMTP on (default: %default)',
+                      )
+    parser.add_option('-s',
+                      dest='subject',
+                      help='Subject line in email to send',
+                      )
+    parser.add_option('-u', default=os.getenv('USER'),
+                      dest='sender_user',
+                      help=('username to use when sending mail '
+                            '(default: %default)'),
+                      )
 
-    mailserver = 'mail.zonarsystems.com'
-    password = os.environ.get('PASSWORD',
-                              getpass.getpass()).strip().encode('utf-8')
-    port = os.environ.get('PORT', 587)
-    recipients = sys.argv[1:]
+    opts, recipients = parser.parse_args()
+    if not len(recipients):
+        parser.exit('you must supply at least one recipient')
+
+    password = os.getenv('PASSWORD') or getpass.getpass()
+    password = password.strip().encode('utf-8')
 
     while True:
         msg = sys.stdin.read()
         if msg:
-            do_email(mailserver, port, user, domain, password, recipients, msg)
+            do_email(opts.mailserver, opts.port, opts.sender_user,
+                     opts.sender_domain, password, recipients, msg,
+                     opts.subject)
 
 if __name__ == '__main__':
     main()
