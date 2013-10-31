@@ -7,3 +7,48 @@ Obfuscating email snippet:
 def em_obfuscate(username, domain):
     # Screw you spambots
         return '@'.join([username, domain]).encode('utf-8')
+
+===============================
+API version handling?
+
+APIS = {}
+VALID_API_VERSIONS = (1, )
+
+
+class DuplicateAPIException(Exception):
+    pass
+
+
+class UnknownAPIException(Exception):
+    pass
+
+
+def call_api(name, *args, **kwargs):
+    try:
+        api_fn = APIS[name]
+    except NameError:
+        raise UnknownAPIException('API %s does not exist' % (name, ))
+    return api_fn(*args, **kwargs)
+
+
+def register_api(name, endpoint):
+    global APIS
+
+    if name in APIS:
+        raise DuplicateAPIException(name)
+    __import__('.'.join(name.split('.')[:-1]))
+    APIS[endpoint] = name
+
+
+def unregister_api(name):
+    global APIS
+
+    try:
+        del APIS[name]
+    except KeyError:
+        raise UnknownAPIException('API %s is not registered' % (name, ))
+
+
+def valid_api_version(version):
+    return version in VALID_API_VERSIONS
+
