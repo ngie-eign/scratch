@@ -5,6 +5,12 @@ manner. Best used with FIFOs.
 
 Sort of ripped from FreeNAS 8 (gui.common.system).
 
+Example:
+
+echo 'hello world!' | \
+     python sendmail.py -d zonarsystems.com -m mail.zonarsystems.com -p 587 \
+                        -s 'Hello world'
+
 Garrett Cooper, October 2013
 """
 
@@ -52,7 +58,7 @@ def main():
     import optparse
 
     parser = optparse.OptionParser()
-    parser.add_option('-d', default=socket.gethostname().split('.')[1:],
+    parser.add_option('-d', default='.'.join(socket.getfqdn().split('.')[1:]),
                       dest='sender_domain',
                       help=('domain name to use for sender email '
                             '(default: %default)'),
@@ -68,7 +74,7 @@ def main():
                       )
     parser.add_option('-s',
                       dest='subject',
-                      help='Subject line in email to send',
+                      help='subject line in email to send',
                       )
     parser.add_option('-u', default=os.getenv('USER'),
                       dest='sender_user',
