@@ -18,6 +18,7 @@ from email.mime.text import MIMEText
 from email.Utils import formatdate
 import getpass
 import os
+import select
 import smtplib
 import socket
 import sys
@@ -89,12 +90,17 @@ def main():
     password = os.getenv('PASSWORD') or getpass.getpass()
     password = password.strip().encode('utf-8')
 
+    rlist = [sys.stdin]
+
     while True:
-        msg = sys.stdin.read()
+        ready = select.select(rlist, [], [])
+        msg = ready[0][0].read()
         if msg:
             do_email(opts.mailserver, opts.port, opts.sender_user,
                      opts.sender_domain, password, recipients, msg,
                      opts.subject)
+        else:
+            time.sleep(1)
 
 if __name__ == '__main__':
     main()
