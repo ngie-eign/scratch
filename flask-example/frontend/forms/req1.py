@@ -6,22 +6,12 @@ Garrett Cooper, October 2013
 """
 
 import time
-from flask import jsonify
 
-from frontend.forms import app, valid_api_version
+from frontend.forms import app, get_json_from_api
 
 @app.route('/<int:api_version>/req1')
 def req1(api_version):
-    if valid_api_version(api_version):
-        status = 'aok'
-    else:
-        status = 'sadtrombone.com'
-    d = {
-        'status': status,
-        'time': time.clock(),
-        'version': api_version,
-        'my': 'precious...',
-    }
-    return jsonify(d)
-
-
+    # 1. Grab the request.
+    # 2. Punt it over to the model logic
+    # 3. Present the result.
+    return get_json_from_api(api_version)
