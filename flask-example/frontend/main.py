@@ -8,15 +8,10 @@ from frontend.forms import app
 
 
 if __name__ == '__main__':
-    run_dict = {
-        'debug': settings.SITE_DEBUG,
-        'host': settings.SITE_HTTP_LISTEN_ADDRESS,
-        'port': settings.SITE_HTTP_LISTEN_PORT,
-    }
-    app.run(**run_dict)
+    app.debug = settings.SITE_DEBUG
 
 
-# Log on failures via email; based on:
+# Log via email if exceptions occur; based on:
 # http://flask.pocoo.org/docs/errorhandling/
 if not app.debug:
     from logging.handlers import SMTPHandler
@@ -31,3 +26,11 @@ if not app.debug:
                                )
     mail_handler.setLevel(settings.SITE_MAIL_LOG_LEVEL)
     app.logger.addHandler(mail_handler)
+
+
+if __name__ == '__main__':
+    run_dict = {
+        'host': settings.SITE_HTTP_LISTEN_ADDRESS,
+        'port': settings.SITE_HTTP_LISTEN_PORT,
+    }
+    app.run(**run_dict)
