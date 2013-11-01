@@ -8,7 +8,13 @@ from frontend.forms import app
 
 
 if __name__ == '__main__':
-    app.run(debug=2, host='0.0.0.0', port=80)
+    run_dict = {
+        'debug': settings.SITE_DEBUG,
+        'host': settings.SITE_HTTP_LISTEN_ADDRESS,
+        'port': settings.SITE_HTTP_LISTEN_PORT,
+    }
+    app.run(**run_dict)
+
 
 # Log on failures via email; based on:
 # http://flask.pocoo.org/docs/errorhandling/

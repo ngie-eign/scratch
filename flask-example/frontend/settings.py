@@ -4,6 +4,7 @@ import os
 import socket
 import sys
 
+SITE_DEBUG = 0
 
 def em_obfuscate(username, domain):
     # Screw you spambots
@@ -14,6 +15,8 @@ def em_obfuscate(username, domain):
 SITE_ADMINS = map(lambda x: em_obfuscate(x[0], x[1]), [
                    ('garrett.cooper', 'zonarsystems.com'),
                   ])
+SITE_HTTP_LISTEN_ADDRESS = '0.0.0.0'
+SITE_HTTP_LISTEN_PORT = 80
 SITE_HOSTNAME = socket.getfqdn()
 SITE_MAIL_LOG_LEVEL = logging.ERROR
 SITE_MAIL_HOST = os.getenv('SITE_MAIL_HOST') or 'localhost'
