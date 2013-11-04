@@ -4,6 +4,7 @@ set -e
 # Avoid the glob ;).
 original_branch=$(git branch -l | awk '$1 == "*" { print $NF }')
 trap "git checkout $original_branch" EXIT
+cd "$(git rev-parse --show-toplevel)"
 git checkout master
 git pull
 git pu
