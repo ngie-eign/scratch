@@ -25,7 +25,6 @@ do
 	git checkout $branch && git pull &&
 	git merge --no-edit $parent_branch || exit 1
 done
-git checkout master
 if ${AUTO_PUSH:-true}
 then
 	git push --all
