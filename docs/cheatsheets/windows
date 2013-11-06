@@ -3,3 +3,20 @@ http://home.eunet.no/~pnordahl/ntpasswd/
 
 Deleting email in Outlook after X days:
 http://superuser.com/questions/549565/deleting-emails-from-a-sender-after-x-days
+
+Getting version details in VBS:
+
+strComputer = "."
+ Set objWMIService = GetObject("winmgmts:\\" & strComputer & "\root\cimv2")
+ Set colOperatingSystem = objWMIService.ExecQuery("Select * from Win32_OperatingSystem")
+
+ For Each objOperatingSystem in colOperatingSystem
+ ServicePack = objOperatingSystem.ServicePackMajorVersion
+ Version = objOperatingSystem.Version
+
+ Next
+
+ Wscript.Echo "This operating system is " + Version
+
+http://msdn.microsoft.com/en-us/library/microsoft.windowsserversolutions.common.devices.operatingsystemproperty_properties.aspx
+http://stackoverflow.com/questions/545666/how-to-translate-ms-windows-os-version-numbers-into-product-names-in-net
