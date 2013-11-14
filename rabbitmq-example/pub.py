@@ -59,5 +59,4 @@ with kombu.Connection(**conn_dict) as conn:
     simple_queue = conn.SimpleQueue(*queue_args, **queue_kwargs)
     simple_queue.put(msg)
     print('Sent %s' % (msg, ))
-    # Not closing a queue
     simple_queue.close()

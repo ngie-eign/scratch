@@ -62,4 +62,6 @@ with kombu.Connection(**conn_dict) as conn:
     print('Received %s' % (message.payload, ))
     # No ACK - message still in queue, as expected.
     message.ack()
+    # Not closing a queue cancels any outstanding transactions on the consumer
+    # side
     simple_queue.close()
