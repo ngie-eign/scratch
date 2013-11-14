@@ -54,6 +54,7 @@ queue_kwargs = {
     'exchange_opts': exchange_kwargs,
 }
 
+
 with kombu.Connection(**conn_dict) as conn:
     simple_queue = conn.SimpleQueue(*queue_args, **queue_kwargs)
     # If empty, raises Queue.Empty().
