@@ -24,6 +24,8 @@ namespace MSMQRecv
                     queue.Close();
                 }
             }
+            Console.Write("Press enter to continue..");
+            Console.Read();
         }
     }
 }
