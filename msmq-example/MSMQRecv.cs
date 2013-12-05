@@ -15,6 +15,10 @@ namespace MSMQRecv
                 MessageQueue queue = new MessageQueue(arg);
                 try
                 {
+                    // This just peeks at the messages; see
+                    // http://stackoverflow.com/questions/1228684/how-can-i-get-all-the-available-messages-on-a-msmq-queue
+                    // for an alternative method that receives the message
+                    // and plucks it off the queue.
                     foreach (Message msg in queue.GetAllMessages())
                     {
                         msg.Formatter = new XmlMessageFormatter(new Type[1] { typeof(string) });
