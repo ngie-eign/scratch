@@ -33,12 +33,26 @@ namespace MSMQSend
                 // Create a private queue if it's being created on the local
                 // machine.
                 // http://stackoverflow.com/questions/5559123/programmatically-add-private-queues-in-msmq
-                if (isLocalNoDirectFormat && !MessageQueue.Exists(arg))
+                if (isLocalNoDirectFormat)
                 {
-                    MessageQueue.Create(arg, true);
+                    List<string> queues = new List<string>();
+
+                    queues.Add(arg);
+                    queues.Add(arg + "_ack");
+
+                    foreach (string queueName in queues)
+                    {
+                        if (!MessageQueue.Exists(queueName))
+                        {
+                            MessageQueue.Create(queueName, true);
+                        }
+                    }
                 }
 
                 MessageQueue queue = new MessageQueue(arg);
+                MessageQueue adminQueue = new MessageQueue(arg + "_ack");
+                adminQueue.MessageReadPropertyFilter.CorrelationId = true;
+
                 // Only local queues can be Transactional.
                 // http://msdn.microsoft.com/en-us/library/system.messaging.messagequeue.transactional%28v=vs.110%29.aspx
                 Boolean isTransactional = isLocal && queue.Transactional;
@@ -52,6 +66,12 @@ namespace MSMQSend
                     transaction = null;
                 }
 
+                // ACK the message here
+                queue.DefaultPropertiesToSend.AdministrationQueue = adminQueue;
+                // ACK the message
+                queue.DefaultPropertiesToSend.AcknowledgeType =
+                    AcknowledgeTypes.PositiveReceive |
+                    AcknowledgeTypes.PositiveArrival;
                 // Use reliable messaging (i.e. store message on disk).
                 queue.DefaultPropertiesToSend.Recoverable = true;
 
@@ -94,6 +114,29 @@ namespace MSMQSend
                 {
                     queue.Close();
                 }
+                /*
+                try
+                {
+                    Message msg = adminQueue.Receive(new TimeSpan(0, 0, 5));
+                    if (msg.MessageType == MessageType.Acknowledgment)
+                    {
+                        switch (msg.Acknowledgment)
+                        {
+                            case Acknowledgment.ReachQueue:
+                            case Acknowledgment.Receive:
+                                Console.WriteLine("Message completely sent");
+                                break;
+                            default:
+                                Console.WriteLine("Message not completely sent");
+                                break;
+                        }
+                    }
+                }
+                finally
+                {
+                    adminQueue.Close();
+                }
+                 */
             }
             Console.Write("Press enter to continue..");
             Console.Read();
