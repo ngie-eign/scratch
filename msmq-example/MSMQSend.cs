@@ -21,10 +21,11 @@ namespace MSMQSend
                 Boolean isHTTP = false;
 
                 // http://stackoverflow.com/questions/5559123/programmatically-add-private-queues-in-msmq
-                if (arg.ToLower().IndexOf("FormatName:DIRECT=HTTP://") < 0)
+                if (arg.ToLower().IndexOf("FormatName:DIRECT=HTTP://") != -1)
                 {
                     isHTTP = true;
                 }
+
                 if (!isHTTP && !MessageQueue.Exists(arg)) {
                     MessageQueue.Create(arg, true);
                 }
