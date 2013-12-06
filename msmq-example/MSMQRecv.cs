@@ -17,15 +17,19 @@ namespace MSMQRecv
             // `.\private$\test`,
             // `FormatName=DIRECT=OS:localhost/private$/test`,
             // etc
-            foreach (string arg in args) {
-                // HTTP* can't pull; it can only push :/...
-                Boolean isLocal =
-                    arg.ToLower().IndexOf(".\\") == 0 ||
+            foreach (string arg in args)
+            {
+
+                // Best guesses for the magic tables in the MSDN docs for
+                // Local, Remote, etc.
+                Boolean isLocalNoDirectFormat =
+                    arg.ToLower().IndexOf(".\\") == 0;
+                Boolean isLocal = isLocalNoDirectFormat ||
                     arg.ToLower().IndexOf(direct_format + "=os:.\\") == 0;
                 Boolean isHTTP = !isLocal &&
                     arg.ToLower().IndexOf(direct_format + "=http") == 0;
 
-                // :(..
+                // HTTP* can't pull; it can only push :(...
                 // http://blogs.msdn.com/b/johnbreakwell/archive/2008/06/09/msmq-over-http-is-a-push-only-technology.aspx
                 if (isHTTP)
                 {
@@ -37,7 +41,7 @@ namespace MSMQRecv
 
                 try
                 {
-                    if (isLocal) {
+                    if (isLocalNoDirectFormat) {
                         // This just peeks at the messages; see
                         // http://stackoverflow.com/questions/1228684/how-can-i-get-all-the-available-messages-on-a-msmq-queue
                         // for an alternative method that receives the message

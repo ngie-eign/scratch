@@ -25,14 +25,15 @@ namespace MSMQSend
                 // Best guesses for the magic tables in the MSDN docs for
                 // Local, Remote, etc.
                 //Boolean isDirect = Regex.IsMatch(arg, "^" + Regex.Escape(direct_format) + "=");
-                Boolean isLocal =
-                    arg.ToLower().IndexOf(".\\") == 0 ||
+                Boolean isLocalNoDirectFormat =
+                    arg.ToLower().IndexOf(".\\") == 0;
+                Boolean isLocal = isLocalNoDirectFormat ||
                     arg.ToLower().IndexOf(direct_format + "=os:.\\") == 0;
 
                 // Create a private queue if it's being created on the local
                 // machine.
                 // http://stackoverflow.com/questions/5559123/programmatically-add-private-queues-in-msmq
-                if (isLocal && !MessageQueue.Exists(arg))
+                if (isLocalNoDirectFormat && !MessageQueue.Exists(arg))
                 {
                     MessageQueue.Create(arg, true);
                 }
