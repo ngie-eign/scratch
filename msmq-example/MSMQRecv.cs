@@ -11,6 +11,10 @@ namespace MSMQRecv
     {
         static void Main(string[] args)
         {
+            // XXX: add a usage message.
+            // `.\private$\test`,
+            // `FormatName=DIRECT=HTTP://localhost/msmq/private$/test`,
+            // etc
             foreach (string arg in args) {
                 MessageQueue queue = new MessageQueue(arg);
                 try
