@@ -12,11 +12,21 @@ namespace MSMQSend
     {
         static void Main(string[] args)
         {
+            // XXX: add a usage message.
+            // `.\private$\test`,
+            // `FormatName:DIRECT=HTTP://localhost/msmq/private$/test`,
+            // etc
             foreach (string arg in args)
             {
+                Boolean isHTTP = false;
+
                 // http://stackoverflow.com/questions/5559123/programmatically-add-private-queues-in-msmq
-                if (!MessageQueue.Exists(arg)) {
-                    MessageQueue.Create(arg);
+                if (arg.ToLower().IndexOf("FormatName:DIRECT=HTTP://") < 0)
+                {
+                    isHTTP = true;
+                }
+                if (!isHTTP && !MessageQueue.Exists(arg)) {
+                    MessageQueue.Create(arg, true);
                 }
                 MessageQueue queue = new MessageQueue(arg);
                 try
@@ -26,7 +36,7 @@ namespace MSMQSend
                     msg.Label = "Test Message " + msg.Body.GetHashCode();
                     Console.Write("Will send message " + msg.Label + "  `" + msg.Body + "` to queue: " + arg + "\n");
 
-                    if (queue.Transactional)
+                    if (!isHTTP && queue.Transactional)
                     {
                         // Send a single, transactional, internal message. See also:
                         // http://msdn.microsoft.com/en-us/library/3hyd9xby%28v=vs.110%29.aspx
