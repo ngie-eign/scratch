@@ -1,0 +1,15 @@
+; inspired by http://dam.mellis.org/2004/06/open_cygwin_bash_shell_here/
+
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\Directory\shell\bash]
+@="Open Bash Shell Here"
+
+[HKEY_CLASSES_ROOT\Directory\shell\bash\command]
+@="c:\\cygwin64\\bin\\mintty.exe --exec /bin/sh --login -i -c 'cd \"`cygpath \"$*\"`\";sh' sh %L"
+
+[HKEY_CLASSES_ROOT\Drive\shell\bash]
+@="Open Bash Shell Here"
+
+[HKEY_CLASSES_ROOT\Drive\shell\bash\command]
+@="c:\\cygwin64\\bin\\mintty.exe --exec /bin/sh --login -i -c 'cd \"`cygpath \"$*\"`\";sh' sh %L"
