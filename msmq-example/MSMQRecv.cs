@@ -11,12 +11,26 @@ namespace MSMQRecv
     {
         static void Main(string[] args)
         {
+            const string direct_format = "formatname:direct";
+
             // XXX: add a usage message.
             // `.\private$\test`,
-            // `FormatName=DIRECT=HTTP://localhost/msmq/private$/test`,
+            // `FormatName=DIRECT=OS:localhost/private$/test`,
             // etc
             foreach (string arg in args) {
+                // HTTP* can't pull; it can only push :/...
+                Boolean isHTTP = arg.ToLower().IndexOf(direct_format + "=http") != -1;
+
+                // :(..
+                // http://blogs.msdn.com/b/johnbreakwell/archive/2008/06/09/msmq-over-http-is-a-push-only-technology.aspx
+                if (isHTTP)
+                {
+                    Console.WriteLine("Can't read from HTTP queue :(..");
+                    continue;
+                }
+
                 MessageQueue queue = new MessageQueue(arg);
+
                 try
                 {
                     // This just peeks at the messages; see
@@ -26,7 +40,10 @@ namespace MSMQRecv
                     foreach (Message msg in queue.GetAllMessages())
                     {
                         msg.Formatter = new XmlMessageFormatter(new Type[1] { typeof(string) });
-                        Console.Write("Received message (" + msg.Label + ") with payload: `" + msg.Body + "` from queue " + arg + "\n");
+                        
+                        Console.WriteLine("Received message ({0}) with " +
+                                          "payload: ({1}) from queue {2}",
+                                          msg.Label, msg.Body, arg);
                     }
                 } finally {
                     queue.Close();
