@@ -26,9 +26,9 @@ namespace MSMQSend
                 // Local, Remote, etc.
                 //Boolean isDirect = Regex.IsMatch(arg, "^" + Regex.Escape(direct_format) + "=");
                 Boolean isLocalNoDirectFormat =
-                    arg.ToLower().IndexOf(".\\") == 0;
+                    arg.ToLower().IndexOf(@".\") == 0;
                 Boolean isLocal = isLocalNoDirectFormat ||
-                    arg.ToLower().IndexOf(direct_format + "=os:.\\") == 0;
+                    arg.ToLower().IndexOf(direct_format + @"=os:.\") == 0;
 
                 // Create a private queue if it's being created on the local
                 // machine.

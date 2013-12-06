@@ -23,9 +23,9 @@ namespace MSMQRecv
                 // Best guesses for the magic tables in the MSDN docs for
                 // Local, Remote, etc.
                 Boolean isLocalNoDirectFormat =
-                    arg.ToLower().IndexOf(".\\") == 0;
+                    arg.ToLower().IndexOf(@".\") == 0;
                 Boolean isLocal = isLocalNoDirectFormat ||
-                    arg.ToLower().IndexOf(direct_format + "=os:.\\") == 0;
+                    arg.ToLower().IndexOf(direct_format + @"=os:.\") == 0;
                 Boolean isHTTP = !isLocal &&
                     arg.ToLower().IndexOf(direct_format + "=http") == 0;
 
