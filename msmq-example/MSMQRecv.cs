@@ -37,17 +37,23 @@ namespace MSMQRecv
 
                 try
                 {
-                    // This just peeks at the messages; see
-                    // http://stackoverflow.com/questions/1228684/how-can-i-get-all-the-available-messages-on-a-msmq-queue
-                    // for an alternative method that receives the message
-                    // and plucks it off the queue.
-                    foreach (Message msg in queue.GetAllMessages())
-                    {
-                        msg.Formatter = new XmlMessageFormatter(new Type[1] { typeof(string) });
+                    if (isLocal) {
+                        // This just peeks at the messages; see
+                        // http://stackoverflow.com/questions/1228684/how-can-i-get-all-the-available-messages-on-a-msmq-queue
+                        // for an alternative method that receives the message
+                        // and plucks it off the queue.
+                        foreach (Message msg in queue.GetAllMessages())
+                        {
+                            msg.Formatter =
+                                new XmlMessageFormatter(new Type[1] { typeof(string) });
 
-                        Console.WriteLine("Received message ({0}) with " +
-                                          "payload: ({1}) from queue {2}",
-                                          msg.Label, msg.Body, arg);
+                            Console.WriteLine("Received message ({0}) with " +
+                                              "payload: ({1}) from queue {2}",
+                                              msg.Label, msg.Body, arg);
+                        }
+                    } else {
+                        Console.WriteLine("XXX: implement non-GetAllMessages " +
+                                          "method for peeking at queue");
                     }
                 } finally {
                     queue.Close();
