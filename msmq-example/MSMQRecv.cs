@@ -19,7 +19,11 @@ namespace MSMQRecv
             // etc
             foreach (string arg in args) {
                 // HTTP* can't pull; it can only push :/...
-                Boolean isHTTP = arg.ToLower().IndexOf(direct_format + "=http") != -1;
+                Boolean isLocal =
+                    arg.ToLower().IndexOf(".\\") == 0 ||
+                    arg.ToLower().IndexOf(direct_format + "=os:.\\") == 0;
+                Boolean isHTTP = !isLocal &&
+                    arg.ToLower().IndexOf(direct_format + "=http") == 0;
 
                 // :(..
                 // http://blogs.msdn.com/b/johnbreakwell/archive/2008/06/09/msmq-over-http-is-a-push-only-technology.aspx
@@ -40,7 +44,7 @@ namespace MSMQRecv
                     foreach (Message msg in queue.GetAllMessages())
                     {
                         msg.Formatter = new XmlMessageFormatter(new Type[1] { typeof(string) });
-                        
+
                         Console.WriteLine("Received message ({0}) with " +
                                           "payload: ({1}) from queue {2}",
                                           msg.Label, msg.Body, arg);

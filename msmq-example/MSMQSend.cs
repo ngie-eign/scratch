@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
+//using System.Text.RegularExpressions;
 using System.Messaging;
 using Messaging = System.Messaging;
 
@@ -14,7 +14,7 @@ namespace MSMQSend
         static void Main(string[] args)
         {
             MessageQueueTransaction transaction;
-            //const string direct_format = "formatname:direct";
+            const string direct_format = "formatname:direct";
 
             // XXX: add a usage message.
             // `.\private$\test`,
@@ -25,7 +25,9 @@ namespace MSMQSend
                 // Best guesses for the magic tables in the MSDN docs for
                 // Local, Remote, etc.
                 //Boolean isDirect = Regex.IsMatch(arg, "^" + Regex.Escape(direct_format) + "=");
-                Boolean isLocal = Regex.IsMatch(arg, "^" + Regex.Escape(".\\"));
+                Boolean isLocal =
+                    arg.ToLower().IndexOf(".\\") == 0 ||
+                    arg.ToLower().IndexOf(direct_format + "=os:.\\") == 0;
 
                 // Create a private queue if it's being created on the local
                 // machine.
