@@ -63,8 +63,8 @@ namespace MSMQRecv
                     queue.Close();
                 }
             }
-            Console.Write("Press enter to continue..");
-            Console.Read();
+            Console.Write("Press any key to continue.. ");
+            Console.ReadKey();
         }
     }
 }
