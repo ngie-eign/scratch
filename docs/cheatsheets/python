@@ -51,4 +51,6 @@ def unregister_api(name):
 
 def valid_api_version(version):
     return version in VALID_API_VERSIONS
+===============================
 
+http://stackoverflow.com/questions/961048/get-class-that-defined-method
