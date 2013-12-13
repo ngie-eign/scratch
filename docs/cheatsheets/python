@@ -54,3 +54,9 @@ def valid_api_version(version):
 ===============================
 
 http://stackoverflow.com/questions/961048/get-class-that-defined-method
+
+===============================
+
+Upgrading all pip-installed packages (sans git and hg):
+
+pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | egrep -v 'git|mercurial' | xargs pip install -U
