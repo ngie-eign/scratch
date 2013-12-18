@@ -17,6 +17,13 @@ from reportlab.platypus import Frame, Paragraph, Table, TableStyle
 
 
 def create_subschema_table(data, subschema_list):
+    """Return a flattened list in the following format:
+
+      [(description, values), (description, values), ...]
+
+    etc.
+    """
+
     tables = []
     value_set = []
 
