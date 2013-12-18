@@ -14,6 +14,7 @@ echo 'hello world!' | \
 Garrett Cooper, October 2013
 """
 
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.Utils import formatdate
 import getpass
@@ -25,7 +26,7 @@ import sys
 import time
 
 def do_email(mailserver, port, user, domain, password, recipients, message,
-             subject):
+             subject, attachments=None):
     server = smtplib.SMTP(mailserver, port, timeout=10)
     try:
         #server.set_debuglevel(1)
@@ -35,11 +36,17 @@ def do_email(mailserver, port, user, domain, password, recipients, message,
 
         sender = '@'.join([user, domain]).encode('utf-8')
 
-        msg = MIMEText(message, _charset='utf-8')
+        if attachments:
+            msg = MIMEMultipart()
+            msg.preamble = message
+            for attachment in attachments:
+                msg.attach(attachment)
+        else:
+            msg = MIMEText(message, _charset='utf-8')
         msg['From'] = sender
         msg['To'] = ', '.join(recipients)
         msg['Date'] = formatdate()
-        msg['Subject'] = 'Hello!'
+        msg['Subject'] = subject
         msg = msg.as_string()
 
         try:
@@ -48,12 +55,13 @@ def do_email(mailserver, port, user, domain, password, recipients, message,
             print('Error logging into server: %r' % (repr(e)))
             #time.sleep(10)
         res = server.sendmail(sender, recipients, msg)
-        if res:
-            print('Error sending mail: %r' % (repr(res)))
-        else:
-            print('Email sent!\n%s' % (msg, ))
+        #if res:
+        #    print('Error sending mail: %r' % (repr(res)))
+        #else:
+        #    print('Email sent!\n%s' % (msg, ))
     finally:
         server.quit()
+
 
 def main():
     import optparse
