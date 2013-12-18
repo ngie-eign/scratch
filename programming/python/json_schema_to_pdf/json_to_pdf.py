@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-import json
-import pprint
-import sys
+#import json
+#import pprint
 import time
 import types
 
@@ -27,15 +26,16 @@ def create_subschema_table(data, subschema_list):
     tables = []
     value_set = []
 
-    if subschema_list:
-        subschema_list_humanized = ' '.join(subschema_list) + ':\n'
-    else:
-        subschema_list_humanized = ''
-    print('%s%s' %
-          (subschema_list_humanized, pprint.pformat(data, indent=4)))
+    #if subschema_list:
+    #    subschema_list_humanized = ' '.join(subschema_list) + ':\n'
+    #else:
+    #    subschema_list_humanized = ''
+    #print('%s%s' %
+    #      (subschema_list_humanized, pprint.pformat(data, indent=4)))
 
-    for key, value in data.iteritems():
-        if type(value) in (types.DictType, ):
+    for key in sorted(data.keys()):
+
+        if type(data[key]) in (types.DictType, ):
             base_subschema_list = subschema_list + [key]
             if data[key]:
                 object_tables = []
@@ -46,7 +46,7 @@ def create_subschema_table(data, subschema_list):
             else:
                 value = '<Empty>'
 
-        if type(value) in (types.ListType, ):
+        elif type(data[key]) in (types.ListType, ):
             base_subschema_list = subschema_list + [key]
             for i, item in enumerate(data[key]):
                 _subschema_list = base_subschema_list + ['- index %d' % i]
@@ -59,6 +59,8 @@ def create_subschema_table(data, subschema_list):
                         (' '.join(base_subschema_list))
             else:
                 value = '<Empty>'
+        else:
+            value = data[key]
 
         value_set.append((key, value))
 
