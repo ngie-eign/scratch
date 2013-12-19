@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-#import json
-#import pprint
+import pprint
 import time
 import types
 
@@ -98,30 +97,55 @@ def json_to_pdf(data, schema, pdf_filename):
 
     styles = getSampleStyleSheet()
     h1 = styles['h1']
-    story.append(Paragraph('Summary', h1))
-    story.append(Paragraph('Report generated on %s' %
-                           (time.strftime('%Y/%m/%d')), styles['Normal']))
+
+    c = canvas.Canvas(pdf_filename)
+    f = Frame(inch, inch, 7*inch, 10*inch, showBoundary=1)
+
+    story = [
+        Paragraph('Summary', h1),
+        Paragraph('Report generated on %s' %
+                  (time.strftime('%Y/%m/%d')), styles['Normal']),
+    ]
+    f.addFromList(story, c)
+    c.showPage()
 
     #print('Schema tables:\n%s' % (pprint.pformat(schema_tables), ))
 
     for schema_description, schema_table in schema_tables:
 
-        story.append(Paragraph(schema_description, h1))
+        f = Frame(inch, inch, 7*inch, 10*inch, showBoundary=1)
+        story = [
+            Paragraph(schema_description, h1),
+        ]
+        table_contents  = table_keys
+        for prop, value in schema_table:
+            table_contents.append((prop,
+                                   Paragraph(str(value), styles['Normal'])))
 
-        table_to_print = table_keys + schema_table
-
-        #print('Table to print:\n%s' % (pprint.pformat(table_to_print), ))
-
-        t = Table(table_to_print)
+        t = Table(table_contents, colWidths=(2.5 * inch, 4 * inch))
         t.setStyle(TableStyle([
-            ('INNERGRID', (0,0), (-1,-1), 0.25, black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('BOX', (0, 0), (-1, -1), 0.25, black),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('INNERGRID', (0, 0), (-1, -1), 0.25, black),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ]))
         story.append(t)
+        f.addFromList(story, c)
+        c.showPage()
 
-    c = canvas.Canvas(pdf_filename)
-    f = Frame(inch, inch, 7*inch, 10*inch, showBoundary=1)
-    f.addFromList(story, c)
     c.save()
 
 
+if __name__ == '__main__':
+    import json
+    import os
+    import sys
+
+    if len(sys.argv) != 4:
+        sys.exit('usage: %s file.json schema.json output.pdf'
+                 % (os.path.basename(sys.argv[0]), ))
+
+    with open(sys.argv[1]) as json_fd:
+        #with open(sys.argv[2]) as json_schema_fd:
+        json_to_pdf(json.load(json_fd), {}, sys.argv[3])
