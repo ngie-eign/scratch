@@ -6,9 +6,19 @@ import types
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.colors import black
-from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.styles import (
+                                  getSampleStyleSheet,
+                                  ParagraphStyle,
+                                  )
 from reportlab.lib.units import inch
-from reportlab.platypus import Frame, Paragraph, Table, TableStyle
+from reportlab.platypus import (
+                                BaseDocTemplate,
+                                Frame,
+                                PageTemplate,
+                                Paragraph,
+                                Table,
+                                TableStyle,
+                                )
 
 
 #def get_descriptions(subschema_list):
@@ -23,21 +33,11 @@ def create_subschema_table(data, subschema_list):
     """
 
     def subschema_list_to_description(subschema_list):
-        subschema_description = ' '.join(subschema_list)
-        if subschema_description:
-            subschema_description += ' Table'
-        return subschema_description
+        return '%s Table' % (' '.join(subschema_list) or 'Root')
 
 
     tables = []
     value_set = []
-
-    #if subschema_list:
-    #    subschema_list_humanized = ' '.join(subschema_list) + ':\n'
-    #else:
-    #    subschema_list_humanized = ''
-    #print('%s%s' %
-    #      (subschema_list_humanized, pprint.pformat(data, indent=4)))
 
     for key in sorted(data.keys()):
 
@@ -80,44 +80,64 @@ def create_subschema_table(data, subschema_list):
     return [(subschema_description, value_set)] + tables
 
 
+class PdfTemplate(BaseDocTemplate):
+
+
+    def __init__(self, *args, **kwargs):
+        BaseDocTemplate.__init__(self, *args, **kwargs)
+
+
+    def afterPage(self):
+
+        self.canv.saveState()
+        self.canv._x = 0
+        self.canv._y = 0
+        self.canv.restoreState()
+
+
 def json_to_pdf(data, schema, pdf_filename):
     """Builds a table of 3 values:
 
     Property | Value | Description
     """
 
-    #table_keys = [('Property', 'Value', 'Description')]
-    table_keys = [('Property', 'Value')]
+    styles = getSampleStyleSheet()
+
+    #table_keys = ['Property', 'Value', 'Description']
+    table_keys = ['Property', 'Value']
+
+    table_keys = [[Paragraph(key, styles['h3']) for key in table_keys]]
 
     schema_tables = create_subschema_table(data, subschema_list=[])
+    styles = getSampleStyleSheet()
 
     # Inspired by:
     # http://stackoverflow.com/questions/2252726/how-to-create-pdf-files-in-python
-    story = []
+    elements = [
+        Paragraph('Report generated on %s' % (time.strftime('%Y/%m/%d')),
+                  styles['h2'])
+    ]
 
-    styles = getSampleStyleSheet()
     h1 = styles['h1']
 
-    c = canvas.Canvas(pdf_filename)
-    f = Frame(inch, inch, 7*inch, 10*inch, showBoundary=1)
-
-    story = [
-        Paragraph('Summary', h1),
-        Paragraph('Report generated on %s' %
-                  (time.strftime('%Y/%m/%d')), styles['Normal']),
-    ]
-    f.addFromList(story, c)
-    c.showPage()
-
-    #print('Schema tables:\n%s' % (pprint.pformat(schema_tables), ))
+    doc = PdfTemplate(
+        pdf_filename,
+        rightMargin = 0.3 * inch,
+        leftMargin = 0.3 * inch,
+        topMargin = 0.3 * inch,
+        bottomMargin = 0.3 * inch,
+    )
 
     for schema_description, schema_table in schema_tables:
 
-        f = Frame(inch, inch, 7*inch, 10*inch, showBoundary=1)
-        story = [
+        # XXX: the ` ` paragraphs are hacks around the fact that I don't know
+        # how to flow text properly to pad the tables.
+        elements.extend([
+            Paragraph(' ', h1),
             Paragraph(schema_description, h1),
-        ]
-        table_contents  = table_keys
+            Paragraph(' ', h1),
+        ])
+        table_contents = list(table_keys)
         for prop, value in schema_table:
             table_contents.append((prop,
                                    Paragraph(str(value), styles['Normal'])))
@@ -130,11 +150,10 @@ def json_to_pdf(data, schema, pdf_filename):
             ('INNERGRID', (0, 0), (-1, -1), 0.25, black),
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ]))
-        story.append(t)
-        f.addFromList(story, c)
-        c.showPage()
-
-    c.save()
+        elements.append(t)
+    doc.addPageTemplates(PageTemplate('normal',
+                         [Frame(inch, inch, 7*inch, 10*inch, showBoundary=1)]))
+    doc.build(elements)
 
 
 if __name__ == '__main__':
