@@ -32,7 +32,7 @@ def add_attachments(attachment_files):
         attachment = MIMEText(open(attachment_file, 'rb').read(),
                               _charset='utf-8')
         attachment.add_header('Content-Disposition', 'attachment',
-                              filename=attachment_file)
+                              filename=os.path.basename(attachment_file))
         attachments.append(attachment)
     return attachments
 
