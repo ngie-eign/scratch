@@ -23,6 +23,13 @@ def create_subschema_table(data, subschema_list):
     etc.
     """
 
+    def subschema_list_to_description(subschema_list):
+        subschema_description = ' '.join(subschema_list)
+        if subschema_description:
+            subschema_description += ' Table'
+        return subschema_description
+
+
     tables = []
     value_set = []
 
@@ -36,10 +43,10 @@ def create_subschema_table(data, subschema_list):
     for key in sorted(data.keys()):
 
         if type(data[key]) in (types.DictType, ):
-            base_subschema_list = subschema_list + [key]
             if data[key]:
-                object_tables = []
-                #object_tables.append((_key, _value))
+                base_subschema_list = subschema_list + [key]
+                object_tables = create_subschema_table(data[key],
+                                                       base_subschema_list)
                 tables.extend(object_tables)
                 value = 'See "%s" table' % \
                         (' '.join(base_subschema_list))
@@ -47,14 +54,19 @@ def create_subschema_table(data, subschema_list):
                 value = '<Empty>'
 
         elif type(data[key]) in (types.ListType, ):
-            base_subschema_list = subschema_list + [key]
-            for i, item in enumerate(data[key]):
-                _subschema_list = base_subschema_list + ['- index %d' % i]
-                item_tables = []
-                #subschema_tables = \
-                #    create_subschema_table(item, _subschema_list)
-                tables.extend(item_tables)
             if data[key]:
+                base_subschema_list = subschema_list + [key]
+                item_tables = []
+                for i, item in enumerate(data[key]):
+                    _subschema_list = base_subschema_list + ['- index %d' % i]
+                    if type(item) in (types.DictType, ):
+                        item_tables.extend((key, create_subschema_table(item,
+                                            _subschema_list)))
+                    else:
+                        item_tables.append(('', item))
+                tables.append(
+                    (subschema_list_to_description(base_subschema_list),
+                     item_tables))
                 value = 'See "%s" table' % \
                         (' '.join(base_subschema_list))
             else:
@@ -64,9 +76,7 @@ def create_subschema_table(data, subschema_list):
 
         value_set.append((key, value))
 
-    subschema_description = ' '.join(subschema_list)
-    if subschema_description:
-        subschema_description += ' Table'
+    subschema_description = subschema_list_to_description(subschema_list)
 
     return [(subschema_description, value_set)] + tables
 
