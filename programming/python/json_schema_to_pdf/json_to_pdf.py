@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 
-import pprint
+#import pprint
 import time
 import types
 
-from reportlab.pdfgen import canvas
 from reportlab.lib.colors import black
-from reportlab.lib.styles import (
-                                  getSampleStyleSheet,
-                                  ParagraphStyle,
-                                  )
+from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import (
                                 BaseDocTemplate,
@@ -21,10 +17,7 @@ from reportlab.platypus import (
                                 )
 
 
-#def get_descriptions(subschema_list):
-
-
-def create_subschema_table(data, subschema_list):
+def create_subschema_table(instance, subschema_list):
     """Return a flattened list in the following format:
 
       [(description, values), (description, values), ...]
@@ -39,12 +32,12 @@ def create_subschema_table(data, subschema_list):
     tables = []
     value_set = []
 
-    for key in sorted(data.keys()):
+    for key in sorted(instance.keys()):
 
-        if type(data[key]) in (types.DictType, ):
-            if data[key]:
+        if type(instance[key]) in (types.DictType, ):
+            if instance[key]:
                 base_subschema_list = subschema_list + [key]
-                object_tables = create_subschema_table(data[key],
+                object_tables = create_subschema_table(instance[key],
                                                        base_subschema_list)
                 tables.extend(object_tables)
                 value = 'See "%s" table' % \
@@ -52,11 +45,11 @@ def create_subschema_table(data, subschema_list):
             else:
                 value = '<Empty>'
 
-        elif type(data[key]) in (types.ListType, ):
-            if data[key]:
+        elif type(instance[key]) in (types.ListType, ):
+            if instance[key]:
                 base_subschema_list = subschema_list + [key]
                 item_tables = []
-                for i, item in enumerate(data[key]):
+                for i, item in enumerate(instance[key]):
                     _subschema_list = base_subschema_list + ['- index %d' % i]
                     if type(item) in (types.DictType, ):
                         item_tables.extend((key, create_subschema_table(item,
@@ -71,7 +64,7 @@ def create_subschema_table(data, subschema_list):
             else:
                 value = '<Empty>'
         else:
-            value = data[key]
+            value = instance[key]
 
         value_set.append((key, value))
 
@@ -81,6 +74,7 @@ def create_subschema_table(data, subschema_list):
 
 
 class PdfTemplate(BaseDocTemplate):
+    """Template for the PDF document"""
 
 
     def __init__(self, *args, **kwargs):
@@ -88,6 +82,7 @@ class PdfTemplate(BaseDocTemplate):
 
 
     def afterPage(self):
+        """afterPage override"""
 
         self.canv.saveState()
         self.canv._x = 0
@@ -95,10 +90,10 @@ class PdfTemplate(BaseDocTemplate):
         self.canv.restoreState()
 
 
-def json_to_pdf(data, schema, pdf_filename):
-    """Builds a table of 3 values:
+def json_to_pdf(instance, schema, pdf_filename):
+    """Builds a PDF with tables from a json instance
 
-    Property | Value | Description
+    TODO: add description support
     """
 
     styles = getSampleStyleSheet()
@@ -108,7 +103,7 @@ def json_to_pdf(data, schema, pdf_filename):
 
     table_keys = [[Paragraph(key, styles['h3']) for key in table_keys]]
 
-    schema_tables = create_subschema_table(data, subschema_list=[])
+    schema_tables = create_subschema_table(instance, subschema_list=[])
     styles = getSampleStyleSheet()
 
     # Inspired by:
@@ -156,7 +151,9 @@ def json_to_pdf(data, schema, pdf_filename):
     doc.build(elements)
 
 
-if __name__ == '__main__':
+def main():
+    """main"""
+
     import json
     import os
     import sys
@@ -166,5 +163,13 @@ if __name__ == '__main__':
                  % (os.path.basename(sys.argv[0]), ))
 
     with open(sys.argv[1]) as json_fd:
-        #with open(sys.argv[2]) as json_schema_fd:
-        json_to_pdf(json.load(json_fd), {}, sys.argv[3])
+        json_text = json_fd.read()
+
+    #with open(sys.argv[2]) as json_schema_fd:
+    #    json_schema_text = json_schema_fd.read()
+
+    json_to_pdf(json.loads(json_text), None, sys.argv[3])
+
+
+if __name__ == '__main__':
+    main()
