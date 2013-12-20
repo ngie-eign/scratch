@@ -25,9 +25,26 @@ import socket
 import sys
 import time
 
+
+def add_attachments(attachment_files):
+    attachments = []
+    for attachment_file in attachment_files:
+        attachment = MIMEText(open(attachment_file, 'rb').read(),
+                              _charset='utf-8')
+        attachment.add_header('Content-Disposition', 'attachment',
+                              filename=attachment_file)
+        attachments.append(attachment)
+    return attachments
+
+
 def do_email(mailserver, port, user, domain, password, recipients, message,
              subject, attachments=None):
-    server = smtplib.SMTP(mailserver, port, timeout=10)
+    smtp_args = []
+    if mailserver:
+        smtp_args.append(mailserver)
+        if port:
+            smtp_args.append(port)
+    server = smtplib.SMTP(*smtp_args, timeout=10)
     try:
         #server.set_debuglevel(1)
         server.ehlo()
@@ -50,7 +67,8 @@ def do_email(mailserver, port, user, domain, password, recipients, message,
         msg = msg.as_string()
 
         try:
-            server.login(user, password)
+            if password:
+                server.login(user, password)
         except Exception as e:
             print('Error logging into server: %r' % (repr(e)))
             #time.sleep(10)
@@ -112,3 +130,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
