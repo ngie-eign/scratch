@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#import pprint
+import json
 import time
 import types
 
@@ -17,60 +17,89 @@ from reportlab.platypus import (
                                 )
 
 
-def create_subschema_table(instance, subschema_list):
+def property_description(schema, path=None, path_travelled=None):
+
+    if path_travelled is None:
+        path_travelled = []
+
+    if not path or schema.get('type', 'string') not in ('array', 'object', ):
+        prop_desc = schema.get('description', '')
+        return prop_desc
+
+    path_travelled.append(path.pop(0))
+    schema = schema.get('properties', {}).get(path_travelled[-1], {})
+
+    if 'items' in schema:
+        schema = schema['items']
+
+    return property_description(schema, path=path,
+                                path_travelled=path_travelled)
+
+
+def create_schema_tables(instance, schema, path):
     """Return a flattened list in the following format:
 
-      [(description, values), (description, values), ...]
+      [(table_description, values), ...]
+
+      Each of the values inside should be in the following format:
+
+      [(instance_name, value, instance_description]]
 
     etc.
     """
 
-    def subschema_list_to_description(subschema_list):
-        return '%s Table' % (' '.join(subschema_list) or 'Root')
+    def path_to_str(path):
+        return ' '.join([str(e) for e in path])
+
+
+    def _table_description(path):
+        return '%s Table' % (path_to_str(path) or 'Root')
 
 
     tables = []
     value_set = []
 
+    table_description = _table_description(path)
+
     for key in sorted(instance.keys()):
+
+        prop_desc = property_description(schema, path=(path + [key]))
 
         if type(instance[key]) in (types.DictType, ):
             if instance[key]:
-                base_subschema_list = subschema_list + [key]
-                object_tables = create_subschema_table(instance[key],
-                                                       base_subschema_list)
+                base_path = path + [key]
+                object_tables = create_schema_tables(instance[key], schema,
+                                                     base_path)
                 tables.extend(object_tables)
-                value = 'See "%s" table' % \
-                        (' '.join(base_subschema_list))
+                value = 'See "%s" table' % (' '.join(base_path))
             else:
                 value = '<Empty>'
 
         elif type(instance[key]) in (types.ListType, ):
             if instance[key]:
-                base_subschema_list = subschema_list + [key]
-                item_tables = []
                 for i, item in enumerate(instance[key]):
-                    _subschema_list = base_subschema_list + ['- index %d' % i]
+                    base_path = path + [key, i]
                     if type(item) in (types.DictType, ):
-                        item_tables.extend((key, create_subschema_table(item,
-                                            _subschema_list)))
+                        subschema_tables = create_schema_tables(item, schema,
+                                                                base_path)
+                        tables.extend(subschema_tables)
                     else:
-                        item_tables.append(('', item))
-                tables.append(
-                    (subschema_list_to_description(base_subschema_list),
-                     item_tables))
-                value = 'See "%s" table' % \
-                        (' '.join(base_subschema_list))
+                        if type(item) not in (types.ListType, ):
+                            item = [item]
+                        tables.append((_table_description(base_path),
+                                       [(str(i), table_value, '') \
+                                           for j, table_value in enumerate(item)]))
+
+                    value = 'See "%s" table(s)' % \
+                            (path_to_str(base_path[:-1]), )
             else:
                 value = '<Empty>'
         else:
             value = instance[key]
 
-        value_set.append((key, value))
+        value_set.append((key, value, prop_desc))
 
-    subschema_description = subschema_list_to_description(subschema_list)
-
-    return [(subschema_description, value_set)] + tables
+    return [(table_description, value_set)] + tables
 
 
 class PdfTemplate(BaseDocTemplate):
@@ -90,6 +119,14 @@ class PdfTemplate(BaseDocTemplate):
         self.canv.restoreState()
 
 
+STYLES = getSampleStyleSheet()
+H1_STYLE = STYLES['h1']
+H2_STYLE = STYLES['h2']
+H3_STYLE = STYLES['h3']
+H4_STYLE = STYLES['h4']
+NORMAL_STYLE = STYLES['Normal']
+
+
 def json_to_pdf(instance, schema, pdf_filename):
     """Builds a PDF with tables from a json instance
 
@@ -98,22 +135,23 @@ def json_to_pdf(instance, schema, pdf_filename):
 
     styles = getSampleStyleSheet()
 
-    #table_keys = ['Property', 'Value', 'Description']
-    table_keys = ['Property', 'Value']
+    table_keys = [
+        'Property',
+        'Value',
+        'Description',
+    ]
 
-    table_keys = [[Paragraph(key, styles['h3']) for key in table_keys]]
+    table_keys = [[Paragraph(key, H3_STYLE) for key in table_keys]]
 
-    schema_tables = create_subschema_table(instance, subschema_list=[])
+    schema_tables = create_schema_tables(instance, schema, [])
     styles = getSampleStyleSheet()
 
     # Inspired by:
     # http://stackoverflow.com/questions/2252726/how-to-create-pdf-files-in-python
     elements = [
         Paragraph('Report generated on %s' % (time.strftime('%Y/%m/%d')),
-                  styles['h2'])
+                  H2_STYLE)
     ]
-
-    h1 = styles['h1']
 
     doc = PdfTemplate(
         pdf_filename,
@@ -123,21 +161,26 @@ def json_to_pdf(instance, schema, pdf_filename):
         bottomMargin = 0.3 * inch,
     )
 
+    #print(json.dumps(schema_tables, indent=4))
     for schema_description, schema_table in schema_tables:
+
+        #print schema_description
 
         # XXX: the ` ` paragraphs are hacks around the fact that I don't know
         # how to flow text properly to pad the tables.
         elements.extend([
-            Paragraph(' ', h1),
-            Paragraph(schema_description, h1),
-            Paragraph(' ', h1),
+            Paragraph(' ', H1_STYLE),
+            Paragraph(schema_description, H1_STYLE),
+            Paragraph(' ', H1_STYLE),
         ])
         table_contents = list(table_keys)
-        for prop, value in schema_table:
-            table_contents.append((prop,
-                                   Paragraph(str(value), styles['Normal'])))
+        #print(json.dumps(schema_table, indent=4))
+        for prop, value, description in schema_table:
+            table_contents.append(tuple([Paragraph(str(cell_txt), NORMAL_STYLE)
+                                             for cell_txt in (prop, value,
+                                                              description)]))
 
-        t = Table(table_contents, colWidths=(2.5 * inch, 4 * inch))
+        t = Table(table_contents, colWidths=(2.5 * inch, 2.5 * inch, 2 * inch))
         t.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('BOX', (0, 0), (-1, -1), 0.25, black),
@@ -146,6 +189,7 @@ def json_to_pdf(instance, schema, pdf_filename):
             ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ]))
         elements.append(t)
+
     doc.addPageTemplates(PageTemplate('normal',
                          [Frame(inch, inch, 7*inch, 10*inch, showBoundary=1)]))
     doc.build(elements)
@@ -165,10 +209,13 @@ def main():
     with open(sys.argv[1]) as json_fd:
         json_text = json_fd.read()
 
-    #with open(sys.argv[2]) as json_schema_fd:
-    #    json_schema_text = json_schema_fd.read()
+    with open(sys.argv[2]) as json_schema_fd:
+        json_schema_text = json_schema_fd.read()
 
-    json_to_pdf(json.loads(json_text), None, sys.argv[3])
+    output_pdf = sys.argv[3]
+
+    json_to_pdf(json.loads(json_text), json.loads(json_schema_text),
+                output_pdf)
 
 
 if __name__ == '__main__':
