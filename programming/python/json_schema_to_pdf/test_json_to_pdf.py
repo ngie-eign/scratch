@@ -14,7 +14,17 @@ DATA = {
     'i': [
     ],
     'j': {
-    }
+    },
+    'k': [
+        {
+            'l': 'm',
+            'n': 'o',
+        },
+        {
+            'l': 'p',
+            'n': 'q',
+        },
+    ]
 }
 
 SCHEMA = {
@@ -46,6 +56,11 @@ SCHEMA = {
             'type': 'object',
             'description': 'Tenth letter',
         },
+        'k': {
+            'type': 'array',
+            'description': 'Eleventh letter',
+            'minItems': 1,
+        }
     }
 }
 
