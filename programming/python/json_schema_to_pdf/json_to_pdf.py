@@ -5,6 +5,10 @@ import time
 import types
 
 from reportlab.lib.colors import black
+from reportlab.lib.pagesizes import (
+                                     landscape,
+                                     letter,
+                                     )
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from reportlab.platypus import (
@@ -180,7 +184,7 @@ def json_to_pdf(instance, schema, pdf_filename):
                                              for cell_txt in (prop, value,
                                                               description)]))
 
-        t = Table(table_contents, colWidths=(2.5 * inch, 2.5 * inch, 2 * inch))
+        t = Table(table_contents, colWidths=(3 * inch, 3 * inch, 3.75 * inch))
         t.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('BOX', (0, 0), (-1, -1), 0.25, black),
@@ -191,7 +195,8 @@ def json_to_pdf(instance, schema, pdf_filename):
         elements.append(t)
 
     doc.addPageTemplates(PageTemplate('normal',
-                         [Frame(inch, inch, 7*inch, 10*inch, showBoundary=1)]))
+                         [Frame(inch, inch, 10 * inch, 7 * inch, showBoundary=1)],
+                         pagesize=landscape(letter)))
     doc.build(elements)
 
 
