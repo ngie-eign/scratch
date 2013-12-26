@@ -91,8 +91,9 @@ def create_schema_tables(instance, schema, path):
                         if type(item) not in (types.ListType, ):
                             item = [item]
                         tables.append((_table_description(base_path),
-                                       [(str(i), table_value, '') \
-                                           for j, table_value in enumerate(item)]))
+                                       [(str(j), table_value, '') \
+                                           for j, table_value in
+                                                           enumerate(item)]))
 
                     value = 'See "%s" table(s)' % \
                             (path_to_str(base_path[:-1]), )
@@ -137,8 +138,6 @@ def json_to_pdf(instance, schema, pdf_filename):
     TODO: add description support
     """
 
-    styles = getSampleStyleSheet()
-
     table_keys = [
         'Property',
         'Value',
@@ -148,7 +147,6 @@ def json_to_pdf(instance, schema, pdf_filename):
     table_keys = [[Paragraph(key, H3_STYLE) for key in table_keys]]
 
     schema_tables = create_schema_tables(instance, schema, [])
-    styles = getSampleStyleSheet()
 
     # Inspired by:
     # http://stackoverflow.com/questions/2252726/how-to-create-pdf-files-in-python
@@ -184,7 +182,7 @@ def json_to_pdf(instance, schema, pdf_filename):
                                              for cell_txt in (prop, value,
                                                               description)]))
 
-        t = Table(table_contents, colWidths=(3 * inch, 3 * inch, 3.75 * inch))
+        t = Table(table_contents, colWidths=(3 * inch, 3 * inch, 3 * inch))
         t.setStyle(TableStyle([
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('BOX', (0, 0), (-1, -1), 0.25, black),
@@ -195,7 +193,8 @@ def json_to_pdf(instance, schema, pdf_filename):
         elements.append(t)
 
     doc.addPageTemplates(PageTemplate('normal',
-                         [Frame(inch, inch, 10 * inch, 7 * inch, showBoundary=1)],
+                         [Frame(inch, inch, 9 * inch, 7 * inch,
+                                showBoundary=1)],
                          pagesize=landscape(letter)))
     doc.build(elements)
 
@@ -203,7 +202,6 @@ def json_to_pdf(instance, schema, pdf_filename):
 def main():
     """main"""
 
-    import json
     import os
     import sys
 
