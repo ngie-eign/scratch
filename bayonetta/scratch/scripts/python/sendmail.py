@@ -44,6 +44,10 @@ def do_email(mailserver, port, user, domain, password, recipients, message,
         smtp_args.append(mailserver)
         if port:
             smtp_args.append(port)
+
+    user = user or getpass.getuser()
+    domain = domain or socket.gethostname()
+
     server = smtplib.SMTP(*smtp_args, timeout=10)
     try:
         #server.set_debuglevel(1)
