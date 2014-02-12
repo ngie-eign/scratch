@@ -7,8 +7,7 @@ trap "git checkout $original_branch" EXIT
 cd "$(git rev-parse --show-toplevel)"
 MASTER=master
 git checkout $MASTER
-git pull
-git pu
+git pull --all
 branches=$(git branch -l | grep -v $MASTER | sort -du || :)
 for branch in $branches
 do
@@ -23,8 +22,7 @@ do
 		parent_branch=$MASTER
 		;;
 	esac
-	git checkout $branch && git pull &&
-	git merge --no-edit $parent_branch || exit 1
+	git checkout $branch &&	git merge --no-edit $parent_branch || exit 1
 done
 if ${AUTO_PUSH:-true}
 then
