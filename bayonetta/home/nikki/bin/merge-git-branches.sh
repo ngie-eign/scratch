@@ -5,10 +5,11 @@ set -e
 original_branch=$(git branch -l | awk '$1 == "*" { print $NF }')
 trap "git checkout $original_branch" EXIT
 cd "$(git rev-parse --show-toplevel)"
-git checkout master
+MASTER=master
+git checkout $MASTER
 git pull
 git pu
-branches=$(git branch -l | grep -v master | sort -du || :)
+branches=$(git branch -l | grep -v $MASTER | sort -du || :)
 for branch in $branches
 do
 	case "$branch" in
@@ -19,7 +20,7 @@ do
 		parent_branch=$(echo $branch | sed -e 's,stable-,stable ,g' -e 's,-.*,,g' -e 's,stable ,stable/,g')
 		;;
 	*)
-		parent_branch=master
+		parent_branch=$MASTER
 		;;
 	esac
 	git checkout $branch && git pull &&
