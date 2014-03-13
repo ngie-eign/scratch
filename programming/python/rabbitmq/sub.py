@@ -5,7 +5,7 @@ import sys
 from pubsubcommon import *
 
 def callback(body, message):
-    sys.stdout.write('Message received was: %s\n' % (body), )
+    sys.stdout.write('Message received was: %s\n' % (body, ))
     message.ack()
 
 
