@@ -31,20 +31,12 @@ conn_dict = {
 queue_kwargs = {}
 
 if args.exchange:
-    exchange_args = [
-        args.exchange,
-        'direct',
-    ]
-
-    exchange_kwargs = {
-        'durable': True,
-    }
-
-    queue_kwargs['exchange'] = exchange = kombu.Exchange(*exchange_args,
-                                                         **exchange_kwargs)
-    queue_kwargs['exchange_opts'] = {
-        'delivery_mode': kombu.Exchange.PERSISTENT_DELIVERY_MODE,
-    }
+    queue_kwargs['exchange'] = exchange = \
+        kombu.Exchange(name=args.exchange,
+                       delivery_mode=kombu.Exchange.PERSISTENT_DELIVERY_MODE,
+                       durable=True,
+                       type='direct',
+                       )
 else:
     exchange = None
 
@@ -53,8 +45,6 @@ if args.routing_key:
 else:
     routing_key = None
 
-queue_args = [
-    args.queue,
-]
+queue_kwargs['name'] = args.queue
 
-queue = kombu.Queue(*queue_args, **queue_kwargs)
+queue = kombu.Queue(**queue_kwargs)
