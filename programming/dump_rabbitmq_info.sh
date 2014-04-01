@@ -2,9 +2,9 @@
 
 while :
 do
-	rabbitmqctl list_exchanges $*
-	rabbitmqctl list_queues $*
 	set -x
+	rabbitmqctl list_exchanges $* name type durable
+	rabbitmqctl list_queues $* name messages durable
 	rabbitmqctl list_bindings $* source_name source_kind destination_name destination_kind routing_key
 	set +x
 	sleep 10

@@ -1,0 +1,13 @@
+Capitalizing the first char of every line with sed:
+
+$ IFS="
+> "
+$ while read line; do
+>    echo $line | sed -e 's/^\(.\)/\U\1/'
+> done <<EOF
+> the quick brown fox jumps over the lazy dog
+> the rain in spain falls mainly in the plain
+> EOF
+The quick brown fox jumps over the lazy dog
+The rain in spain falls mainly in the plain
+$
