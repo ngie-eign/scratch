@@ -5,9 +5,10 @@ set -e
 original_branch=$(git branch -l | awk '$1 == "*" { print $NF }')
 trap "git checkout $original_branch" EXIT
 cd "$(git rev-parse --show-toplevel)"
-GIT_MASTER=master
+: ${GIT_MASTER=master}
 git checkout $GIT_MASTER
 git pull --all
+git merge upstream/$GIT_MASTER
 branches=$(git branch -l | grep -v $GIT_MASTER | sort -du || :)
 for branch in $branches
 do
