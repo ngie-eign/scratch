@@ -32,7 +32,12 @@ def setup():
 def teardown():
     """Not strictly required, but close the db object when the test is done"""
 
-    tmp_database.close()
+    try:
+        cursor = tmp_database.cursor()
+        cursor.execute('SELECT * FROM perple_table')
+        print(cursor.fetchall())
+    finally:
+        tmp_database.close()
 
 
 class BadInsert(Exception):
@@ -60,7 +65,7 @@ class PerpleDb(object):
     """Ermah-person class!"""
 
     def __init__(self, db):
-        self._db = tmp_database
+        self._cursor = db.cursor()
 
 
     def insert(self, perple):
@@ -68,10 +73,9 @@ class PerpleDb(object):
             data = (perple.name, perple.age, )
             insert_sql = 'INSERT INTO perple_table(name,age) VALUES (?,?);'
 
-            self._db.execute(insert_sql, data)
-            if self._db.rowcount == 0:
+            self._cursor.execute(insert_sql, data)
+            if self._cursor.rowcount == 0:
                 raise Exception('The insert failed')
-
         except:
             raise BadInsert
 
