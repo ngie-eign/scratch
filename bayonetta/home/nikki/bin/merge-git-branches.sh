@@ -23,7 +23,8 @@ do
 		parent_branch=$GIT_MASTER
 		;;
 	esac
-	git checkout $branch &&	git merge --no-edit $parent_branch || exit 1
+	git checkout $branch && git merge --no-edit $branch &&
+	git merge --no-edit $parent_branch || exit 1
 done
 if ${AUTO_PUSH:-true}
 then
