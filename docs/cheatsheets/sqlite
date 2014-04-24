@@ -1,0 +1,63 @@
+Strict type-checking in sqlite tables
+=====================================
+
+From: yaneurabeya
+To: sqlite-users
+Subject: Question about checking table requirements on INSERT into a table
+
+Hi sqlite-users,
+    When I was toying around with sqlite in python, I ran into an
+interesting caveat when INSERTing into a table where an unsupported
+data type didn't throw an exception/error from sqlite's perspective.
+    In the example below, I expected an insert of a text field to an
+integer column to throw an error, but the insert succeeded:
+
+$ sqlite3.exe ~/test.db 'CREATE TABLE bar2(foo INTEGER)'
+$ sqlite3.exe ~/test.db 'INSERT INTO bar2(foo) VALUES(6)'
+$ sqlite3.exe ~/test.db 'INSERT INTO bar2(foo) VALUES("a")'
+$ sqlite3.exe ~/test.db 'SELECT * FROM bar2'
+6
+a
+$ sqlite3.exe --version
+3.8.4.3 2014-04-03 16:53:12 a611fa96c4a848614efe899130359c9f6fb889c3
+
+    Being able to INSERT and print out 'a' above caught me off guard a bit.
+    Is this programmer error when I ran CREATE TABLE or the INSERT
+(this is the most likely answer, but I wanted to be sure), or is this
+by design?
+Thank you!
+-Garrett
+
+From: Igor Tandetnik
+
+On 4/24/2014 1:03 PM, yaneurabeya . wrote:
+
+>     Being able to INSERT and print out 'a' above caught me off guard a bit.
+>     Is this programmer error when I ran CREATE TABLE or the INSERT
+> (this is the most likely answer, but I wanted to be sure), or is this
+> by design?
+
+By design. For details, see http://www.sqlite.org/datatype3.html . If you want strict typing, you can request it with a CHECK constraint:
+
+sqlite3 bar2.db "CREATE TABLE bar2(foo INTEGER CHECK (typeof(foo)='integer') );"
+
+Dumping a table to CSV
+======================
+
+sqlite3 bar2.db "CREATE TABLE bar2(foo);"
+sqlite3 bar2.db 'INSERT INTO bar2(foo) VALUES(42)'
+sqlite3 -csv -header -separator ',' bar2.db 'SELECT * FROM bar2' > bar2.csv
+
+Importing the CSV with type checking constraints
+================================================
+
+sqlite3 bar2-new.db "CREATE TABLE bar2(foo INTEGER CHECK(typeof(foo)='integer'));"
+
+# XXX: this doesn't work with sqlite 3.6.20 (at least -- yay CentOS 6!!!)
+#sqlite3 bar2-new.db -csv -header -separator , '.import bar2.csv bar2;'
+
+sqlite_import_hack.sh bar2-new.db bar2.csv bar2
+
+Some nifty one-liners
+=====================
+http://www.tutorialspoint.com/sqlite/sqlite_constraints.htm
