@@ -16,5 +16,4 @@ do
 	else
 		sqlite3 $db "INSERT INTO $table($header) VALUES($line)"
 	fi
-	shift
 done < $csv
