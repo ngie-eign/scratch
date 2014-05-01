@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+"""A csv.{DictReader,Writer} test app
+"""
 
 from collections import OrderedDict
 import cStringIO
