@@ -12,7 +12,6 @@ Originally written against Python 2.7.5.
 """
 
 import argparse
-import os
 import sys
 
 from . import (
@@ -36,7 +35,6 @@ def main(argv=None):
     args = parser.parse_args()
 
     filename = args.filename
-    rest, ext = os.path.splitext(filename)
 
     for extractor in [extractor for ext, extractor in extractors.items()
                       if filename.endswith(ext)]:

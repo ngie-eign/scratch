@@ -27,8 +27,9 @@ def decompress(decompress_callback, srcfile, destdir, keep=True):
             decompress_callback(srcfile, tmpfile.name)
             rm(destfile)
             shutil.move(tmpfile.name, destfile)
-        except Exception as e:
-            rm(tmpfile.name)
+        except:
+            os.remove(tmpfile.name)
+            raise
 
     if not keep:
         os.remove(srcfile)
