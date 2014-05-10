@@ -4,7 +4,7 @@ set -eu
 
 # Build network configuration arguments from the config file.
 #
-# It populates the commadn line for qemu with `-net nic[,...]`, etc. VMs can
+# It populates the command line for qemu with `-net nic[,...]`, etc. VMs can
 # specify per-NIC configuration via $nic_<n>_options, e.g. $nic_1_options for
 # NIC # 1. See man qemu for more details on what's accepted via `-net'.
 build_network_args()
