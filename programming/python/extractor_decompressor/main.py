@@ -12,6 +12,7 @@ Originally written against Python 2.7.5.
 """
 
 import argparse
+import os
 import sys
 
 from . import (

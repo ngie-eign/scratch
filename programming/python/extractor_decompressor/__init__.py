@@ -11,13 +11,13 @@ import tarfile
 import tempfile
 import zipfile
 
-from .utils import (
+from .util import (
     mkdir_p,
     rm,
 )
 
 
-def rm(pdef decompress(decompress_callback, srcfile, destdir, keep=True):
+def decompress(decompress_callback, srcfile, destdir, keep=True):
     mkdir_p(destdir)
 
     path_without_ext = os.path.splitext(srcfile)[0]
