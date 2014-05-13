@@ -3,32 +3,33 @@
 Simple psycopg2 wrapper for querying databases.
 """
 
+import argparse
 import os
 import sys
 
 import psycopg2 as pg
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--database')
+parser.add_argument('--host')
+parser.add_argument('--password')
+parser.add_argument('query')
+args = parser.parse_args()
 
 if len(sys.argv) not in (4, 5):
     sys.exit('%s host password [database] query'
              % (os.path.basename(sys.argv[0]), ))
 
 conn_dict = dict(
-    host=sys.argv[1],
+    database=args.database,
+    host=args.host,
     port='5432',
     user='postgres',
-    password=sys.argv[2],
+    password=args.password,
 )
 
-if len(sys.argv) == 4:
-    query = sys.argv[3]
-else:
-    conn_dict['database'] = sys.argv[3]
-    query = sys.argv[4]
-
-conn = pg.connect(**conn_dict)
-try:
+with pg.connect(**conn_dict) as conn:
     cursor = conn.cursor()
-    cursor.execute(query)
-    print(cursor.fetchall())
-finally:
-    conn.close()
+    cursor.execute(args.query)
+    if cursor.rowcount:
+        sys.stdout.write('%r\n' % (cursor.fetchall(), ))
