@@ -12,10 +12,11 @@ import unittest
 import mox
 
 from nose.tools import (
-     assert_raises,
-     )
+    assert_raises,
+)
 
 tmp_database = None
+
 
 def setup():
     """Initialize an sqlite3 object in memory with a dummy table"""
@@ -53,7 +54,6 @@ class PerpleManager(object):
     def __init__(self, db):
         self._db = db
 
-
     def register(self, perple):
         try:
             self._db.insert(perple)
@@ -66,7 +66,6 @@ class PerpleDb(object):
 
     def __init__(self, db):
         self._cursor = db.cursor()
-
 
     def insert(self, perple):
         try:
@@ -92,13 +91,11 @@ class Perple(object):
 
 class TestPerpleManager(object):
 
-
     def setUp(self):
         self.mox = mox.Mox()
         self.dao = self.mox.CreateMock(PerpleDb)
         self.manager = PerpleManager(self.dao)
         self.perple = Perple('Kate', 42)
-
 
     def test_register_successful_insert(self):
         self.dao.insert(self.perple)
@@ -106,11 +103,8 @@ class TestPerpleManager(object):
         self.manager.register(self.perple)
         self.mox.VerifyAll()
 
-
     def test_failed_insert(self):
         self.dao.insert(self.perple).AndRaise(BadInsert("I don't like Kate!"))
         self.mox.ReplayAll()
         assert_raises(RegistrationFailed, self.manager.register, self.perple)
         self.mox.VerifyAll()
-
-
