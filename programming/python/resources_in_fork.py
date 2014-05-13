@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+"""
+Dump out resource information for a forked PID via
+lsof, ps, and /proc/*/status.
+"""
 
 import commands
 import os
