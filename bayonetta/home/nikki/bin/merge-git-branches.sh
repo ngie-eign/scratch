@@ -9,7 +9,7 @@ cd "$(git rev-parse --show-toplevel)"
 git checkout $GIT_MASTER
 git pull --all
 git merge upstream/$GIT_MASTER
-branches=$(git branch -l | grep -v $GIT_MASTER | sort -du || :)
+branches=$(git branch -l | grep -v master | grep -v $GIT_MASTER | sort -du || :)
 for branch in $branches
 do
 	case "$branch" in
