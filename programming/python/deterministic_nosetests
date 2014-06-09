@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+"""
+Wrapper around nose to set the random seed to something deterministic before
+running the tests.
+
+Garrett Cooper, February 2014
+"""
+
+import os
+import random
+
+import nose
+
+random.seed(os.getenv('NOSE_RANDOM_SEED') or 0)
+
+nose.main()

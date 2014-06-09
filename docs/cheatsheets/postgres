@@ -1,0 +1,23 @@
+Setting up pgSQL 8.3 on Lenny the first time:
+
+# apt-get install postgresql-client postgresql
+# su - postgres
+$ /usr/lib/postgresql/8.3/bin/initdb -D /etc/postgresql/8.3/main/pgdata/
+
+Backing up a server:
+
+# pg_dumpall > pg_backup
+
+Restoring a server:
+
+# psql -f pg_backup postgres
+
+Restoring from a gzipped file:
+
+# gzcat pg_backup | psql postgres
+
+References:
+
+- http://www.debianhelp.co.uk/postgresql.htm
+- http://arstechnica.com/civis/viewtopic.php?f=16&t=689771
+- http://www.postgresql.org/docs/8.1/static/backup.html

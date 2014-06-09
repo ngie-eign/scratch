@@ -1,0 +1,66 @@
+I know the performance seems negligible based on my example below, and one might
+think that the values of current_point/last_point would be in cache still, but
+cProfile appears to disagree (and it makes sense because there are extra
+instructions being tacked on per loop iteration).
+
+Example:
+
+<pre>
+% cat ~/idiom1.py
+#!/usr/bin/env python
+
+def big_list_generator():
+    for i in xrange(1000000):
+        yield i
+
+big_list = big_list_generator()
+
+i0 = big_list.next()
+i1 = big_list.next()
+
+try:
+    while True:
+        #print(i0, i1)
+        i0 = i1
+        i1 = big_list.next()
+except StopIteration:
+    pass
+% cat ~/idiom2.py
+#!/usr/bin/env python
+
+def big_list_generator():
+    for i in xrange(1000000):
+        yield i
+
+big_list = big_list_generator()
+
+i0 = None
+i1 = None
+
+try:
+    while True:
+        i0 = i1
+        i1 = big_list.next()
+        if i0 is None or i1 is None:
+            continue
+except StopIteration:
+    pass
+% python2 -m cProfile ~/idiom1.py
+         1000003 function calls in 7.396 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    4.090    4.090    7.396    7.396 idiom1.py:3(<module>)
+  1000001    3.306    0.000    3.306    0.000 idiom1.py:3(big_list_generator)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+% python2 -m cProfile ~/idiom2.py
+         1000003 function calls in 7.946 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    4.432    4.432    7.946    7.946 idiom2.py:3(<module>)
+  1000001    3.514    0.000    3.514    0.000 idiom2.py:3(big_list_generator)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+</pre>
