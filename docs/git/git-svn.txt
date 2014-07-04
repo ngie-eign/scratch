@@ -10,3 +10,7 @@ git push - kick out of local git/svn into git repo.
 
 http://viget.com/extend/effectively-using-git-with-subversion
 http://git.or.cz/course/svn.html
+
+From https://wiki.freebsd.org/GitWorkflow:
+
+$ git clone --config remote.origin.fetch='+refs/notes/*:refs/notes/*' 

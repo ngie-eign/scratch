@@ -13,11 +13,8 @@ branches=$(git branch -l | grep -v master | grep -v $GIT_MASTER | sort -du || :)
 for branch in $branches
 do
 	case "$branch" in
-	stable/*)
+	*/*)
 		parent_branch=upstream/$branch
-		;;
-	stable-*)
-		parent_branch=$(echo $branch | sed -e 's,stable-,stable ,g' -e 's,-.*,,g' -e 's,stable ,stable/,g')
 		;;
 	*)
 		parent_branch=$GIT_MASTER
@@ -30,3 +27,4 @@ if ${AUTO_PUSH:-true}
 then
 	git push --all
 fi
+git gc
