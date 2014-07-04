@@ -43,3 +43,6 @@ if __name__ == '__main__':
     tn = SnoopyTelnet(host='www.goodellgroup.com', port=80, logfile='webpage.log')
     tn.write('GET /tutorial/chapter4.html HTTP/1.1\n\n')
     tn.read_until('</html>')
+    tn = SnoopyTelnet(host='www.google.com', port=80, logfile='google.log')
+    tn.write('GET /index.html HTTP/1.1\n\n')
+    tn.read_until('</html>')
