@@ -1,0 +1,12 @@
+PROGS+=	memory_stress
+PROGS+=	test_bss
+PROGS+=	test_str_funcs_with_NULL_pointer
+PROGS+=	test_unprivileged_negative_priority_with_nice
+
+.for p in ${PROGS}
+SRCS.$p?=	$p.c
+.endfor
+
+WARNS?=	6
+
+.include <bsd.progs.mk>
