@@ -142,7 +142,6 @@ main(int argc, char **argv)
 
 		fflush(input_fp);
 		fclose(input_fp);
-		close(fd);
 	}
 
 	len = pages * page_size;
