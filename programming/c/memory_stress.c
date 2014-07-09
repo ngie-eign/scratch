@@ -8,17 +8,30 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+
+static char *input_file;
+static int unlink_input_file = -1;
+
+static void
+cleanup(void)
+{
+
+
+	if (unlink_input_file == 1)
+		unlink(input_file);
+
+}
+
 int
 main(int argc, char **argv)
 {
 	FILE *input_fp;
 	char **endptr;
-	char *input_file;
 	long long pages;
 	off_t offset;
 	size_t len;
 	long page_size;
-	int flags, optch, prot, unlink_input_file;
+	int flags, optch, prot;
 
 	endptr = NULL;
 	flags = 0;
@@ -27,8 +40,6 @@ main(int argc, char **argv)
 	offset = 0;
 	pages = 1;
 	prot = 0;
-	unlink_input_file = -1;
-
 	page_size = sysconf(_SC_PAGE_SIZE);
 
 	while ((optch = getopt(argc, argv, "f:i:l:o:p:s:uU")) != -1) {
@@ -138,8 +149,10 @@ main(int argc, char **argv)
 
 	printf("pages = %lld; len = %zu; offset = %ju\n", pages, len, offset);
 
-	if (unlink_input_file == 1)
-		unlink(input_file);
+	if (atexit(cleanup) == -1)
+		err(2, "failed to call atexit with cleanup(..)");
+
+
 
 	exit(0);
 }

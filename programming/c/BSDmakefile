@@ -7,6 +7,8 @@ PROGS+=	test_unprivileged_negative_priority_with_nice
 SRCS.$p?=	$p.c
 .endfor
 
+MAN=
+
 WARNS?=	6
 
 .include <bsd.progs.mk>
