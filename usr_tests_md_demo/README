@@ -1,0 +1,6 @@
+1. Run create_usr_tests_md.sh.
+2. Copy over usr-tests.size.txt and usr-tests.txz to /var
+3. Run ./modify_etc_fstab.sh as root.
+4. Run ./modify_etc_rc_conf.sh as root.
+5. Run 'service mdconfig start' and 'service mdconfig2 start'
+   as root, or reboot your machine.
