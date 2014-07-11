@@ -66,8 +66,19 @@ for prog in $PROGS; do
 	fi
 done
 
+PIDS=
+kill_kids()
+{
+	echo "Will kill $PIDS"
+	for pid in $PIDS; do
+		kill $pid || kill -9 $pid
+	done
+}
+trap kill_kids EXIT INT TERM
+
 : ${NUM_TEST_PROCS=$(sysctl -n kern.smp.cpus)}
 for cpu in $NUM_TEST_PROCS; do
 	spawn_tests &
+	PIDS="$PIDS $!"
 done
 wait
