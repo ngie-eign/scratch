@@ -66,8 +66,10 @@ for prog in $PROGS; do
 	fi
 done
 
+i=0
 : ${NUM_TEST_PROCS=$(sysctl -n kern.smp.cpus)}
-for cpu in $NUM_TEST_PROCS; do
+while [ $i -lt $NUM_TEST_PROCS ]; do
 	spawn_tests &
+	: $(( i += 1 ))
 done
 wait
