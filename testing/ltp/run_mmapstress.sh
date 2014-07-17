@@ -58,7 +58,7 @@ sys.stdout.write(random.choice('$PROGS'.split()))
 		./$_test $(mktemp -u) $(random_offset) 1 $(random_offset)
 		;;
 	mmapstress09)
-		./$_test -p $(sysctl -n kern.smp.cpus) -t $(random_minutes) -f $(random_size)
+		./$_test -p $(sysctl -n kern.smp.cpus) -t $(random_minutes) -s $(random_size)
 		;;
 	mmapstress10)
 		./$_test -f $(random_size) -p $(sysctl -n kern.smp.cpus) -t $(random_minutes) -f $(random_size) -S $(random_offset)
