@@ -11,7 +11,7 @@ random_offset()
 {
 
 	python2 -c "import os, random, sys
-sys.stdout.write(str(int(0.75 * random.randrange($(filesystem_high_watermark)) / os.sysconf('SC_PAGE_SIZE')) * os.sysconf('SC_PAGE_SIZE')))
+sys.stdout.write(str(min(1024 * 1024 * 1024, int(0.75 * random.randrange($(filesystem_high_watermark)) / os.sysconf('SC_PAGE_SIZE')) * os.sysconf('SC_PAGE_SIZE'))))
 "
 }
 
@@ -19,19 +19,24 @@ random_size()
 {
 
 	python2 -c "import random, sys
-sys.stdout.write(str(int(0.75 * random.randrange($(filesystem_high_watermark)))))
+sys.stdout.write(str(min(1024 * 1024 * 1024, int(0.75 * random.randrange($(filesystem_high_watermark))))))
 "
 }
 
-random_time()
+random_minutes()
 {
 	python2 -c "import random, sys
 sys.stdout.write(str(random.randrange(10)))
 "
 }
 
+random_seconds()
+{
+	echo $(( 60 * $(random_minutes) ))
+}
+
 STANDALONE_PROGS="mmap-corruption01 mmapstress02 mmapstress03 mmapstress08"
-PROGS="$STANDALONE_PROGS mmapstress01 mmapstress04"
+PROGS="$STANDALONE_PROGS mmapstress01 mmapstress04 mmapstress05 mmapstress06 mmapstress07 mmapstress09 mmapstress10"
 
 run_random_test()
 {
@@ -41,10 +46,22 @@ sys.stdout.write(random.choice('$PROGS'.split()))
 
 	case "$_test" in
 	mmapstress01)
-		./$_test -p $(sysctl -n kern.smp.cpus) -t $(random_time) -f $(random_size)
+		./$_test -p $(sysctl -n kern.smp.cpus) -t $(random_minutes) -f $(random_size)
 		;;
 	mmapstress04)
 		./$_test $(mktemp -u) $(random_offset)
+		;;
+	mmapstress06)
+		./$_test $(random_seconds)
+		;;
+	mmapstress07)
+		./$_test $(mktemp -u) $(random_offset) 1 $(random_offset)
+		;;
+	mmapstress09)
+		./$_test -p $(sysctl -n kern.smp.cpus) -t $(random_minutes) -f $(random_size)
+		;;
+	mmapstress10)
+		./$_test -f $(random_size) -p $(sysctl -n kern.smp.cpus) -t $(random_minutes) -f $(random_size) -S $(random_offset)
 		;;
 	*)
 		./$_test
