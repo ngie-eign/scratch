@@ -72,7 +72,7 @@ sysctl_test_bad_memory_operation(SYSCTL_HANDLER_ARGS)
 	unsigned int i;
 
 	/* Only handle the request once */
-	if (req->oldptr == NULL)
+	if (req->oldptr != NULL)
 		return (0);
 
 	error = sysctl_handle_string(oidp, operation, sizeof(operation), req);
