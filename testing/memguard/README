@@ -19,6 +19,8 @@ Knobs that can be used to validate the functionality are:
 - vm.memguard.numalloc
 
 Notes:
-- Double-frees cause memguard panics. XXX: how will I test this without RUMP or a VM?
+- Double-frees cause memguard || sys/vm panics if invariants are enabled
+  (see PR # 192098 for relevant discussion). XXX: how will I test this without
+  RUMP or a VM?
 
 
