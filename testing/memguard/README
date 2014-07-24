@@ -1,0 +1,24 @@
+The goal of this testcase and driver is to do targeted, functional testing of
+memguard.
+
+The driver intentionally leaks memory to test certain scenarios.
+
+The different flags that are tested are:
+
+#define MG_GUARD_AROUND         0x001
+#define MG_GUARD_ALLLARGE       0x002
+#define MG_GUARD_NOFREE         0x004
+
+These are bitmask values set via `vm.memguard.options` and currently aren't
+mutually exclusive.
+
+Knobs that can be used to validate the functionality are:
+
+- vm.memguard.fail_kva
+- vm.memguard.fail_pgs
+- vm.memguard.numalloc
+
+Notes:
+- Double-frees cause memguard panics. XXX: how will I test this without RUMP or a VM?
+
+
