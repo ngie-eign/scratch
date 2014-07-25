@@ -2,6 +2,8 @@
 #
 # A script for running mmapstress from LTP on FreeBSD
 
+: ${PYTHON=python}
+
 filesystem_high_watermark()
 {
 	echo $(( $(df -k . | awk 'NR > 1 { print $4 }') * 1024 * 8 / 10 ))
@@ -10,7 +12,7 @@ filesystem_high_watermark()
 random_offset()
 {
 
-	python2 -c "import os, random, sys
+	$PYTHON -c "import os, random, sys
 sys.stdout.write(str(min(1024 * 1024 * 1024, int(0.75 * random.randrange($(filesystem_high_watermark)) / os.sysconf('SC_PAGE_SIZE')) * os.sysconf('SC_PAGE_SIZE'))))
 "
 }
@@ -18,21 +20,22 @@ sys.stdout.write(str(min(1024 * 1024 * 1024, int(0.75 * random.randrange($(files
 random_size()
 {
 
-	python2 -c "import random, sys
+	$PYTHON -c "import random, sys
 sys.stdout.write(str(min(1024 * 1024 * 1024, int(0.75 * random.randrange($(filesystem_high_watermark))))))
 "
 }
 
 random_minutes()
 {
-	python2 -c "import random, sys
-sys.stdout.write(str(random.randrange(10)))
+	$PYTHON -c "import random, sys
+sys.stdout.write(str(random.randrange(1, 10)))
 "
 }
 
 random_seconds()
 {
-	echo $(( 60 * $(random_minutes) ))
+	echo $(( $($PYTHON -c "import random, sys
+sys.stdout.write(str(random.randrange(1, 60)))") * $(random_minutes) ))
 }
 
 STANDALONE_PROGS="mmap-corruption01 mmapstress02 mmapstress03 mmapstress08"
@@ -40,7 +43,7 @@ PROGS="$STANDALONE_PROGS mmapstress01 mmapstress04 mmapstress05 mmapstress06 mma
 
 run_random_test()
 {
-	local _test=$(python2 -c "import random, sys
+	local _test=$($PYTHON -c "import random, sys
 sys.stdout.write(random.choice('$PROGS'.split()))
 ")
 
