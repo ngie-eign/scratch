@@ -1,0 +1,13 @@
+The purpose of this example is to demonstrate how one could write a "C" driver
+for interfacing with a library that is in turn driven by an atf-sh script for
+graybox testing purposes. The goal is to demonstrate how it could be simpler to
+write a shell script for testing instead of a C application when doing trivial
+testing tasks
+
+Building the example:
+
+% make obj
+% make depend
+% make all
+% mtree -deU -f BSD.tests.dist -p /usr/tests
+% make install

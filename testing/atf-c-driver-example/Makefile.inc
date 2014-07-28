@@ -1,0 +1,1 @@
+TESTSDIR=	${TESTSBASE}/lib/mylibrary
