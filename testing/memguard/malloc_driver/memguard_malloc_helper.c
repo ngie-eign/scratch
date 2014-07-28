@@ -6,14 +6,14 @@
 #include <sys/sysctl.h>
 
 MALLOC_DECLARE(M_MEMGUARD_HELPER);
-MALLOC_DEFINE(M_MEMGUARD_HELPER, "memguard_helper", "Bad memory test malloc zone");
+MALLOC_DEFINE(M_MEMGUARD_HELPER, "memguard_malloc_helper", "Bad memory test malloc zone");
 
 unsigned int allocation_attempts = 1;
 unsigned long slab_size = PAGE_SIZE;
 long slab_offset;
 
 static int
-load_memguard_helper(struct module *m, int what, void *arg)
+load_memguard_malloc_helper(struct module *m, int what, void *arg)
 {
 
 	return (0);
@@ -22,7 +22,7 @@ load_memguard_helper(struct module *m, int what, void *arg)
 
 
 static int
-sysctl_memguard_helper_allocate(SYSCTL_HANDLER_ARGS)
+sysctl_memguard_malloc_helper_allocate(SYSCTL_HANDLER_ARGS)
 {
 	char *buf;
 	unsigned int i;
@@ -52,30 +52,30 @@ SYSCTL_ROOT_NODE(OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
 SYSCTL_NODE(, OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
 #endif
 
-SYSCTL_ULONG(_test, OID_AUTO, memguard_helper_slab_size,
+SYSCTL_ULONG(_test, OID_AUTO, memguard_malloc_helper_slab_size,
     CTLTYPE_ULONG|CTLFLAG_RW, &slab_size, 0,
     "SLAB size to try and allocate memory for with malloc(9)");
 
-SYSCTL_UINT(_test, OID_AUTO, memguard_helper_allocation_attempts,
+SYSCTL_UINT(_test, OID_AUTO, memguard_malloc_helper_allocation_attempts,
     CTLTYPE_UINT|CTLFLAG_RW, &allocation_attempts, 0,
     "Number of attempts for allocating and freeing memory");
 
-SYSCTL_LONG(_test, OID_AUTO, memguard_helper_overallocate,
+SYSCTL_LONG(_test, OID_AUTO, memguard_malloc_helper_slab_offset,
     CTLTYPE_LONG|CTLFLAG_RW, &slab_offset, 0,
     "Virtual offset to seek to in the slab to test memory access protection "
     "support");
 
 SYSCTL_PROC(_test, OID_AUTO, memguard_allocate, CTLTYPE_STRING|CTLFLAG_RW,
-    NULL, 0, sysctl_memguard_helper_allocate, "A",
+    NULL, 0, sysctl_memguard_malloc_helper_allocate, "A",
     "Allocate memory according to other related (size, number of attempts, "
     "overallocation)");
 
-static moduledata_t memguard_helper_moddata = {
-	"memguard_helper",
-	load_memguard_helper,
+static moduledata_t memguard_malloc_helper_moddata = {
+	"memguard_malloc_helper",
+	load_memguard_malloc_helper,
 	NULL,
 };
 
-MODULE_VERSION(memguard_helper, 1);
-DECLARE_MODULE(memguard_helper, memguard_helper_moddata, SI_SUB_EXEC,
-    SI_ORDER_ANY);
+MODULE_VERSION(memguard_malloc_helper, 1);
+DECLARE_MODULE(memguard_malloc_helper, memguard_malloc_helper_moddata,
+    SI_SUB_EXEC, SI_ORDER_ANY);
