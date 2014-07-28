@@ -1,10 +1,9 @@
 #include <sys/param.h>
 #include <sys/kernel.h>
+#include <sys/systm.h>
 #include <sys/malloc.h>
 #include <sys/module.h>
-#include <sys/sbuf.h>
 #include <sys/sysctl.h>
-#include <sys/systm.h>
 
 MALLOC_DECLARE(M_BAD_MEMORY);
 MALLOC_DEFINE(M_BAD_MEMORY, "bad_memory", "Bad memory test malloc zone");
@@ -21,11 +20,18 @@ double_free_cb(void)
 {
 	void *buf;
 
-	buf = malloc(1, M_BAD_MEMORY, 0);
+	buf = malloc(1, M_BAD_MEMORY, M_WAITOK);
 	KASSERT(buf != NULL, "malloc failed");
 
 	free(buf, M_BAD_MEMORY);
 	free(buf, M_BAD_MEMORY);
+}
+
+static void
+failed_allocation_cb(void)
+{
+
+	malloc((unsigned long)-1, M_BAD_MEMORY, M_NOWAIT);
 }
 
 static void
@@ -53,6 +59,7 @@ static struct callback_t {
 	void (*fn)(void);
 } callbacks[] = {
 	{ "double_free", double_free_cb, },
+	{ "failed_allocation", failed_allocation_cb, },
 	{ "out_of_bounds", out_of_bounds_cb, },
 	{ "uninitialized", uninitialized_cb, },
 };
@@ -60,29 +67,35 @@ static struct callback_t {
 static int
 sysctl_test_bad_memory_operation(SYSCTL_HANDLER_ARGS)
 {
-	struct sbuf operation;
+	char operation[20];
 	int error;
 	unsigned int i;
 
-	sbuf_new(&operation, NULL, 20, SBUF_FIXEDLEN);
+	/* Only handle the request once */
+	if (req->oldptr != NULL)
+		return (0);
 
-	error = sysctl_handle_string(oidp, sbuf_data(&operation),
-	    sbuf_len(&operation), req);
+	error = sysctl_handle_string(oidp, operation, sizeof(operation), req);
 	if (error)
 		return (error);
 
-	for (i = 0; i < nitems(callbacks); i++)
-		if (strcmp(callbacks[i].name, sbuf_data(&operation)) == 0)
+	for (i = 0; i < nitems(callbacks); i++) {
+		if (strcmp(callbacks[i].name, operation) == 0) {
+			printf("Running callback for %s\n", operation);
 			callbacks[i].fn();
-
-	sbuf_delete(&operation);
+		}
+	}
 
 	return (EINVAL);
 }
 
 /* XXX: move these next few lines somewhere else */
 SYSCTL_DECL(_test);
+#ifdef SYSCTL_ROOT_NODE
 SYSCTL_ROOT_NODE(OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
+#else
+SYSCTL_NODE(, OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
+#endif
 
 /*
  * XXX: needs some work because of unresolved symbols
