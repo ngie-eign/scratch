@@ -15,7 +15,7 @@ SYSCTL_NODE(, OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
 
 static moduledata_t test_sysctl_moddata = {
 	"test_sysctl",
-	NULL,
+	_modevent_noop,
 	NULL,
 };
 

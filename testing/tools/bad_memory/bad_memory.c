@@ -110,7 +110,7 @@ SYSCTL_PROC(_test, OID_AUTO, bad_memory_operation, CTLTYPE_STRING|CTLFLAG_RW,
 
 static moduledata_t bad_memory_moddata = {
 	"bad_memory",
-	NULL,
+	_modevent_noop,
 	NULL,
 };
 

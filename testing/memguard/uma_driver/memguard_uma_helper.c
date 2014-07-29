@@ -71,7 +71,7 @@ SYSCTL_PROC(_test, OID_AUTO, memguard_allocate, CTLTYPE_STRING|CTLFLAG_RW,
 
 static moduledata_t memguard_uma_helper_moddata = {
 	"memguard_uma_helper",
-	NULL,
+	_modevent_noop,
 	NULL,
 };
 

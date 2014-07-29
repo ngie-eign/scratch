@@ -57,7 +57,7 @@ SYSCTL_PROC(_test, OID_AUTO, memguard_allocate, CTLTYPE_STRING|CTLFLAG_RW,
 
 static moduledata_t memguard_malloc_helper_moddata = {
 	"memguard_malloc_helper",
-	NULL,
+	_modevent_noop,
 	NULL,
 };
 
