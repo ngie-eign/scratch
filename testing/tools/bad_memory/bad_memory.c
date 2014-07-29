@@ -5,15 +5,10 @@
 #include <sys/module.h>
 #include <sys/sysctl.h>
 
+#include "test_sysctl.h"
+
 MALLOC_DECLARE(M_BAD_MEMORY);
 MALLOC_DEFINE(M_BAD_MEMORY, "bad_memory", "Bad memory test malloc zone");
-
-static int
-load_bad_memory(struct module *m, int what, void *arg)
-{
-
-	return (0);
-}
 
 static void
 double_free_cb(void)
@@ -89,14 +84,6 @@ sysctl_test_bad_memory_operation(SYSCTL_HANDLER_ARGS)
 	return (EINVAL);
 }
 
-/* XXX: move these next few lines somewhere else */
-SYSCTL_DECL(_test);
-#ifdef SYSCTL_ROOT_NODE
-SYSCTL_ROOT_NODE(OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
-#else
-SYSCTL_NODE(, OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
-#endif
-
 /*
  * XXX: needs some work because of unresolved symbols
  *
@@ -123,9 +110,10 @@ SYSCTL_PROC(_test, OID_AUTO, bad_memory_operation, CTLTYPE_STRING|CTLFLAG_RW,
 
 static moduledata_t bad_memory_moddata = {
 	"bad_memory",
-	load_bad_memory,
+	NULL,
 	NULL,
 };
 
 MODULE_VERSION(bad_memory, 1);
 DECLARE_MODULE(bad_memory, bad_memory_moddata, SI_SUB_EXEC, SI_ORDER_ANY);
+MODULE_DEPEND(memguard_malloc_helper, test_sysctl, 1, 1, 1);

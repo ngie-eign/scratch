@@ -5,21 +5,14 @@
 #include <sys/module.h>
 #include <sys/sysctl.h>
 
+#include "test_sysctl.h"
+
 MALLOC_DECLARE(M_MEMGUARD_HELPER);
 MALLOC_DEFINE(M_MEMGUARD_HELPER, "memguard_malloc_helper", "Bad memory test malloc zone");
 
 unsigned int allocation_attempts = 1;
 unsigned long slab_size = PAGE_SIZE;
 long slab_offset;
-
-static int
-load_memguard_malloc_helper(struct module *m, int what, void *arg)
-{
-
-	return (0);
-}
-
-
 
 static int
 sysctl_memguard_malloc_helper_allocate(SYSCTL_HANDLER_ARGS)
@@ -44,14 +37,6 @@ sysctl_memguard_malloc_helper_allocate(SYSCTL_HANDLER_ARGS)
 	return (0);
 }
 
-/* XXX: move these next few lines somewhere else */
-SYSCTL_DECL(_test);
-#ifdef SYSCTL_ROOT_NODE
-SYSCTL_ROOT_NODE(OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
-#else
-SYSCTL_NODE(, OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
-#endif
-
 SYSCTL_ULONG(_test, OID_AUTO, memguard_malloc_helper_slab_size,
     CTLTYPE_ULONG|CTLFLAG_RW, &slab_size, 0,
     "SLAB size to try and allocate memory for with malloc(9)");
@@ -72,10 +57,11 @@ SYSCTL_PROC(_test, OID_AUTO, memguard_allocate, CTLTYPE_STRING|CTLFLAG_RW,
 
 static moduledata_t memguard_malloc_helper_moddata = {
 	"memguard_malloc_helper",
-	load_memguard_malloc_helper,
+	NULL,
 	NULL,
 };
 
 MODULE_VERSION(memguard_malloc_helper, 1);
 DECLARE_MODULE(memguard_malloc_helper, memguard_malloc_helper_moddata,
     SI_SUB_EXEC, SI_ORDER_ANY);
+MODULE_DEPEND(memguard_malloc_helper, test_sysctl, 1, 1, 1);

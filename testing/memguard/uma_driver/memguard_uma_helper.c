@@ -6,6 +6,8 @@
 #include <sys/sysctl.h>
 #include <vm/uma.h>
 
+#include "test_sysctl.h"
+
 MALLOC_DECLARE(M_MEMGUARD_HELPER);
 MALLOC_DEFINE(M_MEMGUARD_HELPER, "memguard_uma_helper", "Bad memory test uma_zalloc zone");
 
@@ -13,13 +15,6 @@ uint32_t align;
 unsigned int allocation_attempts = 1;
 unsigned long item_size = PAGE_SIZE;
 long item_offset;
-
-static int
-load_memguard_uma_helper(struct module *m, int what, void *arg)
-{
-
-	return (0);
-}
 
 static int
 sysctl_memguard_uma_helper_allocate(SYSCTL_HANDLER_ARGS)
@@ -52,14 +47,6 @@ sysctl_memguard_uma_helper_allocate(SYSCTL_HANDLER_ARGS)
 	return (0);
 }
 
-/* XXX: move these next few lines somewhere else */
-SYSCTL_DECL(_test);
-#ifdef SYSCTL_ROOT_NODE
-SYSCTL_ROOT_NODE(OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
-#else
-SYSCTL_NODE(, OID_AUTO, test, CTLFLAG_RW, 0, "Testing");
-#endif
-
 SYSCTL_ULONG(_test, OID_AUTO, memguard_uma_helper_item_size,
     CTLTYPE_ULONG|CTLFLAG_RW, &item_size, 0,
     "Size to reserve for a zone keg uma_zalloc(9)");
@@ -84,10 +71,11 @@ SYSCTL_PROC(_test, OID_AUTO, memguard_allocate, CTLTYPE_STRING|CTLFLAG_RW,
 
 static moduledata_t memguard_uma_helper_moddata = {
 	"memguard_uma_helper",
-	load_memguard_uma_helper,
+	NULL,
 	NULL,
 };
 
 MODULE_VERSION(memguard_uma_helper, 1);
 DECLARE_MODULE(memguard_uma_helper, memguard_uma_helper_moddata,
     SI_SUB_EXEC, SI_ORDER_ANY);
+MODULE_DEPEND(memguard_malloc_helper, test_sysctl, 1, 1, 1);
