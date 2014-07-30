@@ -8,20 +8,46 @@
 
 #include "test_sysctl.h"
 
-MALLOC_DECLARE(M_MEMGUARD_HELPER);
-MALLOC_DEFINE(M_MEMGUARD_HELPER, "memguard_uma_helper", "Bad memory test uma_zalloc zone");
-
-static uint32_t align;
+static uma_zone_t zone;
 static long item_offset;
 static unsigned long item_size = 256;
 static int allocate;
+static int destroy_zone_after_use = 1;
+static uint32_t align;
 static unsigned int allocation_attempts = 1;
+
+static void
+destroy_zone(void)
+{
+
+	if (zone == NULL)
+		return;
+
+	printf("%s called\n", __func__);
+
+	uma_zdestroy(zone);
+	zone = NULL;
+}
+
+static int
+evhand(struct module *m __unused, int what, void *arg __unused)
+{
+
+	if (what == MOD_UNLOAD)
+		destroy_zone();
+
+	return (0);
+}
 
 static int
 sysctl_memguard_uma_helper_allocate(SYSCTL_HANDLER_ARGS)
 {
+	struct entry {
+		char *buf;
+		SLIST_ENTRY(entry) entries;
+	} *np, *np_temp;
+
 	char *buf;
-	uma_zone_t zone;
 	int error, val;
 	unsigned int i;
 
@@ -34,27 +60,64 @@ sysctl_memguard_uma_helper_allocate(SYSCTL_HANDLER_ARGS)
 	if (error || req->newptr == NULL)
 		goto end;
 
-	zone = uma_zcreate("MEMGUARD UMA HELPER", item_size,
- 	    NULL, NULL, NULL, NULL, align, UMA_ZONE_VM);
 	if (zone == NULL) {
-		error = ENOMEM;
-		goto end;
+		zone = uma_zcreate("memguard_uma_helper", item_size,
+		    NULL, NULL, NULL, NULL, align, UMA_ZONE_VM);
+		if (zone == NULL) {
+			error = ENOMEM;
+			goto end;
+		}
 	}
 
-	for (i = 0; i < allocation_attempts; i++) {
+	SLIST_HEAD(, entry) head = SLIST_HEAD_INITIALIZER(head);
+	SLIST_INIT(&head);
+
+	for (i = 1; i <= allocation_attempts; i++) {
+		printf("%s: allocation attempt %u/%u\n", __func__, i,
+		    allocation_attempts);
 		buf = uma_zalloc(zone, M_NOWAIT);
 		if (buf == NULL) {
 			printf("%s: uma_zalloc failed\n", __func__);
-			continue;
+			break;
 		}
+
+		np = malloc(sizeof(struct entry), M_TEMP, M_NOWAIT);
+		if (np == NULL) {
+			uma_zfree(zone, buf);
+			printf("%s: malloc for SLIST entry failed\n",
+			    __func__);
+			break;
+		}
+
 		buf[item_offset] = 'a';
-		uma_zfree(zone, buf);
+		np->buf = buf;
+
+		SLIST_INSERT_HEAD(&head, np, entries);
 	}
 
-	uma_zdestroy(zone);
+	if (0 < allocation_attempts) {
+
+		i = 1;
+
+		SLIST_FOREACH_SAFE(np, &head, entries, np_temp) {
+			printf("%s: deallocating item %u/%u\n", __func__, i,
+			    allocation_attempts);
+
+			SLIST_REMOVE(&head, np, entry, entries);
+
+			uma_zfree(zone, np->buf);
+			free(np, M_TEMP);
+			i++;
+		}
+
+	}
+
+	if (destroy_zone_after_use)
+		destroy_zone();
 
 end:
 	allocate = 0;
+
 	return (0);
 }
 
@@ -70,6 +133,10 @@ SYSCTL_UINT(_test, OID_AUTO, memguard_uma_helper_align,
     CTLTYPE_UINT|CTLFLAG_RW, &align, 0,
     "Value to pass to uma_zcreate for `align`; see uma.h for more details");
 
+SYSCTL_UINT(_test, OID_AUTO, memguard_uma_helper_destroy_zone_after_allocate,
+    CTLTYPE_INT|CTLFLAG_RW, &destroy_zone_after_use, 0,
+    "Automatically destroy zone after allocate operation completes");
+
 SYSCTL_LONG(_test, OID_AUTO, memguard_uma_helper_item_offset,
     CTLTYPE_LONG|CTLFLAG_RW, &item_offset, 0,
     "Virtual offset to seek to in the item to test memory access protection "
@@ -83,7 +150,7 @@ SYSCTL_PROC(_test, OID_AUTO, memguard_uma_helper_allocate,
 
 static moduledata_t memguard_uma_helper_moddata = {
 	"memguard_uma_helper",
-	_modevent_noop,
+	evhand,
 	NULL,
 };
 
