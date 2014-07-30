@@ -2,7 +2,7 @@
 
 if [ -z "$PPID" -o $PPID -le 0 ]
 then
-	echo "${0##*/}: ERROR: $PPID either undefined or less than 0"
+	echo "${0##*/}: ERROR: \$PPID is either undefined or less than 0"
 	exit 1
 fi
 
@@ -16,5 +16,6 @@ else
 fi
 
 for i in mmap*.sh; do
+	echo "Running $i"
 	protect sh ./$i
 done
