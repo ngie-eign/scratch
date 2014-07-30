@@ -11,26 +11,30 @@
 MALLOC_DECLARE(M_MEMGUARD_HELPER);
 MALLOC_DEFINE(M_MEMGUARD_HELPER, "memguard_uma_helper", "Bad memory test uma_zalloc zone");
 
-uint32_t align;
-unsigned int allocation_attempts = 1;
-unsigned long item_size = PAGE_SIZE;
-long item_offset;
+static uint32_t align;
+static long item_offset;
+static unsigned long item_size = 256;
+static int allocate;
+static unsigned int allocation_attempts = 1;
 
 static int
 sysctl_memguard_uma_helper_allocate(SYSCTL_HANDLER_ARGS)
 {
 	char *buf;
 	uma_zone_t zone;
+	int error, val;
 	unsigned int i;
 
-	/* Don't run the request twice */
-	if (req->oldptr != NULL)
-		return (0);
+	error = sysctl_handle_int(oidp, &val, 0, req);
+	if (error || req->newptr != NULL)
+		goto end;
 
 	zone = uma_zcreate("MEMGUARD UMA HELPER", item_size,
  	    NULL, NULL, NULL, NULL, align, UMA_ZONE_VM);
-	if (zone == NULL)
-		return (ENOMEM);
+	if (zone == NULL) {
+		error = ENOMEM;
+		goto end;
+	}
 
 	for (i = 0; i < allocation_attempts; i++) {
 		buf = uma_zalloc(zone, M_NOWAIT);
@@ -44,6 +48,8 @@ sysctl_memguard_uma_helper_allocate(SYSCTL_HANDLER_ARGS)
 
 	uma_zdestroy(zone);
 
+end:
+	allocate = 0;
 	return (0);
 }
 
@@ -64,8 +70,9 @@ SYSCTL_LONG(_test, OID_AUTO, memguard_uma_helper_item_offset,
     "Virtual offset to seek to in the item to test memory access protection "
     "support");
 
-SYSCTL_PROC(_test, OID_AUTO, memguard_uma_helper_allocate, CTLTYPE_STRING|CTLFLAG_RW,
-    NULL, 0, sysctl_memguard_uma_helper_allocate, "A",
+SYSCTL_PROC(_test, OID_AUTO, memguard_uma_helper_allocate,
+    CTLTYPE_INT|CTLFLAG_RW, NULL, 0,
+    sysctl_memguard_uma_helper_allocate, "I",
     "Allocate memory according to other related (size, number of attempts, "
     "overallocation)");
 

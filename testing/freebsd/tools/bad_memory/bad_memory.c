@@ -59,54 +59,66 @@ static struct callback_t {
 	{ "uninitialized", uninitialized_cb, },
 };
 
+static char operation[sizeof("failed_allocation") + 1];
+static int do_operation;
+
 static int
 sysctl_test_bad_memory_operation(SYSCTL_HANDLER_ARGS)
 {
-	char operation[20];
 	int error;
 	unsigned int i;
 
-	/* Only handle the request once */
-	if (req->oldptr != NULL)
-		return (0);
-
 	error = sysctl_handle_string(oidp, operation, sizeof(operation), req);
 	if (error)
+		operation[0] = '\0';
+	if (error || req->newptr == NULL)
 		return (error);
 
 	for (i = 0; i < nitems(callbacks); i++) {
 		if (strcmp(callbacks[i].name, operation) == 0) {
-			printf("Running callback for %s\n", operation);
-			callbacks[i].fn();
+			memcpy(operation, callbacks[i].name,
+			    sizeof(operation));
+			return (0);
 		}
 	}
 
 	return (EINVAL);
 }
 
-/*
- * XXX: needs some work because of unresolved symbols
- *
- * Should look at some of the drivers that employ hw.* to
- * build their sysctl trees automagically
- */
-#if 0
-SYSCTL_DECL(_test_bad_memory);
-static SYSCTL_NODE(_test_bad_memory, OID_AUTO, bad_memory, CTLFLAG_RD, 0,
-    "bad_memory testing sysctl node");
+static int
+sysctl_test_bad_memory_do_operation(SYSCTL_HANDLER_ARGS)
+{
+	int error;
+	unsigned int i;
 
-SYSCTL_PROC(_test_bad_memory, OID_AUTO, operation, CTLTYPE_STRING|CTLFLAG_RW,
-    0, 0, sysctl_test_bad_memory_operation, "A",
-    "Perform an operation with the module to force a failure state in the "
-    "kernel related to memory allocation/dereferencing; supported operations "
-    "are: 'double_free', 'out_of_bounds', and 'uninitialized'");
-#else
+	error = sysctl_handle_int(oidp, &do_operation, sizeof(do_operation),
+	    req);
+	if (error || req->newptr == NULL)
+		goto end;
+
+	for (i = 0; i < nitems(callbacks); i++) {
+		if (strcmp(callbacks[i].name, operation) == 0) {
+			printf("Running callback for %s\n", operation);
+			callbacks[i].fn();
+			goto end;
+		}
+	}
+	error = EINVAL;
+
+end:
+	do_operation = 0;
+	return (error);
+}
+
 SYSCTL_PROC(_test, OID_AUTO, bad_memory_operation, CTLTYPE_STRING|CTLFLAG_RW,
     NULL, 0, sysctl_test_bad_memory_operation, "A",
     "Perform an operation with the module to force a failure state in the "
-    "kernel related to memory allocation/dereferencing; supported operations "
-    "are: 'double_free', 'out_of_bounds', and 'uninitialized'");
-#endif
+    "kernel related to memory allocation/dereferencing");
+
+SYSCTL_PROC(_test, OID_AUTO, bad_memory_do_operation, CTLTYPE_INT|CTLFLAG_RW,
+    NULL, 0, sysctl_test_bad_memory_do_operation, "I",
+    "Operations to perform on the kernel: 'double_free', 'out_of_bounds', and "
+    "'uninitialized'");
 
 static moduledata_t bad_memory_moddata = {
 	"bad_memory",

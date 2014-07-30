@@ -10,19 +10,21 @@
 MALLOC_DECLARE(M_MEMGUARD_HELPER);
 MALLOC_DEFINE(M_MEMGUARD_HELPER, "memguard_malloc_helper", "Bad memory test malloc zone");
 
-unsigned int allocation_attempts = 1;
-unsigned long slab_size = PAGE_SIZE;
-long slab_offset;
+static unsigned long slab_size = PAGE_SIZE;
+static long slab_offset;
+static unsigned int allocation_attempts = 1;
+static int allocate;
 
 static int
 sysctl_memguard_malloc_helper_allocate(SYSCTL_HANDLER_ARGS)
 {
 	char *buf;
+	int error, val;
 	unsigned int i;
 
-	/* Don't run the request twice */
-	if (req->oldptr != NULL)
-		return (0);
+	error = sysctl_handle_int(oidp, &val, 0, req);
+	if (error || req->newptr != NULL)
+		goto end;
 
 	for (i = 0; i < allocation_attempts; i++) {
 		buf = malloc(slab_size, M_MEMGUARD_HELPER, M_NOWAIT);
@@ -34,6 +36,8 @@ sysctl_memguard_malloc_helper_allocate(SYSCTL_HANDLER_ARGS)
 		free(buf, M_MEMGUARD_HELPER);
 	}
 
+end:
+	allocate = 0;
 	return (0);
 }
 
@@ -50,8 +54,9 @@ SYSCTL_LONG(_test, OID_AUTO, memguard_malloc_helper_slab_offset,
     "Virtual offset to seek to in the slab to test memory access protection "
     "support");
 
-SYSCTL_PROC(_test, OID_AUTO, memguard_malloc_helper_allocate, CTLTYPE_STRING|CTLFLAG_RW,
-    NULL, 0, sysctl_memguard_malloc_helper_allocate, "A",
+SYSCTL_PROC(_test, OID_AUTO, memguard_malloc_helper_allocate,
+    CTLTYPE_INT|CTLFLAG_RW, NULL, 0,
+    sysctl_memguard_malloc_helper_allocate, "I",
     "Allocate memory according to other related (size, number of attempts, "
     "overallocation)");
 
