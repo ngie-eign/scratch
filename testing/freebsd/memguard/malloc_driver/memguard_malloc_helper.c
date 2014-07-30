@@ -22,8 +22,13 @@ sysctl_memguard_malloc_helper_allocate(SYSCTL_HANDLER_ARGS)
 	int error, val;
 	unsigned int i;
 
+	error = 0;
+
+	if (req->oldptr != NULL || req->oldlen != 0)
+		goto end;
+
 	error = sysctl_handle_int(oidp, &val, 0, req);
-	if (error || req->newptr != NULL)
+	if (error || req->newptr == NULL)
 		goto end;
 
 	for (i = 0; i < allocation_attempts; i++) {

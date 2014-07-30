@@ -25,8 +25,13 @@ sysctl_memguard_uma_helper_allocate(SYSCTL_HANDLER_ARGS)
 	int error, val;
 	unsigned int i;
 
+	error = 0;
+
+	if (req->oldptr != NULL || req->oldlen != 0)
+		goto end;
+
 	error = sysctl_handle_int(oidp, &val, 0, req);
-	if (error || req->newptr != NULL)
+	if (error || req->newptr == NULL)
 		goto end;
 
 	zone = uma_zcreate("MEMGUARD UMA HELPER", item_size,

@@ -71,7 +71,8 @@ sysctl_test_bad_memory_operation(SYSCTL_HANDLER_ARGS)
 	error = sysctl_handle_string(oidp, operation, sizeof(operation), req);
 	if (error)
 		operation[0] = '\0';
-	if (error || req->newptr == NULL)
+
+	if (error || req->newptr == NULL || req->newlen == 0)
 		return (error);
 
 	for (i = 0; i < nitems(callbacks); i++) {
@@ -90,6 +91,11 @@ sysctl_test_bad_memory_do_operation(SYSCTL_HANDLER_ARGS)
 {
 	int error;
 	unsigned int i;
+
+	error = 0;
+
+	if (req->oldptr != NULL || req->oldlen != 0)
+		goto end;
 
 	error = sysctl_handle_int(oidp, &do_operation, sizeof(do_operation),
 	    req);
