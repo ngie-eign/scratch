@@ -14,6 +14,7 @@ mutually exclusive.
 
 Knobs that can be used to validate the functionality are:
 
+- vm.memguard.desc
 - vm.memguard.fail_kva
 - vm.memguard.fail_pgs
 - vm.memguard.numalloc
