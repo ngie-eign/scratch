@@ -24,7 +24,7 @@ sysctl_memguard_uma_helper_allocate(SYSCTL_HANDLER_ARGS)
 	unsigned int i;
 
 	/* Don't run the request twice */
-	if (req->oldptr == NULL)
+	if (req->oldptr != NULL)
 		return (0);
 
 	zone = uma_zcreate("MEMGUARD UMA HELPER", item_size,
@@ -64,7 +64,7 @@ SYSCTL_LONG(_test, OID_AUTO, memguard_uma_helper_item_offset,
     "Virtual offset to seek to in the item to test memory access protection "
     "support");
 
-SYSCTL_PROC(_test, OID_AUTO, memguard_allocate, CTLTYPE_STRING|CTLFLAG_RW,
+SYSCTL_PROC(_test, OID_AUTO, memguard_uma_helper_allocate, CTLTYPE_STRING|CTLFLAG_RW,
     NULL, 0, sysctl_memguard_uma_helper_allocate, "A",
     "Allocate memory according to other related (size, number of attempts, "
     "overallocation)");
