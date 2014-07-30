@@ -38,6 +38,8 @@ sysctl_memguard_malloc_helper_allocate(SYSCTL_HANDLER_ARGS)
 			continue;
 		}
 		buf[slab_offset] = 'a';
+		printf("%s: scribbled on malloc buffer @ offset=%ld", __func__,
+		    slab_offset);
 		free(buf, M_MEMGUARD_HELPER);
 	}
 
