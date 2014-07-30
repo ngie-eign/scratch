@@ -90,6 +90,8 @@ sysctl_memguard_uma_helper_allocate(SYSCTL_HANDLER_ARGS)
 		}
 
 		buf[item_offset] = 'a';
+		printf("%s: scribbled on uma item @ offset=%ld", __func__,
+		    slab_offset);
 		np->buf = buf;
 
 		SLIST_INSERT_HEAD(&head, np, entries);
