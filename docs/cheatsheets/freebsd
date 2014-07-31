@@ -19,10 +19,11 @@ Getting FreeBSD ports to compile on FreeBSD 7 for pain and profit (directions wo
    # with libarchive and times(3), and gcc on the OS didn't support all of the
    # keywords that clang did (restrict for instance).
 
-   export CC=clang FORCE_PKG_REGISTER=1 MK_ICONV=no MK_TESTS=no MAKESYSPATH=/usr/share/mk NO_WARNING_PKG_INSTALL_EOL=1
+   export CC=clang FORCE_PKG_REGISTER=1 MK_ICONV=no MK_GCC=yes MK_GNUCXX=yes MK_SHARED_TOOLCHAIN=yes MK_TESTS=no MAKESYSPATH=/usr/share/mk NO_WARNING_PKG_INSTALL_EOL=1
 
-3. Turn off spawn.h/posix_spawn support in lib/libarchive/freebsd_config.h.
-4. Revert FreeBSD @ r252231 so sed will compile again.
-5. Install `usr.bin/bmake lib/lzma lib/libarchive lib/libedit usr.bin/sed usr.bin/tar`
-6. Remove RUN_DEPENDS for info in bsd.port.mk.
-7. Install `devel/autoconf devel/automake devel/m4`
+3. Install the latest version of gcc/binutils.
+4. Turn off spawn.h/posix_spawn support in lib/libarchive/freebsd_config.h.
+5. Revert FreeBSD @ r252231 so sed will compile again.
+6. Install `usr.bin/bmake lib/lzma lib/libarchive lib/libedit usr.bin/sed usr.bin/tar`
+7. Remove RUN_DEPENDS for info in bsd.port.mk.
+8. Install `devel/autoconf devel/automake devel/m4`
