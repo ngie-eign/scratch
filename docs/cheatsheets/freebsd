@@ -9,3 +9,20 @@ sh -c 'set -x; for i in `cd /dev/; ls da[0-9]* | grep -v s`; do gpart destroy -F
 Loading the usr-tests.md.xz mfsroot at boot:
 
 load -t mfs_root /usr-tests.md.xz
+
+Getting FreeBSD ports to compile on FreeBSD 7 for pain and profit (directions worked with CURRENT @ ~r267851):
+
+1. echo `'.include <bsd.own.mk>' > /usr/share/mk/bsd.own.mk`.
+2. Export the following variables:
+
+   # Not sure how to get things to work with gcc; ran into -Wshadow problems
+   # with libarchive and times(3), and gcc on the OS didn't support all of the
+   # keywords that clang did (restrict for instance).
+
+   export CC=clang FORCE_PKG_REGISTER=1 MK_ICONV=no MK_TESTS=no MAKESYSPATH=/usr/share/mk NO_WARNING_PKG_INSTALL_EOL=1
+
+3. Turn off spawn.h/posix_spawn support in lib/libarchive/freebsd_config.h.
+4. Revert FreeBSD @ r252231 so sed will compile again.
+5. Install `usr.bin/bmake lib/lzma lib/libarchive lib/libedit usr.bin/sed usr.bin/tar`
+6. Remove RUN_DEPENDS for info in bsd.port.mk.
+7. Install `devel/autoconf devel/automake devel/m4`
