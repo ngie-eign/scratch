@@ -12,7 +12,7 @@ load -t mfs_root /usr-tests.md.xz
 
 Getting FreeBSD ports to compile on FreeBSD 7 for pain and profit (directions worked with CURRENT @ ~r267851):
 
-1. echo `'.include <bsd.own.mk>' > /usr/share/mk/bsd.own.mk`.
+1. echo `'.include <bsd.own.mk>' > /usr/share/mk/src.opts.mk`.
 2. Export the following variables:
 
    # Not sure how to get things to work with gcc; ran into -Wshadow problems
