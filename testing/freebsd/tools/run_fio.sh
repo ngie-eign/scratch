@@ -13,8 +13,8 @@ sys.stdout.write(str(random.randrange(512, 10241)))'
 random_io_engine()
 {
 	$PYTHON -c 'import random, sys;
-rw_choices = "mmap posixaio psync pvsync sync vsync".split();
-sys.stdout.write(random.choice(rw_choices))'
+io_engine_choices = "mmap posixaio psync pvsync sync vsync".split();
+sys.stdout.write(random.choice(io_engine_choices))'
 }
 
 random_io_operation()
