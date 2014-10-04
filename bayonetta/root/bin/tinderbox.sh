@@ -2,4 +2,4 @@
 
 set -ex
 : ${JOBS=$(sysctl -n kern.smp.cpus)}
-make tinderbox JFLAG=$JOBS $*
+make tinderbox JFLAG="-j $JOBS" $*
