@@ -86,15 +86,26 @@ for prog in $PROGS; do
 	fi
 done
 
-PIDS=
-kill_kids()
+cleanup()
 {
-	echo "Will kill $PIDS"
+	trap "" EXIT INT TERM
+
+	cleanup_kids
+	cleanup_tmpdir
+}
+
+PIDS=
+cleanup_kids()
+{
+	[ -n "$PIDS" ] || return 0
+
+	echo "Will kill${PIDS}"
 	for pid in $PIDS; do
-		kill $pid || kill -9 $pid
+		kill $pid 2>/dev/null || kill -9 $pid
 	done
 }
-trap kill_kids EXIT INT TERM
+
+trap cleanup EXIT INT TERM
 
 i=0
 : ${NUM_TEST_PROCS=$(sysctl -n kern.smp.cpus)}
