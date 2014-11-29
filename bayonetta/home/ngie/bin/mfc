@@ -1,0 +1,16 @@
+#!/bin/sh
+
+from=$1; shift
+
+set -e
+svn up
+
+for i in $*; do
+	svn merge -c $i $from .
+done
+mfc_log $from $* > commit
+
+svn status
+
+echo
+cat commit
