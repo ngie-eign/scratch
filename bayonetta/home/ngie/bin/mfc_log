@@ -1,0 +1,18 @@
+#!/bin/sh
+
+error() {
+	echo "${0##*/}: ERROR: $*"
+	exit 1
+}
+
+from=$1; shift
+[ -n "$from" ] || error "from must be a non-zero length string"
+[ $# -ge 1 ] || error "you must provide at least one revision"
+
+revisions=$(echo r$* | sed -e 's/ / r/g' -e 's/rr/r/g' | tr ' ' '\012' | sort)
+echo "MFC $(echo ${revisions} | sed -e 's/ /,/g'):"
+[ $# -gt 1 ] && echo
+for rev in $revisions; do
+	[ $# -gt 1 ] && echo "${rev}:"
+	svn log -${rev} --limit 1 $from | sed -E -e "/$rev/d" -e '/\-{72}/d' -e '/^MFC after:/d' -e '/X-MFC with:/d' -e 's/^/  /g' -e 's/^  $//g'
+done
