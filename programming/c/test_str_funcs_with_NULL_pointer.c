@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-void
-segfault_handler(int signo)
+static void
+segfault_handler(int signo __attribute__((unused)))
 {
 
 	printf("Would have segfaulted\n");

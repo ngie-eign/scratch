@@ -1,0 +1,17 @@
+PROGS+=	memory_stress
+PROGS+=	note_usage
+PROGS+=	note_usage_with_debug
+PROGS+=	test_bss
+PROGS+=	test_str_funcs_with_NULL_pointer
+PROGS+=	test_unprivileged_negative_priority_with_nice
+
+PROG_VARS+=	DEBUG_FLAGS
+
+DEBUG_FLAGS.note_usage_with_debug+=	-g
+SRCS.note_usage_with_debug=	note_usage.c
+
+MAN=
+
+WARNS?=	6
+
+.include <bsd.progs.mk>

@@ -1,0 +1,11 @@
+This demo provides an idea of how one could use tests.txz from
+release CDs, etc if they're under a bit of a space crunch on
+their root media. The demo remounts the filesystem readonly after
+it's been populated with the files from usr-tests.txz .
+
+1. Run create_usr_tests_md.sh.
+2. Copy over usr-tests.size.txt and usr-tests.txz to /var
+3. Run ./modify_etc_fstab.sh as root.
+4. Run ./modify_etc_rc_conf.sh as root.
+5. Run 'service mdconfig start' and 'service mdconfig2 start'
+   as root, or reboot your machine.
