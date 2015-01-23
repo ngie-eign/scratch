@@ -1,7 +1,11 @@
 #!/bin/sh
 
 set -e
-mergemaster -p $*
+
+: ${DESTDIR=/}
+export DESTDIR
+
+sudo mergemaster -iU -p -m $PWD -D $DESTDIR
+$(dirname $0)/installkernel.sh || exit
 make installworld
-make installkernel
-mergemaster -iU $*
+sudo mergemaster -iU -m $PWD -D $DESTDIR
