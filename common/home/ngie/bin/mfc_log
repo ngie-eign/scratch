@@ -11,8 +11,15 @@ from=$1; shift
 
 revisions=$(echo r$* | sed -e 's/ / r/g' -e 's/rr/r/g' | tr ' ' '\012' | sort)
 echo "MFC $(echo ${revisions} | sed -e 's/ /,/g'):"
-[ $# -gt 1 ] && echo
+echo
 for rev in $revisions; do
-	[ $# -gt 1 ] && echo "${rev}:"
-	svn log -${rev} --limit 1 $from | sed -E -e "/$rev/d" -e '/\-{72}/d' -e '/^MFC after:/d' -e '/X-MFC with:/d' -e 's/^/  /g' -e 's/^  $//g'
+	svn log -${rev} --limit 1 $from | \
+	    sed -E -e "/^${rev} /s/\|/\(by/" \
+		   -e "/^${rev} /s/[ \t]*\|.*/\):/" \
+		   -e '/\-{72}/d' \
+		   -e '/^MFC after:/d' \
+		   -e '/X-MFC with:/d' \
+		   -e "s/^/  /g" \
+		   -e 's/^  $//g' \
+		   -e "/^  ${rev}/s/^  //"
 done
