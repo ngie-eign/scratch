@@ -10,7 +10,7 @@ revs=$(echo $* | sed -e 's/r//g' | tr ' ' '\n' | sort -nu)
 for i in $revs; do
 	svn merge -c $i $from .
 done
-mfc_log $from $revs > commit
+$(dirname $0)/mfc_log $from $revs > commit
 
 svn status
 

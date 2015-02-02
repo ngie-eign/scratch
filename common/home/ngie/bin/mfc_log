@@ -9,6 +9,7 @@ from=$1; shift
 [ -n "$from" ] || error "from must be a non-zero length string"
 [ $# -ge 1 ] || error "you must provide at least one revision"
 
+ssh_user=$(svn info . | grep ^URL: | sed -e 's,.*svn+ssh://,,' -e 's,@.*,,g')
 revisions=$(echo r$* | sed -e 's/ / r/g' -e 's/rr/r/g' | tr ' ' '\012' | sort)
 echo "MFC $(echo ${revisions} | sed -e 's/ /,/g'):"
 echo
@@ -16,6 +17,7 @@ for rev in $revisions; do
 	svn log -${rev} --limit 1 $from | \
 	    sed -E -e "/^${rev} /s/\|/\(by/" \
 		   -e "/^${rev} /s/[ \t]*\|.*/\):/" \
+		   -e "s/ \(by ${ssh_user}\):/:/" \
 		   -e '/\-{72}/d' \
 		   -e '/^MFC after:/d' \
 		   -e '/X-MFC with:/d' \
