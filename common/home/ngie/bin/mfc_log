@@ -10,18 +10,25 @@ from=$1; shift
 [ $# -ge 1 ] || error "you must provide at least one revision"
 
 ssh_user=$(svn info . | grep ^URL: | sed -e 's,.*svn+ssh://,,' -e 's,@.*,,g')
-revisions=$(echo r$* | sed -e 's/ / r/g' -e 's/rr/r/g' | tr ' ' '\012' | sort)
-echo "MFC $(echo ${revisions} | sed -e 's/ /,/g'):"
-echo
+rel_url=$(svn info $from | awk '/Relative URL:/ { print $NF }')
+[ "$rel_url" = ^/head ] && rel_url=C
+
+revisions=$(echo $* | tr ' ' '\n' | sort | tr '\n' ' ')
+echo "MF$rel_url $(echo r${revisions} | sed -e 's/ / r/g' -e 's/rr/r/g' -e 's/ /,/'):"
+[ $# -gt 1 ] && echo
 for rev in $revisions; do
-	svn log -${rev} --limit 1 $from | \
-	    sed -E -e "/^${rev} /s/\|/\(by/" \
-		   -e "/^${rev} /s/[ \t]*\|.*/\):/" \
+	svn log --incremental -c ${rev} $from | \
+	    sed -E -e "/^r${rev} /s/\|/\(by/" \
+		   -e "/^r${rev} /s/[ \t]*\|.*/\):/" \
 		   -e "s/ \(by ${ssh_user}\):/:/" \
-		   -e '/\-{72}/d' \
 		   -e '/^MFC after:/d' \
 		   -e '/X-MFC with:/d' \
-		   -e "s/^/  /g" \
-		   -e 's/^  $//g' \
-		   -e "/^  ${rev}/s/^  //"
+		   -e 's/^ *$//g' \
+		   -e "/^r${rev}/s/^//" \
+		   -e '/\-{72}/d' | \
+	if [ $# -eq 1 ]; then
+		sed -E -e "/^r${rev}:$/d"
+	else
+		cat
+	fi
 done

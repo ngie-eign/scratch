@@ -29,9 +29,16 @@ shift 2
 
 [ $# -gt 0 ]
 
+REVISIONS=$(echo $* | sed -e 's/r//g')
+MERGES=$(echo $REVISIONS | tr ' ' '\012' | grep -v '^-' | sort -nu)
+REVERSE_MERGES=$(echo $REVISIONS | tr ' ' '\n' | grep '^-' | sed -e 's/^-//g' | sort -nu)
+SORTED_REVISIONS=$(echo "$MERGES $REVERSE_MERGES" | tr ' ' '\n' | sort -nu)
+
 is_reverse_merge()
 {
-	local change
+	local change reverse_merge
+
+	change=$1
 
 	for reverse_merge in $REVERSE_MERGES
 	do
@@ -42,12 +49,9 @@ is_reverse_merge()
 	return 1
 }
 
-MERGES=$(echo $* | tr ' ' '\012' | grep -v ^- | sort -nu)
-REVERSE_MERGES=$(echo $* | tr ' ' '\012' | grep ^- | sed -e 's/^-//g' | sort -nu)
-
-for change in $(echo "$MERGES $REVERSE_MERGES" | tr ' ' '\012' | sort -nu)
+for change in $SORTED_REVISIONS
 do
-	if is_reverse_merge
+	if is_reverse_merge $change
 	then
 		change="-$change"
 	fi
