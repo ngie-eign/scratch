@@ -16,6 +16,7 @@ rel_url=$(svn info $from | awk '/Relative URL:/ { print $NF }')
 revisions=$(echo $* | tr ' ' '\n' | sort | tr '\n' ' ')
 echo "MF$rel_url $(echo r${revisions} | sed -e 's/ / r/g' -e 's/rr/r/g' -e 's/ /,/'):"
 [ $# -gt 1 ] && echo
+trap "rm -f commit.$$" EXIT INT TERM
 for rev in $revisions; do
 	svn log --incremental -c ${rev} $from | \
 	    sed -E -e "/^r${rev} /s/\|/\(by/" \
@@ -31,4 +32,6 @@ for rev in $revisions; do
 	else
 		cat
 	fi
-done | cat -s
+done | cat -s > commit.$$
+line_count=$(wc -l commit.$$ | awk '{ print $1 }')
+head -n $(( $line_count - 1 )) commit.$$
