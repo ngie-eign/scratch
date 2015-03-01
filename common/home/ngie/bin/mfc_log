@@ -31,4 +31,4 @@ for rev in $revisions; do
 	else
 		cat
 	fi
-done
+done | cat -s
