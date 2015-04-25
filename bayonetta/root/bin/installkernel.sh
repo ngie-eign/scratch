@@ -24,9 +24,10 @@ rev="${svn:+r$svn}$git"
 
 : ${DESTDIR=/}
 export DESTDIR
+: ${SRCCONF=/etc/src.conf}
 
 set -e
-for _kc in $(make -VKERNCONF)
+for _kc in $(make -VKERNCONF -f $SRCCONF)
 do
 	make installkernel INSTKERNNAME="$_kc.$rev" KERNCONF=$_kc
 done
