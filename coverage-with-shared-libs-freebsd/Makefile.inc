@@ -8,7 +8,6 @@ CFLAGS+=	--coverage
 # XXX: better automate this
 _CLANG_PRIVATE_LIBS!=	clang -print-search-dirs | grep libraries: | sed -e 's,.*=,,' -e 's,:.*,,g'
 LDADD+=		${_CLANG_PRIVATE_LIBS}/lib/freebsd/libclang_rt.profile-x86_64.a
-OBJS+=		${LIBPROFILE_RT}
 .elif ${COMPILER_TYPE} == "gcc"
 # XXX: this should be implied by --coverage according to gcc(1)
 LDADD+=		-lgcov
