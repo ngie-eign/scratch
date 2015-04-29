@@ -10,11 +10,11 @@ from=$1; shift
 [ $# -ge 1 ] || error "you must provide at least one revision"
 
 ssh_user=$(svn info . | grep ^URL: | sed -e 's,.*svn+ssh://,,' -e 's,@.*,,g')
-rel_url=$(svn info $from | awk '/Relative URL:/ { print $NF }')
-[ "$rel_url" = ^/head ] && rel_url=C
+rel_url=$(svn info $from | awk '/Relative URL:/ { print $NF }' | sed -e 's,^\^/,,g')
+[ "$rel_url" = "head" ] && rel_url=C
 
 revisions=$(echo $* | tr ' ' '\n' | sort | tr '\n' ' ')
-echo "MF$rel_url $(echo r${revisions} | sed -e 's/ / r/g' -e 's/rr/r/g' -e 's/ /,/'):"
+echo "MF$rel_url $(echo r${revisions} | sed -e 's/ / r/g' -e 's/rr/r/g' -e 's/ /,/g'):"
 [ $# -gt 1 ] && echo
 trap "rm -f commit.$$" EXIT INT TERM
 for rev in $revisions; do

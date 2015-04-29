@@ -1,11 +1,9 @@
-# Makefile for taking local customizations and ports and installing them by
+# Makefile for taking local customizations and packages and installing them by
 # default on the base system with minimal effort.
 #
 # Invoke like:
 #
-# sudo make HOME=/home/gcooper install
-#
-# Garrett Cooper, April 2012
+# sudo make HOME=/home/ngie install
 
 # SECTION: FreeBSD customized overlay
 
@@ -24,7 +22,7 @@ DOTFILES!=	find ./${HOME}/dot.* ../${HOST}${HOME}/dot.* -maxdepth 0
 ${HOME}/.shrc: Makefile
 	(cat /usr/share/skel/dot.shrc; echo; echo '[ -f $$HOME/.shrc-local ] && . $$HOME/.shrc-local') > $@
 
-EXCLUDE=	Makefile|PORTS|/dot\.*|${HOME}|/usr/src|-local\$$
+EXCLUDE=	Makefile|PACKAGES|/dot\.*|${HOME}|/scratch|/usr/src|-local\$$
 install-dotfiles: \
     ${HOME}/.shrc
 .for dir in ../${HOST}/ .
@@ -41,33 +39,15 @@ install-dotfiles: \
 .endif
 .endfor
 
-# SECTION: Ports installation
+# SECTION: Packages installation
 
-PORTS!=		grep -hv '\#' ../${HOST}/PORTS PORTS
+PACKAGES!=	grep -hv '\#' ../${HOST}/PACKAGES PACKAGES
 
-PORTSDIR?=	/usr/ports
-
-install-ports:
-.if !defined(NO_PORTS)
-.for port in ${PORTS}
-	cd ${PORTSDIR}/${port}; \
-	if ${MAKE} check-already-installed >/dev/null; then \
-		${MAKE} config-recursive \
-		    DISABLE_VULNERABILITIES=1; \
-		${MAKE} fetch-recursive \
-		    DISABLE_VULNERABILITIES=1; \
-	fi
-.endfor
-.for port in ${PORTS}
-	cd ${PORTSDIR}/${port}; \
-	if ${MAKE} check-already-installed >/dev/null; then \
-		echo "Building ${port}"; \
-		${MAKE} clean all deinstall install clean \
-		    DISABLE_VULNERABILITIES=1; \
-	fi
-.endfor
+install-packages:
+.if !defined(NO_PACKAGES) && !empty(PACKAGES)
+	pkg install -y ${PACKAGES}
 .endif
 
 install: \
     install-dotfiles \
-    install-ports
+    install-packages
