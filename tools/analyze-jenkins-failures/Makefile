@@ -1,5 +1,3 @@
-#!/bin/sh
-
 JENKINS_JOB_NAME=	FreeBSD_HEAD-tests
 JENKINS_JOB_URL=	https://jenkins.freebsd.org/job/${JENKINS_JOB_NAME}
 
