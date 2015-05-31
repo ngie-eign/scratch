@@ -1,6 +1,7 @@
 JENKINS_JOB_NAME=	FreeBSD_HEAD-tests
 JENKINS_JOB_URL=	https://jenkins.freebsd.org/job/${JENKINS_JOB_NAME}
 
+# Why 869? See: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=200546
 BUILD_START?=	869
 .ifndef BUILD_END
 BUILD_END!=	curl -s ${JENKINS_JOB_URL}/lastCompletedBuild/testReport/ | \
