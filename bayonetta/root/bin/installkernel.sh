@@ -69,16 +69,15 @@ if [ -n "$git_cmd" ] ; then
 	fi
 	git_b=`$git_cmd rev-parse --abbrev-ref HEAD`
 	if [ -n "$git_b" ] ; then
-		git="${git}(${git_b})"
+		git="${git}"
 	fi
 	if $git_cmd --work-tree=${SYSDIR}/.. diff-index \
 	    --name-only HEAD | read dummy; then
 		git="${git}-dirty"
 	fi
 fi
-
-[ -n "$svn" ] && rev="$svn"
-[ -n "$git" ] && rev="$git"
+git=$(echo -n "${git:-}" | sed -e 's, ,,g')
+svn=$(echo -n "${svn:-}" | sed -e 's, ,,g')
 
 : ${DESTDIR=/}
 export DESTDIR
@@ -87,5 +86,5 @@ export DESTDIR
 set -e
 for _kc in $(make -VKERNCONF -f $SRCCONF)
 do
-	make installkernel INSTKERNNAME="$_kc.$rev" KERNCONF=$_kc
+	make installkernel INSTKERNNAME="$_kc.${svn:-$svn}${git:-$git}" KERNCONF=$_kc
 done
