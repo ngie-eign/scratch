@@ -4,13 +4,13 @@ JENKINS_JOB_URL=	https://jenkins.freebsd.org/job/${JENKINS_JOB_NAME}
 # Why 869? See: https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=200546
 BUILD_START?=	869
 .ifndef BUILD_END
-BUILD_END!=	curl -s ${JENKINS_JOB_URL}/lastCompletedBuild/testReport/ | \
+BUILD_END!=	curl -s ${JENKINS_JOB_URL}/lastCompletedBuild/ | \
 		grep '<title>' | \
 		sed -e 's,.*<title>${JENKINS_JOB_NAME} \#,,g' \
-		    -e 's,Test Results.*</title>.*,,g'
+		    -e 's, .*</title>.*,,g'
 .endif
 
-BUILD_NUMBERS!=	seq ${BUILD_START} ${BUILD_END}
+BUILD_NUMBERS!=	seq ${BUILD_START} 1 ${BUILD_END}
 
 .for bnum in ${BUILD_NUMBERS}
 ${bnum}.xml:
