@@ -24,25 +24,30 @@
  OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  SUCH DAMAGE.
 
-Example:
-    kyua report | annotate_kyua_runs_with_date.py --start-time-format '%a %b %d %H:%M:%S %Y' --start-time 'Wed Apr 22 01:44:51 2015'
+Examples:
+
+    kyua report --results-filter failed | annotate_kyua_runs_with_date.py --start-time-format '%a %b %d %H:%M:%S %Y' --start-time 'Wed Apr 22 01:44:51 2015'
+
+    annotate_kyua_runs_with_date.py --start-time-format '%a %b %d %H:%M:%S %Y' --start-time 'Wed Apr 22 01:44:51 2015' results.txt
 """
 
 
-from datetime import datetime, timedelta
 import optparse
 import re
 import sys
 import time
 
+
+DEFAULT_DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
+
 def main(argv=None):
     parser = optparse.OptionParser(usage='usage: %prog [results.txt]')
-    parser.add_option('--output-date-format', default='%F %H:%M:%S',
+    parser.add_option('--output-date-format', default=DEFAULT_DATE_FORMAT,
                       help=('time format to use for time output (see '
                             'strftime(3) for more details)'))
     parser.add_option('--start-time', default=None,
                       help='the time kyua was started')
-    parser.add_option('--start-time-format', default='%F %H:%M:%S',
+    parser.add_option('--start-time-format', default=DEFAULT_DATE_FORMAT,
                       help=('time format to use for start time input (see '
                             'strftime(3) for more details)'))
     parser.add_option('--testcase-filter', dest='testcase_filter',
@@ -53,7 +58,7 @@ def main(argv=None):
 
     opts, args = parser.parse_args(argv)
 
-    if args:
+    if len(args) > 1:
         parser.error('spurious arguments: %r' % (args, ))
 
     if not opts.start_time:
@@ -70,10 +75,10 @@ def main(argv=None):
     time.strftime(output_date_format)
 
     try:
-        if len(args) == 0:
-            fd = sys.stdin
+        if args:
+            fd = open(args[0])
         else:
-            fd = open(test_output)
+            fd = sys.stdin
         output = fd.read()
     finally:
         fd.close()
