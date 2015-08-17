@@ -5,19 +5,16 @@
 #
 # sudo make HOME=/home/ngie install
 
-# SECTION: FreeBSD customized overlay
-
 .MAIN: install
 
 HOST!=	hostname | sed -E -e 's/\..*//g'
 
-.if empty(HOST)
-.error you must define HOST (could not be automatically divined)
-.elif !exists(../${HOST}/)
-.error directory for ${HOST} does not exist
+DIRS=	./
+.if !empty(HOST) && exists(../${HOST}/)
+DIRS+=	../${HOST}/
 .endif
 
-DOTFILES!=	find ./${HOME}/dot.* ../${HOST}${HOME}/dot.* -maxdepth 0
+DOTFILES!=	find ${DIRS:tw:C/$/${HOME}\/dot.*/g} -maxdepth 0
 
 ${HOME}/.shrc: Makefile
 	(cat /usr/share/skel/dot.shrc; echo; echo '[ -f $$HOME/.shrc-local ] && . $$HOME/.shrc-local') > $@
@@ -25,7 +22,7 @@ ${HOME}/.shrc: Makefile
 EXCLUDE=	Makefile|PACKAGES|/dot\.*|${HOME}|/scratch|/usr/src|-local\$$
 install-dotfiles: \
     ${HOME}/.shrc
-.for dir in ../${HOST}/ .
+.for dir in ${DIRS}
 	cd ${dir} && find . -type f | egrep -v "${EXCLUDE}" | \
 	    cpio -dumpv /
 .endfor
@@ -39,9 +36,7 @@ install-dotfiles: \
 .endif
 .endfor
 
-# SECTION: Packages installation
-
-PACKAGES!=	grep -hv '\#' ../${HOST}/PACKAGES PACKAGES
+PACKAGES!=	grep -hv '\#' ${DIRS:tw:C/$/PACKAGES/g}
 
 install-packages:
 .if !defined(NO_PACKAGES) && !empty(PACKAGES)
