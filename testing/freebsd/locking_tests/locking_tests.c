@@ -81,23 +81,7 @@ locking_tests_helper_proc(void *_lock)
 
 	/* 3.: DONE */
 
-	/**
-	 * 4. Make sure downgrading the wakes up the parent
-	 */
-	rc = lockmgr(lock, LK_SHARED, &locking_tests_sync_mtx);
-	KASSERT(rc == 0, ("LK_SHARED call in child failed: %d", rc));
-
 	sema_post(&locking_tests_sync_sem);
-
-	rc = lockmgr(lock, LK_UPGRADE, &locking_tests_sync_mtx);
-	KASSERT(rc == 0,
-	    ("LK_UPGRADE call in child failed: %d", rc));
-
-	sema_post(&locking_tests_sync_sem);
-
-	rc = lockmgr(lock, LK_DOWNGRADE, &locking_tests_sync_mtx);
-	KASSERT(rc == 0,
-	    ("LK_DOWNGRADE call in child failed: %d", rc));
 
 	/* All good! */
 	rc = 0;
@@ -135,7 +119,7 @@ run_locking_tests(void)
 
 	/* Upgrade the lock to LK_EXCLUSIVE via LK_UPGRADE */
 	rc = lockmgr(lock, LK_UPGRADE, &locking_tests_sync_mtx);
-	KASSERT(rc == 0, ("LK_UPGRADE call in child failed: %d", rc));
+	KASSERT(rc == 0, ("LK_UPGRADE call in parent failed: %d", rc));
 
 	rc = lockstatus(lock);
 	KASSERT(rc == LK_EXCLUSIVE,
@@ -159,7 +143,7 @@ run_locking_tests(void)
 	    ("LK_RELEASE call in parent failed: %d", rc));
 
 	/**
-	 * 3. Make sure the child was able to upgrade the shared lock to an
+	 * 2. Make sure the child was able to upgrade the shared lock to an
 	 *    exclusive lock
 	 */
 	sema_wait(&locking_tests_sync_sem);
@@ -168,22 +152,12 @@ run_locking_tests(void)
 	    ("not locked exclusively by child: %d", rc));
 
 	/**
-	 * 4. Make sure the lock was released by the child.
+	 * 3. Make sure the lock was released by the child.
 	 */
 	sema_wait(&locking_tests_sync_sem);
+
 	rc = lockstatus(lock);
 	KASSERT(rc == 0, ("lock is already owned: %d", rc));
-
-	sema_wait(&locking_tests_sync_sem);
-
-	rc = lockmgr(lock, LK_SHARED, &locking_tests_sync_mtx);
-	KASSERT(rc == 0, ("LK_SHARED call in parent failed: %d", rc));
-
-	/**
-	 * 5. Make sure we get woken back up when the lock is LK_DOWNGRADED.
-	 */
-
-
 
 	/* All good! */
 	rc = 0;
