@@ -83,8 +83,10 @@ svn=$(echo -n "${svn:-}" | sed -e 's, ,,g')
 export DESTDIR
 : ${SRCCONF=/etc/src.conf}
 
+KERNCONF=$(make -VKERNCONF -f $SRCCONF)
+KERNCONF=${KERNCONF:-GENERIC}
 set -e
-for _kc in $(make -VKERNCONF -f $SRCCONF)
+for _kc in ${KERNCONF}
 do
 	make installkernel INSTKERNNAME="$_kc.${svn:-$svn}${git:-$git}" KERNCONF=$_kc
 done
