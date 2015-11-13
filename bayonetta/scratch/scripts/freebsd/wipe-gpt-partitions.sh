@@ -20,7 +20,23 @@ set -e
 # We'll error out below with diskinfo if this fails
 gpart destroy -F $disk || :
 
-# Avoid precision error dividing by 1MB and ensuring
+# Recovery partitions are fun when wiping out disks. If FreeBSD finds the
+# recovery partition, but doesn't find a correct partition table, or finds
+# a corrupt partition table at the beginning sectors of the disk, it will
+# try and use whatever the recovery partition says should be there, which
+# could be horribly wrong if the disk was used after the fact
+#
+# This script's purpose is to wipe out GPT partitions, so we want to make
+# sure the primary and recovery partition tables are toast.
+#
+# The oseek is there to avoid having to wipe the entire disk to get to the
+# recovery partition (which can take a long time on large spinning disks)
+#
+# Relevant reading:
+# - http://serverfault.com/questions/666886/gpt-partition-errors-on-boot-zfs-freebsd
+# - https://forums.freenas.org/index.php?threads/gpt-table-is-corrupt-or-invalid-error-on-bootup.12171/
+
+# Avoid precision error dividing by 1MB
 mediasize_in_bytes=$(diskinfo -v $diskdev | awk '/mediasize in bytes/ { print $1 }')
 oseek_in_mb=$(( $(( $mediasize_in_bytes - 10 * $MB )) / $MB ))
 
