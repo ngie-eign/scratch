@@ -20,7 +20,7 @@ trap "rm -f commit.$$" EXIT INT TERM
 for rev in $revisions; do
 	svn log --incremental -c ${rev} $from | \
 	    sed -E -e "/^r${rev} /s/\|/\(by/" \
-		   -e "/^r${rev} /s/[ \t]*\|.*/\):/" \
+		   -e "/^r${rev} /s/[[:space:]]*\|.*/\):/" \
 		   -e "s/ \(by ${ssh_user}\):/:/" \
 		   -e '/^MFC after:/d' \
 		   -e '/X-MFC with:/d' \
