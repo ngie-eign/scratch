@@ -1,16 +1,18 @@
-FreeBSD and POSIX compliance issues: http://lists.freebsd.org/pipermail/freebsd-standards/2010-April/001936.html
+== FreeBSD and POSIX compliance issues ==
 
-Deleting partitions:
+http://lists.freebsd.org/pipermail/freebsd-standards/2010-April/001936.html
+
+== Deleting partitions ==
 
 sh -c 'set -x; for i in `cd /dev/; ls *p*`; do echo gpart delete -i ${i##*p} ${i%p*}; done'
 sh -c 'set -x; for i in `cd /dev/; ls ad*p*`; do echo gpart delete -i ${i##*p} ${i%p*}; done'
 sh -c 'set -x; for i in `cd /dev/; ls da[0-9]* | grep -v s`; do gpart destroy -F $i; done'
 
-Loading the usr-tests.md.xz mfsroot at boot:
+== Loading the usr-tests.md.xz mfsroot at boot ==
 
 load -t mfs_root /usr-tests.md.xz
 
-Getting FreeBSD ports to compile on FreeBSD 7 for pain and profit (directions worked with CURRENT @ ~r267851):
+== Getting FreeBSD ports to compile on FreeBSD 7 for pain and profit (directions worked with CURRENT @ ~r267851) ==
 
 1. echo `'.include <bsd.own.mk>' > /usr/share/mk/src.opts.mk`.
 2. Export the following variables:
