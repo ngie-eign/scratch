@@ -32,7 +32,11 @@ if not os.path.exists(test_results_database):
         cursor = conn.cursor()
         cursor.execute(CREATE_RESULTS_TABLE_SQL)
 
-root = ET.parse(xml_file)
+try:
+    root = ET.parse(xml_file)
+except ET.ParseError:
+    sys.stderr.write('%s is malformed XML\n' % (xml_file, ))
+    sys.exit(0)
 failures = []
 for a_node in root.iter('a'):
     if (a_node.attrib and
