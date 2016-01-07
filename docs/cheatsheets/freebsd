@@ -29,3 +29,22 @@ load -t mfs_root /usr-tests.md.xz
 6. Install `usr.bin/bmake lib/lzma lib/libarchive lib/libedit usr.bin/sed usr.bin/tar`
 7. Remove RUN_DEPENDS for info in bsd.port.mk.
 8. Install `devel/autoconf devel/automake devel/m4`
+
+== Figuring out how many commits a FreeBSD developer has using git between two timeframes ==
+
+Requirements:
+- Commit notes for SVN revision numbers.
+- The `upstream` remote be set [to github.com/freebsd/freebsd.git or an
+  equivalent].
+
+author=ngie
+branches='master stable/10 stable/9'
+start_date='2015-09-01'
+end_date='2016-01-01' # This is inclusive
+
+git fetch upstream;
+for branch in master $branches; do
+    # Commit notes
+    num_commits=$(git log --author $author --pretty=format:"%ai %N" --after="$start_date" --before="$end_date" upstream/$branch | sed -e '/^[:space:]*$/d' | wc -l);
+    printf "%24s: %4d\n" "$branch" "$num_commits";
+done
