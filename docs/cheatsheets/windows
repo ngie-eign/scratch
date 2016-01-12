@@ -1,10 +1,11 @@
-Offline registry editor password tool:
+== Offline registry editor password tool ==
+
 http://home.eunet.no/~pnordahl/ntpasswd/
 
 Deleting email in Outlook after X days:
 http://superuser.com/questions/549565/deleting-emails-from-a-sender-after-x-days
 
-Getting version details in VBS:
+== Getting version details in VBS ==
 
 strComputer = "."
  Set objWMIService = GetObject("winmgmts:\\" & strComputer & "\root\cimv2")
