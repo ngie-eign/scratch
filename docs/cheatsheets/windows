@@ -21,3 +21,20 @@ strComputer = "."
 
 http://msdn.microsoft.com/en-us/library/microsoft.windowsserversolutions.common.devices.operatingsystemproperty_properties.aspx
 http://stackoverflow.com/questions/545666/how-to-translate-ms-windows-os-version-numbers-into-product-names-in-net
+
+== Backdooring Windows via pstools ==
+
+This is helpful when needing to get RDP access when WMI is on, but not
+remote registry:
+
+https://technet.microsoft.com/en-us/sysinternals/psexec.aspx
+http://ares.gobien.be:8080/2012/01/enable-remote-desktop-remotely-with-psexec
+
+Example (this uses the deprecated "netsh firewall" command):
+
+Replace "\\machinename" a UNC syntax compatible machine name, e.g.
+"\\192.168.99.254" or "\\MACHINE"
+
+  psexec \\machinename reg add "hklm\system\currentcontrolset\control\terminal server" /f /v fDenyTSConnections /t REG_DWORD /d 0
+  psexec \\machinename netsh firewall set service remotedesktop enable
+  psexec \\machinename netsh firewall set service remoteadmin enable
