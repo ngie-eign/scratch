@@ -88,5 +88,16 @@ KERNCONF=${KERNCONF:-GENERIC}
 set -e
 for _kc in ${KERNCONF}
 do
-	make installkernel INSTKERNNAME="$_kc.${svn:-$svn}${git:-$git}" KERNCONF=$_kc
+	instkernname=$_kc.${svn:-$svn}${git:-$git}
+	make installkernel INSTKERNNAME="$instkernname" KERNCONF=$_kc
 done
+if [ -n "${DEFAULT_KERNCONF}" ]; then
+	default_kern_name=${DEFAULT_KERNCONF}.${svn:-$svn}${git:-$git}
+
+	if [ ! -d "${DESTDIR}/boot/${default_kern_name}" ]; then
+		echo "${default_kern_name} not installed at ${DESTDIR}/boot/"
+		exit 1
+	fi
+
+	ln -sfh ${default_kern_name} ${DESTDIR}/boot/kernel
+fi
