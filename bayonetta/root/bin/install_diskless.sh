@@ -8,9 +8,9 @@ if [ "${DESTDIR:-/}" = "/" ]; then
 fi
 
 if [ -d "$DESTDIR" ]; then
-	rm -Rf $DESTDIR || :
+	rm -xRf $DESTDIR || :
 	chflags -R 0 $DESTDIR || :
-	rm -Rf $DESTDIR
+	rm -xRf $DESTDIR
 fi
 
 export PATH=$PATH:$(dirname $0)
@@ -36,6 +36,7 @@ sshd_enable="YES"
 EOF
 
 echo -n abcd1234 | pw useradd -R ${DESTDIR} unprivileged -h 0 -m -G wheel
+env DEFAULT_ALWAYS_YES=1 pkg -c ${DESTDIR} install -y ipmitool sudo
 
 CONF=${DESTDIR}/conf
 BASE=${CONF}/base
