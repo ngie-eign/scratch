@@ -36,6 +36,8 @@ sshd_enable="YES"
 EOF
 
 echo -n abcd1234 | pw useradd -R ${DESTDIR} unprivileged -h 0 -m -G wheel
+cp /etc/resolv.conf ${DESTDIR}/etc/resolv.conf
+trap "rm ${DESTDIR}/etc/resolv.conf" EXIT INT TERM
 env DEFAULT_ALWAYS_YES=1 pkg -c ${DESTDIR} install -y ipmitool sudo
 
 CONF=${DESTDIR}/conf
