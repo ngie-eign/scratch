@@ -1,1 +1,62 @@
-Commands for setting up IPMI on Dells (ipmitool-devel post): http://www.mail-archive.com/ipmitool-devel@lists.sourceforge.net/msg01598.html
+= Setting up IPMI using ipmitool =
+
+This is roughly based on http://sourceforge.net/mailarchive/message.php?msg_id=26913861 .
+
+# Connect the management interface to the network before powering your machine on if you have a dedicated interface for it; if not, connect to the first onboard interface on the chassis.
+# Boot your OS.
+# Load the ipmi kernel module for the system (kldload ipmi for FreeBSD, modprobe ipmi for Linux, etc).
+
+'''Notes''':
+* The following blurb sets your machine's BMC up to talk on a 192.168.20.0/24 network, where the gateway is 192.168.20.1 and the IP address it can be accessed at is 192.168.20.2. You can substitute 'ipsrc static' with 'ipsrc dhcp' if you  wish to use DHCP.
+* Adjust the following settings to meet your needs, and see the ipmitool manpage for more details.
+* You may have to power off your machine and disconnect all power after issuing the following commands if the BMC is unpingable via the configured address below (192.168.20.2, etc).
+
+Setting up the BMC with a static address (192.168.20.2/24 and a default gateway of 192.168.20.1):
+
+ ipmitool lan set 1 ipsrc static
+ ipmitool lan set 1 ipaddr 192.168.20.2
+ ipmitool lan set 1 netmask 255.255.255.0
+ ipmitool lan set 1 defgw ipaddr 192.168.20.1
+
+Setting up the BMC with a dynamic address:
+
+ ipmitool lan set 1 ipsrc dhcp
+
+The rest of the setup steps are as follows:
+
+ # The user id for the administrator account. See the product specific BMC spec for
+ # the implementation; it may vary.
+ ADMIN_ACCOUNT_USER_ID=2
+ ADMIN_ACCOUNT_PASSWORD="ADMIN"
+ ADMIN_ACCOUNT_USERNAME="ADMIN"
+ # See the "user priv" section under ipmitool(1) for more details
+ readonly ADMINISTRATOR_PRIV=4
+ # The unique channel number to talk to the BMC; see:
+ # https://www.thomas-krenn.com/en/wiki/IPMI_Basics#Channel_Model
+ readonly IPMI_CHANNEL=1
+ # turn on lan access
+ ipmitool lan set $IPMI_CHANNEL access on
+ # sleeping 1 second is required as the first command might not always work
+ ipmitool lan set $IPMI_CHANNEL access  on
+ # Setup necessary auth methods
+ ipmitool lan set $IPMI_CHANNEL auth USER "MD2,MD5"
+ ipmitool lan set $IPMI_CHANNEL auth OPERATOR "MD2,MD5"
+ ipmitool lan set $IPMI_CHANNEL auth ADMIN "MD2,MD5"
+ ipmitool lan set $IPMI_CHANNEL auth CALLBACK "MD2,MD5"
+ # Allow the BMC to be pingable
+ ipmitool lan set $IPMI_CHANNEL arp respond on
+ # Let the BMC generate ARP packets
+ ipmitool lan set $IPMI_CHANNEL arp generate on
+ ipmitool user set name $ADMIN_ACCOUNT_USER_ID $ADMIN_ACCOUNT_USERNAME
+ # Set the administrator account password
+ ipmitool user set password $ADMIN_ACCOUNT_USER_ID "$ADMIN_ACCOUNT_PASSWORD"
+ # Give the account administrator account on the designated IPMI channel.
+ # NB: This is likely redundant.
+ ipmitool user priv $ADMIN_ACCOUNT_USER_ID $ADMINISTRATOR_PRIV $IPMI_CHANNEL
+ # Enable the adminstrator account.
+ ipmitool user enable $ADMIN_ACCOUNT_USER_ID
+ # Turn on serial over lan (SOL)
+ #
+ # NB: This more often than not fails under FreeBSD. The failure as far as I
+ # can tell this is benign.
+ ipmitool sol set enabled true
