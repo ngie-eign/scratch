@@ -37,7 +37,8 @@ The rest of the setup steps are as follows:
  # turn on lan access
  ipmitool lan set $IPMI_CHANNEL access on
  # sleeping 1 second is required as the first command might not always work
- ipmitool lan set $IPMI_CHANNEL access  on
+ sleep 1
+ ipmitool lan set $IPMI_CHANNEL access on
  # Setup necessary auth methods
  ipmitool lan set $IPMI_CHANNEL auth USER "MD2,MD5"
  ipmitool lan set $IPMI_CHANNEL auth OPERATOR "MD2,MD5"
