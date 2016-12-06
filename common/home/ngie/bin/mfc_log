@@ -24,8 +24,8 @@ for rev in $revisions; do
 		   -e "s/ \(by ${ssh_user}\):/:/" \
 		   -e '/^MFC after:/d' \
 		   -e '/Differential Revision:/d' \
-		   -e '/(Reported|Reviewed|Sponsored) by:/d' \
-		   -e '/X-MFC with:/d' \
+		   -e '/(Approved|Reported|Reviewed|Sponsored|Submitted) by:/d' \
+		   -e '/X-MFC.*with:/d' \
 		   -e 's/^ *$//g' \
 		   -e "/^r${rev}/s/^//" \
 		   -e '/\-{72}/d' | \
