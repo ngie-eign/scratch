@@ -29,3 +29,19 @@ $ git checkout -b <branch> remotes/origin/<branch>
 
 http://book.git-scm.com/4_undoing_in_git_-_reset,_checkout_and_revert.html
 http://stackoverflow.com/questions/2389361/git-undo-a-merge
+
+Dumping an old repository to a new repository under a subdirectory, maintaining
+all of the commit history:
+
+$ cd /old/checkout
+# Dump all patches for the commits from the start of time to `HEAD`
+# XXX: does this work with binaries?
+$ git format-patch --root HEAD
+
+$ cd /new/checkout
+# Start fresh
+$ git am --abort
+$ git reset --hard
+# Apply all patches in sequence; abort if needed
+$ find -s /old/checkout/ -name \*.patch -exec git am --directory=new/subdir {} \;
+[ $? -ne 0 ] && git am --abort
