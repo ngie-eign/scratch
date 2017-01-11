@@ -3,3 +3,4 @@ Looking up commit stats via git: http://stackoverflow.com/questions/1486819/whic
 http://stackoverflow.com/questions/1459150/how-to-undo-git-commit-amend-done-instead-of-git-commit
 git/hg -> CVS: http://stackoverflow.com/questions/584522/how-to-export-revision-history-from-mercurial-or-git-to-cvs/586225#586225
 CVS <-> git: http://www.oak.homeunix.org/~marcel/blog/2009/06/03/tracking-cvs-with-git-using-cvs2git
+Setting up per-origin identity policy handling: http://stackoverflow.com/questions/4220416/can-i-specify-multiple-users-for-myself-in-gitconfig
