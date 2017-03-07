@@ -8,4 +8,5 @@ export DESTDIR
 mergemaster -iU -p -m $PWD -D $DESTDIR
 $(dirname $0)/installkernel.sh || exit
 make installworld
-mergemaster -iU -m $PWD -D $DESTDIR
+etcupdate -s $PWD -D $DESTDIR -F
+etcupdate -s $PWD -D $DESTDIR -F resolve
