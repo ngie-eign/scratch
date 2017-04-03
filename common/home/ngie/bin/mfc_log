@@ -5,20 +5,24 @@ error() {
 	exit 1
 }
 
+if ! svn=$(command -v svn); then
+	svn=svnlite
+fi
+
 from=$1; shift
 [ -n "$from" ] || error "from must be a non-zero length string"
 [ $# -ge 1 ] || error "you must provide at least one revision"
 
-ssh_user=$(svn info . | grep ^URL: | sed -e 's,.*svn+ssh://,,' -e 's,@.*,,g')
-rel_url=$(svn info $from | awk '/Relative URL:/ { print $NF }' | sed -e 's,^\^/,,g')
+ssh_user=$($svn info . | grep ^URL: | sed -e 's,.*svn+ssh://,,' -e 's,@.*,,g')
+rel_url=$($svn info $from | awk '/Relative URL:/ { print $NF }' | sed -e 's,^\^/,,g')
 [ "$rel_url" = "head" ] && rel_url=C
 
 revisions=$(echo $* | tr ' ' '\n' | sort | tr '\n' ' ')
-echo "MF$rel_url $(echo r${revisions} | sed -e 's/ / r/g' -e 's/rr/r/g' -e 's/ /,/g'):"
+echo "MF$rel_url $(echo r${revisions} | sed -e 's/ / r/g' -e 's/rr/r/g' -e 's/ /,/g' | sort -nu):"
 [ $# -gt 1 ] && echo
 trap "rm -f commit.$$" EXIT INT TERM
 for rev in $revisions; do
-	svn log --incremental -c ${rev} $from | \
+	$svn log --incremental -c ${rev} $from | \
 	    sed -E -e "/^r${rev} /s/\|/\(by/" \
 		   -e "/^r${rev} /s/[[:space:]]*\|.*/\):/" \
 		   -e "s/ \(by ${ssh_user}\):/:/" \
