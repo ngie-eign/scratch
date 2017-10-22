@@ -13,7 +13,7 @@ def em_obfuscate(username, domain):
 
 # Email logging settings.
 SITE_ADMINS = map(lambda x: em_obfuscate(x[0], x[1]), [
-                   ('garrett.cooper', 'zonarsystems.com'),
+                   ('yaneurabeya', 'gmail.com'),
                   ])
 SITE_HTTP_LISTEN_ADDRESS = '0.0.0.0'
 SITE_HTTP_LISTEN_PORT = 80

@@ -26,7 +26,7 @@ $ sqlite3.exe --version
 (this is the most likely answer, but I wanted to be sure), or is this
 by design?
 Thank you!
--Garrett
+-Ngie
 
 From: Igor Tandetnik
 

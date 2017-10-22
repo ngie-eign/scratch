@@ -26,7 +26,7 @@ nntp-server=
 
 # Path of (local or remote) INBOX, e.g. ={mail.somewhere.edu}inbox
 # Normal Unix default is the local INBOX (usually /usr/spool/mail/$USER).
-inbox-path={mail.google.com:993/novalidate-cert/ssl/user=yanegomi@gmail.com}inbox
+inbox-path={mail.google.com:993/novalidate-cert/ssl/user=yaneurabeya@gmail.com}inbox
 
 # List of folder pairs; the first indicates a folder to archive, and the
 # second indicates the folder read messages in the first should

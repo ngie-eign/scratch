@@ -1,7 +1,7 @@
 """
 Logger module
 
-.. moduleauthor:: Garrett Cooper <garrett.cooper {at} {DONT-SPAM-ME} {dot} zonarsystems.com>
+.. moduleauthor:: Ngie Cooper <yaneurabeya@gmail.com>
 .. date: March 2014
 """
 

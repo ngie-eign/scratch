@@ -10,7 +10,7 @@ PORTVERSION=	3.3.2
 CATEGORIES=	net ipv6
 MASTER_SITES=	http://www.tahi.org/release/v6eval/
 
-MAINTAINER=	yanegomi@gmail.com
+MAINTAINER=	yaneurabeya@gmail.com
 COMMENT=	IPv6 Conformance Test Platform
 
 RUN_DEPENDS=	${SITE_PERL}/Expect.pm:${PORTSDIR}/lang/p5-Expect

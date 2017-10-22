@@ -2,7 +2,7 @@
 """
 A complex-ish mox test example.
 
-.. moduleauthor: Garrett Cooper
+.. moduleauthor: Ngie Cooper
 .. date: April 2014
 """
 

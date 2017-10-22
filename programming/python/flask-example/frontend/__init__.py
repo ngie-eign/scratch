@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-__author__ = "Garrett Cooper <garrett.cooper@zonarsystems.com>"
+__author__ = "Ngie Cooper <yaneurabeya@gmail.com>"
 __date__ = "$Date$"
 __license__ = ""
 __version_info__ = (0, 0, 1)

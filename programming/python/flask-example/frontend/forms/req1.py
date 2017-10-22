@@ -2,7 +2,7 @@
 """
 Request Handler # 1
 
-Garrett Cooper, October 2013
+Ngie Cooper, October 2013
 """
 
 import time

@@ -8,10 +8,10 @@ Sort of ripped from FreeNAS 8 (gui.common.system).
 Example:
 
 echo 'hello world!' | \
-     python sendmail.py -d zonarsystems.com -m mail.zonarsystems.com -p 587 \
+     python sendmail.py -d gmail.com -m mail.zonarsystems.com -p 587 \
                         -s 'Hello world'
 
-Garrett Cooper, October 2013
+Ngie Cooper, October 2013
 """
 
 from email.mime.multipart import MIMEMultipart

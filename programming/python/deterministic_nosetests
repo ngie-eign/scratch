@@ -3,7 +3,7 @@
 Wrapper around nose to set the random seed to something deterministic before
 running the tests.
 
-Garrett Cooper, February 2014
+Ngie Cooper, February 2014
 """
 
 import os
