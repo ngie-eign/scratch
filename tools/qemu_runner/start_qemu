@@ -1,0 +1,86 @@
+#!/bin/sh
+
+set -eu
+
+# Build network configuration arguments from the config file.
+#
+# It populates the command line for qemu with `-net nic[,...]`, etc. VMs can
+# specify per-NIC configuration via $nic_<n>_options, e.g. $nic_1_options for
+# NIC # 1. See man qemu for more details on what's accepted via `-net'.
+build_network_args()
+{
+	local i network_args nic_options
+
+	set +u
+
+	i=1
+	network_args="-net none"
+	while [ $i -le $network_interfaces ]
+	do
+		nic_options=$(eval echo \$nic_${i}_options)
+		if [ -n "$nic_options" ]
+		then
+			nic_options=",$nic_options"
+		fi
+		network_args="$network_args -net nic,model=${nic_model}${nic_options} -net user"
+
+		: $(( i += 1 ))
+	done
+
+	set -u
+	echo $network_args
+}
+
+readonly TAP=$VM_DIR/tap
+
+create_tap()
+{
+	local i tap
+
+	tap=$(get_tap)
+	if [ -z "$tap" ]
+	then
+		i=0
+		while ! /etc/qemu-ifup tap$i
+		do
+			: $(( i += 1 ))
+		done
+		tap=tap$i
+	fi
+	echo $tap > $TAP
+}
+
+get_tap()
+{
+	cat $TAP
+}
+
+usage()
+{
+	cat <<EOF
+usage: ${0##*/} [-i iso-file]
+EOF
+}
+
+cli_start_args=
+while getopts 'i:' ch
+do
+	case "$ch" in
+	*i*)
+		cli_start_args="$cli_start_args -cdrom $OPTARG -boot once=d"
+		;;
+	*)
+		usage
+		;;
+	esac
+done
+shift $(( $OPTIND - 1 ))
+
+. ${0%/*}/defaults
+. $VM_DIR/conf
+
+start_args="$cli_start_args $(build_network_args) $start_args"
+
+create_tap
+$QEMU -drive file=$disk_file $start_args
+sudo /etc/qemu-ifdown $(get_tap)
