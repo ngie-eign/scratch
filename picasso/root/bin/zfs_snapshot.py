@@ -25,6 +25,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 from __future__ import print_function
+from __future__ import unicode_literals
+
 import argparse
 import shlex
 import subprocess
@@ -47,8 +49,11 @@ def zfs(arg_str, fake=False):
     if fake:
         print('Would execute: %s %s' % (ZFS, arg_str, ))
         return ''
-    return str(subprocess.check_output([ZFS] + shlex.split(arg_str)),
-               'utf-8')
+    output = subprocess.check_output([ZFS] + shlex.split(arg_str))
+    try:
+        return str(output, encoding='utf-8')
+    except TypeError:
+        return output
 
 
 def create_snapshot(vdev, date_format):
