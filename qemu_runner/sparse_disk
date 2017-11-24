@@ -1,8 +1,0 @@
-#!/bin/sh
-
-set -eu
-
-. ${0%/*}/defaults
-. $VM_DIR/conf
-
-qemu-img create -f qcow2 $disk_file $disk_size
