@@ -1,9 +1,0 @@
---- script/pmod/Makefile	2012-10-06 15:24:00.955739075 -0700
-+++ script/pmod/Makefile	2012-10-06 15:25:11.980742298 -0700
-@@ -1,2 +1,5 @@
--SUBDIR=V6evalTool V6evalRemote V6evalCommon
-+# Prefer the copy of V6evalRemote in net/v6eval-remotes as it's more
-+# complete and slightly less buggy.
-+#SUBDIR=V6evalTool V6evalRemote V6evalCommon
-+SUBDIR=V6evalTool V6evalCommon
- .include <bsd.subdir.mk>
