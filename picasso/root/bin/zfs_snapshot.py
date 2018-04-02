@@ -210,11 +210,14 @@ def main(args=None):
 
 
     def period_type(optarg):
-        """Validate --period to ensure that the value passed is valid."""
+        """Validate --snapshot-period to ensure that the value passed is valid."""
 
-        value = optarg
-        mapping_names = [mapping[0].lower() for mapping in snapshot_mappings]
-        return mapping_names.index(value)
+        value = optarg.lower()
+        for i, mapping_tuple in enumerate(snapshot_mappings):
+            if mapping_tuple[0] == value:
+                return i
+        raise argparse.ArgumentError('Invalid --snapshot-period: '
+                                     '{}'.format(optarg))
 
 
     def prefix_type(optarg):
@@ -239,31 +242,26 @@ def main(args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--lifetime',
-                        dest='lifetime',
                         help=('lifetime (number of snapshots) to keep of a '
-                              'vdev; is "period" specific'),
+                              'vdev; the value is relative to the number of '
+                              '"periods".'),
                         type=lifetime_type)
     parser.add_argument('--snapshot-period',
-                        choices=[mapping[0] for mapping in snapshot_mappings],
                         default='hour',
-                        dest='period',
                         help=('period with which to manage snapshot policies '
                               'with'),
                         type=period_type)
     parser.add_argument('--snapshot-prefix',
                         default='auto',
-                        dest='prefix',
                         help='prefix to add to a snapshot',
                         type=prefix_type)
     parser.add_argument('--recursive',
                         action='store_true',
-                        dest='recursive',
                         help='create and destroy snapshots recursively')
     parser.add_argument('--snapshot-suffix',
                         default='',
-                        dest='snapshot_suffix',
                         help=('suffix to add to the end of the snapshot; '
-                              'defaults to the first character of the period'))
+                              'defaults to the strdate(3)-format qualifier'))
     parser.add_argument('--vdev',
                         action='append',
                         default=[],
@@ -274,14 +272,14 @@ def main(args=None):
     opts = parser.parse_args(args)
 
     date_format = SEPARATOR.join(['%' + snapshot_mappings[i][-1]
-                                  for i in range(opts.period+1)])
+                                  for i in range(opts.snapshot_period+1)])
 
     snapshot_cutoff = list(time.localtime())
-    struct_tm_offset = snapshot_mappings[opts.period][1]
+    struct_tm_offset = snapshot_mappings[opts.snapshot_period][1]
     if opts.lifetime:
         lifetime = opts.lifetime
     else:
-        lifetime = snapshot_mappings[opts.period][2]
+        lifetime = snapshot_mappings[opts.snapshot_period][2]
     snapshot_cutoff[struct_tm_offset] -= lifetime
 
     now = time.localtime()
@@ -289,9 +287,10 @@ def main(args=None):
     if opts.snapshot_suffix:
         snapshot_suffix = opts.snapshot_suffix
     else:
-        snapshot_suffix = snapshot_mappings[opts.period][0][0]
+        snapshot_suffix = snapshot_mappings[opts.snapshot_period][-1][0]
 
-    date_format = '%s-%s%s' % (opts.prefix, date_format, snapshot_suffix, )
+    date_format = '%s-%s%s' % (opts.snapshot_prefix, date_format,
+                               snapshot_suffix, )
 
     if opts.vdevs:
         vdevs = opts.vdevs
