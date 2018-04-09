@@ -1,7 +1,7 @@
 """
 Logger module
 
-.. moduleauthor:: Ngie Cooper <yaneurabeya@gmail.com>
+.. moduleauthor:: Enji Cooper <yaneurabeya@gmail.com>
 .. date: March 2014
 """
 

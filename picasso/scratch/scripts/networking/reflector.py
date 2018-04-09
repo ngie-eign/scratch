@@ -2,7 +2,7 @@
 """
 Simple reflection module with verification support
 
-Copyright (c) 2012, EMC Corporation.
+Copyright (c) 2012, Enji Cooper.
 All rights reserved.
 
 Redistribution and use in source and binary forms are permitted
@@ -17,7 +17,7 @@ THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR
 IMPLIED WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 
-Ngie Cooper, August 2012
+Enji Cooper, August 2012
 """
 
 import atexit

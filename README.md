@@ -1,3 +1,3 @@
-Scratch space for me (yaneurabeya)
+Scratch space for me (ngie-eign)
 
-Original URL: https://github.com/yaneurabeya/scratch/
+Original URL: https://github.com/ngie-eign/scratch/

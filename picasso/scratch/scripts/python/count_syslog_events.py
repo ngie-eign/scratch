@@ -11,7 +11,7 @@ How to use this:
 
 This will dump out a table of events and messages.
 
-Ngie Cooper, November 2013
+Enji Cooper, November 2013
 """
 
 import hashlib

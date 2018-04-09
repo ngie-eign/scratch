@@ -7,7 +7,7 @@ automatically determines the appropriate format for extracting files.
 
 Originally written against Python 2.7.5.
 
-...moduleauthor: Ngie Cooper
+...moduleauthor: Enji Cooper
 ...date: May 2014
 """
 

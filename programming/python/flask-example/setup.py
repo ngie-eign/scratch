@@ -2,7 +2,7 @@
 #
 # Python egg installer script for the frontend server
 #
-# @author Ngie Cooper
+# @author Enji Cooper
 
 #import glob
 import os
@@ -46,9 +46,9 @@ setup(
         name="Frontend server",
         version=frontend.__version__,
         description="Frontend server",
-        author="Ngie Cooper",
+        author="Enji Cooper",
         author_email="dev@null",
-        maintainer="Ngie Cooper",
+        maintainer="Enji Cooper",
         maintainer_email="dev@null",
         packages=find_packages(exclude=['*test*']),
         license=frontend.__license__,
