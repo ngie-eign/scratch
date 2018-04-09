@@ -1,0 +1,85 @@
+#!/bin/sh
+
+set -eux
+
+: ${SVNARGS=}
+
+case "$(uname)" in
+FreeBSD)
+	rp() { realpath "$@"; }
+	;;
+*)
+	rp() { readlink -f "$@"; }
+	;;
+esac
+_svn()
+{
+	svn $SVNARGS "$@"
+}
+
+if [ -d "$1" ]
+then
+	from=$(rp "$1")
+else
+	from=$1
+fi
+to=$(rp "$2")
+
+shift 2
+
+[ $# -gt 0 ]
+
+REVISIONS=$(echo $* | sed -e 's/r//g')
+MERGES=$(echo $REVISIONS | tr ' ' '\012' | grep -v '^-' | sort -nu)
+REVERSE_MERGES=$(echo $REVISIONS | tr ' ' '\n' | grep '^-' | sed -e 's/^-//g' | sort -nu)
+SORTED_REVISIONS=$(echo "$MERGES $REVERSE_MERGES" | tr ' ' '\n' | sort -nu)
+
+is_reverse_merge()
+{
+	local change reverse_merge
+
+	change=$1
+
+	for reverse_merge in $REVERSE_MERGES
+	do
+		if [ "$change" = "$reverse_merge" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+for change in $SORTED_REVISIONS
+do
+	if is_reverse_merge $change
+	then
+		change="-$change"
+	fi
+	_svn merge -c $change "$from" "$to"
+done
+
+SRC_URL=$(_svn info "$from" | awk '$1 == "URL:" { print $NF }')
+SRC_RROOT=$(_svn info "$from" | awk '/^Repository Root:/ { print $NF }')
+DEST_URL=$(_svn info "$to" | awk '$1 == "URL:" { print $NF }')
+DEST_RROOT=$(_svn info "$to" | awk '/^Repository Root:/ { print $NF }')
+SRC_BR=$(echo $SRC_URL | sed -e "s,$SRC_RROOT/,,g")
+DEST_BR=$(echo $DEST_URL | sed -e "s,$SRC_RROOT/,,g")
+
+: > "$to/commit"
+
+if [ -n "$REVERSE_MERGES" ]
+then
+	echo "Reverting changes from $SRC_BR to $DEST_BR" >> "$to/commit"
+	for change in $REVERSE_MERGES
+	do
+		_svn log --incremental -r$change "$from" >> "$to/commit"
+	done
+fi
+if [ -n "$MERGES" ]
+then
+	echo "Merging changes from $SRC_BR to $DEST_BR" >> "$to/commit"
+	for change in $MERGES
+	do
+		_svn log --incremental -r$change "$from" >> "$to/commit"
+	done
+fi

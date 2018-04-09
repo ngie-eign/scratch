@@ -1,0 +1,15 @@
+#!/bin/sh
+
+. "$HOME/.bashrc"
+
+if out=$(for verb in update upgrade cleanup; do brew $verb; done); then
+	message=""
+	subtitle="completed successfully"
+else
+	message="Check Console.app for more details"
+	subtitle="failed"
+	sound="-sound"
+fi
+terminal-notifier $sound \
+    -title "Brew Updater" -message "$message" -subtitle "$subtitle" \
+    -group "brew_updater"
