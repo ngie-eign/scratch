@@ -6,7 +6,7 @@ using namespace std;
 
 int main(void)
 {
-  unordered_set<string> a_set({"foo"});
+  unordered_set<string> a_set({"foo"}), empty_set;
 
   assert(a_set.size() == 1);
   a_set.insert("bar");
@@ -23,6 +23,10 @@ int main(void)
   int i = 0;
   for (auto it = a_set.begin(); it != a_set.end(); i++, it++) {
     cout << i << ": " << *it << endl;
+  }
+
+  for (auto elem : empty_set) {
+    cout << elem << endl;
   }
 
   return 0;
