@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright (c) 2017, Ngie Cooper
+Copyright (c) 2017-2018, Enji Cooper
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -24,17 +24,47 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import argparse
+import collections
 import shlex
 import subprocess
 import time
 
 
-SEPARATOR = '.'
-ZFS = '/sbin/zfs'
+SnapshotMapping = collections.namedtuple(
+    "SnapshotMapping",
+    # XXX: struct_time_index might not be needed with py3.
+    ["mapping_type", "struct_time_index", "lifetime", "date_format_qualifier"],
+)
+
+
+ALL_VDEVS = []
+SNAPSHOT_MAPPINGS = [
+    SnapshotMapping(
+        mapping_type="year", struct_time_index=0, lifetime=1, date_format_qualifier="Y"
+    ),
+    SnapshotMapping(
+        mapping_type="month",
+        struct_time_index=1,
+        lifetime=12,
+        date_format_qualifier="m",
+    ),
+    SnapshotMapping(
+        mapping_type="day", struct_time_index=-2, lifetime=30, date_format_qualifier="d"
+    ),
+    SnapshotMapping(
+        mapping_type="hour", struct_time_index=3, lifetime=24, date_format_qualifier="H"
+    ),
+    SnapshotMapping(
+        mapping_type="minute",
+        struct_time_index=5,
+        lifetime=15,
+        date_format_qualifier="M",
+    ),
+]
+SEPARATOR = "."
+SNAPSHOTS_LIST = []
+ZFS = "/sbin/zfs"
 
 
 def zfs(arg_str, fake=False):
@@ -47,11 +77,11 @@ def zfs(arg_str, fake=False):
     """
 
     if fake:
-        print('Would execute: %s %s' % (ZFS, arg_str, ))
-        return ''
+        print("Would execute: %s %s" % (ZFS, arg_str))
+        return ""
     output = subprocess.check_output([ZFS] + shlex.split(arg_str))
     try:
-        return str(output, encoding='utf-8')
+        return str(output, encoding="utf-8")
     except TypeError:
         return output
 
@@ -65,7 +95,7 @@ def create_snapshot(vdev, date_format):
                       snapshot.
     """
 
-    zfs('snapshot {}@{}'.format(vdev, date_format))
+    zfs("snapshot {}@{}".format(vdev, date_format))
 
 
 def destroy_snapshot(snapshot):
@@ -75,7 +105,7 @@ def destroy_snapshot(snapshot):
         snapshot: name of the snapshot to destroy.
     """
 
-    zfs('destroy {}'.format(snapshot))
+    zfs("destroy {}".format(snapshot))
 
 
 def list_vdevs():
@@ -88,13 +118,11 @@ def list_vdevs():
         A list of available vdevs.
     """
 
-    vdevs = zfs('list -H -t filesystem,volume -o name').split()
+    vdevs = zfs("list -H -t filesystem,volume -o name").split()
     if not vdevs:
-        raise ValueError('no vdevs found on system')
+        raise ValueError("no vdevs found on system")
     return vdevs
 
-
-SNAPSHOTS_LIST = []
 
 def list_snapshots(vdev, recursive=True):
     """Get a list of ZFS snapshots for a given vdev
@@ -117,23 +145,45 @@ def list_snapshots(vdev, recursive=True):
             snapshot: full snapshot name
         """
 
-        if snapshot.startswith('@' + vdev):
+        if snapshot.startswith("@" + vdev):
             return True
-        if recursive and snapshot.startswith('/' + vdev):
+        if recursive and snapshot.startswith("/" + vdev):
             return True
         return False
 
     if not SNAPSHOTS_LIST:
-        SNAPSHOTS_LIST = zfs('list -H -t snapshot -o name').splitlines()
+        SNAPSHOTS_LIST = zfs("list -H -t snapshot -o name").splitlines()
 
     return [snap for snap in SNAPSHOTS_LIST if filter_function(snap)]
 
 
-def execute_snapshot_policy(vdev,
-                            now,
-                            cutoff,
-                            date_format,
-                            recursive=True):
+def find_expired_snapshots(vdev, cutoff, date_format, snapshot):
+    """Take a snapshot string, unmarshall the date, and determine if it's
+       eligible for destruction.
+
+    :Parameters:
+         vdev:        name of the vdev to execute the snapshotting policy
+                      (creation/deletion) on.
+         cutoff:      any snapshots created before this time are nuked. This
+                      is a tuple, resembling a time.struct_tm.
+         date_format: a strftime(3) compatible date format to look for/destroy
+                      snapshots with.
+         snapshot: snapshot name.
+
+    :Returns:
+       The name of the snapshot if expired; None otherwise.
+    """
+
+    try:
+        snapshot_time = time.strptime(snapshot, "{}@{}".format(vdev, date_format))
+        if snapshot_time < time.struct_time(cutoff):
+            return snapshot
+    except ValueError:
+        pass
+    return None
+
+
+def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
     """Execute snapshot policy on a vdev -- destroying as necessary and
        creating a snapshot at the end.
 
@@ -152,28 +202,11 @@ def execute_snapshot_policy(vdev,
 
     snapshots = list_snapshots(vdev, recursive=recursive)
 
-    def _find_expired_snapshots(snapshot):
-        """Take a snapshot string, unmarshall the date, and determine if it's
-           eligible for destruction.
-
-        :Parameters:
-           snapshot: snapshot name.
-
-        :Returns:
-           The name of the snapshot if expired; None otherwise.
-        """
-
-        try:
-            snapshot_time = time.strptime(snapshot,
-                                          '{}@{}'.format(vdev, date_format))
-            if snapshot_time < time.struct_time(cutoff):
-                return snapshot
-        except ValueError:
-            pass
-        return None
-
-
-    expired_snapshots = filter(_find_expired_snapshots, snapshots)
+    expired_snapshots = [
+        expired_snapshot
+        for expired_snapshot in snapshots
+        if find_expired_snapshots(vdev, cutoff, date_format, expired_snapshot)
+    ]
     for snapshot in sorted(expired_snapshots, reverse=True):
         # Destroy snapshots as needed, reverse order so the snapshots will
         # be destroyed in order.
@@ -182,104 +215,116 @@ def execute_snapshot_policy(vdev,
     create_snapshot(vdev, time.strftime(date_format, now))
 
 
+def lifetime_type(optarg):
+    """Validate --lifetime to ensure that it's > 0.
+    """
+
+    value = int(optarg)
+    if value <= 0:
+        raise argparse.ArgumentTypeError(
+            "Lifetime must be an integer value greater than 0"
+        )
+    return value
+
+
+def period_type(optarg):
+    """Validate --snapshot-period to ensure that the value passed is valid."""
+
+    value = optarg.lower()
+    for i, mapping_tuple in enumerate(SNAPSHOT_MAPPINGS):
+        if mapping_tuple.mapping_type == value:
+            return i
+    raise argparse.ArgumentTypeError("Invalid --snapshot-period: %s" % (optarg))
+
+
+def prefix_type(optarg):
+    """Validate --prefix to ensure that it's a non-nul string"""
+
+    value = optarg
+    if value:
+        return value
+    raise argparse.ArgumentTypeError("Snapshot prefix must be a non-zero length string")
+
+
+def vdev_type(optarg):
+    """Validate --vdev to ensure that the vdev provided exist(ed) at
+       the time the script was executed.
+    """
+
+    value = optarg
+    if value in ALL_VDEVS:
+        return value
+    raise argparse.ArgumentTypeError(
+        "Dataset specified, '%s' does not exist" % (value,)
+    )
+
+
 def main(args=None):
     """main"""
 
+    global ALL_VDEVS
 
-    def vdev_type(optarg):
-        """Validate --vdev to ensure that the vdev provided exist(ed) at
-           the time the script was executed.
-        """
-
-        value = optarg
-        if value not in all_vdevs:
-            raise argparse.ArgumentTypeError('Dataset specified ({}) does not '
-                                             'exist'.format(value))
-        return value
-
-
-    def lifetime_type(optarg):
-        """Validate --lifetime to ensure that it's > 0.
-        """
-
-        value = int(optarg)
-        if value <= 0:
-            raise argparse.ArgumentTypeError('Lifetime must be an integer '
-                                             'value greater than 0')
-        return value
-
-
-    def period_type(optarg):
-        """Validate --snapshot-period to ensure that the value passed is valid."""
-
-        value = optarg.lower()
-        for i, mapping_tuple in enumerate(snapshot_mappings):
-            if mapping_tuple[0] == value:
-                return i
-        raise argparse.ArgumentError('Invalid --snapshot-period: '
-                                     '{}'.format(optarg))
-
-
-    def prefix_type(optarg):
-        """Validate --prefix to ensure that it's """
-
-        value = optarg
-        if not value:
-            raise argparse.ArgumentTypeError('Snapshot prefix must be a '
-                                             'non-zero length string')
-        return value
-
-    all_vdevs = list_vdevs()
-
-    snapshot_mappings = [
-        # Type, time.struct_time index, sane lifetime, date format qualifier
-        ('year',    0, 1,  'Y', ),
-        ('month',   1, 12, 'm', ),
-        ('day',    -2, 30, 'd', ),
-        ('hour',    3, 24, 'H', ),
-        ('minute',  5, 15, 'M', ),
-    ]
+    ALL_VDEVS = list_vdevs()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--lifetime',
-                        help=('lifetime (number of snapshots) to keep of a '
-                              'vdev; the value is relative to the number of '
-                              '"periods".'),
-                        type=lifetime_type)
-    parser.add_argument('--snapshot-period',
-                        default='hour',
-                        help=('period with which to manage snapshot policies '
-                              'with'),
-                        type=period_type)
-    parser.add_argument('--snapshot-prefix',
-                        default='auto',
-                        help='prefix to add to a snapshot',
-                        type=prefix_type)
-    parser.add_argument('--recursive',
-                        action='store_true',
-                        help='create and destroy snapshots recursively')
-    parser.add_argument('--snapshot-suffix',
-                        default='',
-                        help=('suffix to add to the end of the snapshot; '
-                              'defaults to the strdate(3)-format qualifier'))
-    parser.add_argument('--vdev',
-                        action='append',
-                        default=[],
-                        dest='vdevs',
-                        help='dataset or zvol to snapshot',
-                        type=vdev_type)
+    parser.add_argument(
+        "--lifetime",
+        help=(
+            "lifetime (number of snapshots) to keep of a "
+            "vdev; the value is relative to the number of "
+            '"periods".'
+        ),
+        type=lifetime_type,
+    )
+    parser.add_argument(
+        "--snapshot-period",
+        default="hour",
+        help=("period with which to manage snapshot policies " "with"),
+        type=period_type,
+    )
+    parser.add_argument(
+        "--snapshot-prefix",
+        default="auto",
+        help="prefix to add to a snapshot",
+        type=prefix_type,
+    )
+    parser.add_argument(
+        "--recursive",
+        action="store_true",
+        help="create and destroy snapshots recursively",
+    )
+    parser.add_argument(
+        "--snapshot-suffix",
+        default="",
+        help=(
+            "suffix to add to the end of the snapshot; "
+            "defaults to the strdate(3)-format qualifier"
+        ),
+    )
+    parser.add_argument(
+        "--vdev",
+        action="append",
+        default=[],
+        dest="vdevs",
+        help="dataset or zvol to snapshot",
+        type=vdev_type,
+    )
 
     opts = parser.parse_args(args)
 
-    date_format = SEPARATOR.join(['%' + snapshot_mappings[i][-1]
-                                  for i in range(opts.snapshot_period+1)])
+    date_format = SEPARATOR.join(
+        [
+            "%" + SNAPSHOT_MAPPINGS[i].date_format_qualifier
+            for i in range(opts.snapshot_period + 1)
+        ]
+    )
 
     snapshot_cutoff = list(time.localtime())
-    struct_tm_offset = snapshot_mappings[opts.snapshot_period][1]
+    struct_tm_offset = SNAPSHOT_MAPPINGS[opts.snapshot_period].struct_time_index
     if opts.lifetime:
         lifetime = opts.lifetime
     else:
-        lifetime = snapshot_mappings[opts.snapshot_period][2]
+        lifetime = SNAPSHOT_MAPPINGS[opts.snapshot_period].lifetime
     snapshot_cutoff[struct_tm_offset] -= lifetime
 
     now = time.localtime()
@@ -287,25 +332,22 @@ def main(args=None):
     if opts.snapshot_suffix:
         snapshot_suffix = opts.snapshot_suffix
     else:
-        snapshot_suffix = snapshot_mappings[opts.snapshot_period][-1][0]
+        snapshot_suffix = SNAPSHOT_MAPPINGS[opts.snapshot_period].date_format_qualifier
 
-    date_format = '%s-%s%s' % (opts.snapshot_prefix, date_format,
-                               snapshot_suffix, )
+    date_format = "%s-%s%s" % (opts.snapshot_prefix, date_format, snapshot_suffix)
 
     if opts.vdevs:
         vdevs = opts.vdevs
         if opts.recursive:
-            vdevs = [vdev for vdev in all_vdevs if vdev.startswith(vdev + '/')]
+            vdevs = [vdev for vdev in ALL_VDEVS if vdev.startswith(vdev + "/")]
     else:
-        vdevs = all_vdevs
+        vdevs = ALL_VDEVS
 
     for vdev in sorted(vdevs, reverse=True):
-        execute_snapshot_policy(vdev,
-                                now,
-                                snapshot_cutoff,
-                                date_format,
-                                recursive=opts.recursive)
+        execute_snapshot_policy(
+            vdev, now, snapshot_cutoff, date_format, recursive=opts.recursive
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
