@@ -101,8 +101,6 @@ def list_snapshots(vdev, recursive=True):
         A list of 0 or more snapshots
     """
 
-    global SNAPSHOTS_LIST
-
     def filter_function(snapshot):
         """Filter by parent vdev or nested vdev (depending on how the
            function was called).
@@ -117,10 +115,9 @@ def list_snapshots(vdev, recursive=True):
             return True
         return False
 
-    if not SNAPSHOTS_LIST:
-        SNAPSHOTS_LIST = zfs("list -H -t snapshot -o name").splitlines()
+    snapshot_list = zfs("list -H -t snapshot -o name").splitlines()
 
-    return [snap for snap in SNAPSHOTS_LIST if filter_function(snap)]
+    return [snap for snap in snapshot_list if filter_function(snap)]
 
 
 def find_expired_snapshots(vdev, cutoff, date_format, snapshot):
