@@ -29,7 +29,6 @@ import subprocess
 import time
 
 
-SNAPSHOTS_LIST = []
 ZFS = "/sbin/zfs"
 
 
@@ -166,9 +165,9 @@ def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
     snapshots = list_snapshots(vdev, recursive=recursive)
 
     expired_snapshots = [
-        expired_snapshot
-        for expired_snapshot in snapshots
-        if find_expired_snapshots(vdev, cutoff, date_format, expired_snapshot)
+        snapshot
+        for snapshot in snapshots
+        if find_expired_snapshots(vdev, cutoff, date_format, snapshot)
     ]
     for snapshot in sorted(expired_snapshots, reverse=True):
         # Destroy snapshots as needed, reverse order so the snapshots will
