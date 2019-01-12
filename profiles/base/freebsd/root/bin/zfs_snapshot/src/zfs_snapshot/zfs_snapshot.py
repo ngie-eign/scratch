@@ -109,9 +109,9 @@ def list_snapshots(vdev, recursive=True):
             snapshot: full snapshot name
         """
 
-        if snapshot.startswith("@" + vdev):
+        if snapshot.startswith(vdev + "@"):
             return True
-        if recursive and snapshot.startswith("/" + vdev):
+        if recursive and snapshot.startswith(vdev + "/"):
             return True
         return False
 
