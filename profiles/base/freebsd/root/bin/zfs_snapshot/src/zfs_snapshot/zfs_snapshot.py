@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright (c) 2017-2018, Enji Cooper
+Copyright (c) 2012-2018, Enji Cooper
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
