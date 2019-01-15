@@ -24,8 +24,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
-import argparse
-import copy
 import unittest
 from unittest.mock import patch
 
@@ -33,8 +31,7 @@ from zfs_snapshot.__main__ import (
     parse_args,
     DEFAULT_SNAPSHOT_PERIOD,
     DEFAULT_SNAPSHOT_PREFIX,
-    DEFAULT_SNAPSHOT_SUFFIX,
-    SNAPSHOT_MAPPINGS,
+    SNAPSHOT_CATEGORIES,
 )
 
 
@@ -50,7 +47,7 @@ class TestArguments(unittest.TestCase):
             parse_args(args=["--lifetime", "apple"])
 
     def test_snapshot_period(self):
-        for i, snapshot_mapping in enumerate(SNAPSHOT_MAPPINGS):
+        for i, snapshot_mapping in enumerate(SNAPSHOT_CATEGORIES):
             mapping_type = snapshot_mapping.mapping_type
             opts = parse_args(args=["--snapshot-period", mapping_type])
             self.assertEquals(opts.snapshot_period, i)

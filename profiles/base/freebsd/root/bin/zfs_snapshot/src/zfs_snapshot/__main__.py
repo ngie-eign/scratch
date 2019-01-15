@@ -28,45 +28,45 @@ import argparse
 import collections
 import time
 
-import zfs_snapshot.zfs_snapshot as zfs_snapshot
+from . import zfs_snapshot
 
 
-SnapshotMapping = collections.namedtuple(
-    "SnapshotMapping",
+SnapshotClass = collections.namedtuple(
+    "SnapshotClass",
     # XXX: rework to use the attribute name, instead of a hardcoded index into
     # `time.struct_time`:
     # https://docs.python.org/3/library/time.html#time.struct_time .
     ["mapping_type", "struct_time_index", "lifetime", "date_format_qualifier"],
 )
 
-SNAPSHOT_MAPPINGS = [
-    SnapshotMapping(
+DATE_ELEMENT_SEPARATOR = "."
+# The list order matters. See `main(..)` for more details.
+SNAPSHOT_CATEGORIES = [
+    SnapshotClass(
         mapping_type="year", struct_time_index=0, lifetime=1, date_format_qualifier="Y"
     ),
-    SnapshotMapping(
+    SnapshotClass(
         mapping_type="month",
         struct_time_index=1,
         lifetime=12,
         date_format_qualifier="m",
     ),
-    SnapshotMapping(
+    SnapshotClass(
         mapping_type="day", struct_time_index=-2, lifetime=30, date_format_qualifier="d"
     ),
-    SnapshotMapping(
+    SnapshotClass(
         mapping_type="hour", struct_time_index=3, lifetime=24, date_format_qualifier="H"
     ),
-    SnapshotMapping(
+    SnapshotClass(
         mapping_type="minute",
         struct_time_index=5,
         lifetime=15,
         date_format_qualifier="M",
     ),
 ]
-SNAPSHOT_SEPARATOR = "."
 
 DEFAULT_SNAPSHOT_PERIOD = "hour"
 DEFAULT_SNAPSHOT_PREFIX = "auto"
-DEFAULT_SNAPSHOT_SUFFIX = ""
 
 
 def execute_snapshot_policy(*args, **kwargs):
@@ -74,16 +74,9 @@ def execute_snapshot_policy(*args, **kwargs):
     return zfs_snapshot.execute_snapshot_policy(*args, **kwargs)
 
 
-_ALL_VDEVS = None
-
-
 def list_vdevs(*args, **kwargs):
     """Proxy function for testing"""
-    global _ALL_VDEVS
-
-    if _ALL_VDEVS is None:
-        _ALL_VDEVS = zfs_snapshot.list_vdevs(*args, **kwargs)
-    return _ALL_VDEVS
+    return zfs_snapshot.list_vdevs(*args, **kwargs)
 
 
 def lifetime_type(optarg):
@@ -102,7 +95,7 @@ def period_type(optarg):
     """Validate --snapshot-period to ensure that the value passed is valid."""
 
     value = optarg.lower()
-    for i, mapping_tuple in enumerate(SNAPSHOT_MAPPINGS):
+    for i, mapping_tuple in enumerate(SNAPSHOT_CATEGORIES):
         if mapping_tuple.mapping_type == value:
             return i
     raise argparse.ArgumentTypeError("Invalid --snapshot-period: %s" % (optarg))
@@ -162,14 +155,6 @@ def parse_args(args=None):
         help="create and destroy snapshots recursively",
     )
     parser.add_argument(
-        "--snapshot-suffix",
-        default=DEFAULT_SNAPSHOT_SUFFIX,
-        help=(
-            "suffix to add to the end of the snapshot; "
-            "defaults to the strdate(3)-format qualifier"
-        ),
-    )
-    parser.add_argument(
         "--vdev",
         action="append",
         default=[],
@@ -185,44 +170,49 @@ def main(args=None):
 
     opts = parse_args(args=args)
 
-    date_format = SNAPSHOT_SEPARATOR.join(
+    # This builds a hierarchical date string in reverse recursive order, e.g.,
+    # "2018.09.01" would be "daily".
+    #
+    # This depends on the ordering of `SNAPSHOT_CATEGORIES`.
+    date_format = DATE_ELEMENT_SEPARATOR.join(
         [
-            "%" + SNAPSHOT_MAPPINGS[i].date_format_qualifier
+            "%" + SNAPSHOT_CATEGORIES[i].date_format_qualifier
             for i in range(opts.snapshot_period + 1)
         ]
     )
 
     snapshot_cutoff = list(time.localtime())
-    struct_tm_offset = SNAPSHOT_MAPPINGS[opts.snapshot_period].struct_time_index
+    struct_tm_offset = SNAPSHOT_CATEGORIES[opts.snapshot_period].struct_time_index
     if opts.lifetime:
         lifetime = opts.lifetime
     else:
-        lifetime = SNAPSHOT_MAPPINGS[opts.snapshot_period].lifetime
+        lifetime = SNAPSHOT_CATEGORIES[opts.snapshot_period].lifetime
     snapshot_cutoff[struct_tm_offset] -= lifetime
 
     now = time.localtime()
 
-    if opts.snapshot_suffix:
-        snapshot_suffix = opts.snapshot_suffix
-    else:
-        snapshot_suffix = SNAPSHOT_MAPPINGS[opts.snapshot_period].date_format_qualifier
+    snapshot_suffix = SNAPSHOT_CATEGORIES[opts.snapshot_period].date_format_qualifier
 
-    date_format = "%s-%s%s" % (opts.snapshot_prefix, date_format, snapshot_suffix)
+    snapshot_name_format = "%s-%s%s" % (
+        opts.snapshot_prefix,
+        date_format,
+        snapshot_suffix,
+    )
 
-    all_vdevs = list_vdevs()
-    if opts.vdevs:
-        if opts.recursive:
-            vdevs = []
-            for vdev in opts.vdevs:
-                vdevs.extend(zfs("list -H -o name %s %s" % (vdevs)).splitlines())
-        else:
-            vdevs = opts.vdevs
+    if opts.recursive and opts.vdevs:
+        vdevs = []
+        for vdev in opts.vdevs:
+            vdevs.extend(
+                zfs_snapshot.zfs("list -H -o name -r %s" % (vdev)).splitlines()
+            )
+    elif opts.vdevs:
+        vdevs = opts.vdevs
     else:
-        vdevs = all_vdevs
+        vdevs = list_vdevs()
 
     for vdev in sorted(vdevs, reverse=True):
         execute_snapshot_policy(
-            vdev, now, snapshot_cutoff, date_format, recursive=opts.recursive
+            vdev, now, snapshot_cutoff, snapshot_name_format, recursive=opts.recursive
         )
 
 
