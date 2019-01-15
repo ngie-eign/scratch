@@ -134,7 +134,7 @@ def list_snapshots(vdev, recursive=True):
     return [snap for snap in snapshot_list if filter_function(snap)]
 
 
-def is_expired_snapshot(vdev, cutoff, date_format, snapshot):
+def is_destroyable_snapshot(vdev, cutoff, date_format, snapshot):
     """Take a snapshot string, unmarshall the date, and determine if it's
        eligible for destruction.
 
@@ -142,7 +142,7 @@ def is_expired_snapshot(vdev, cutoff, date_format, snapshot):
         vdev:        name of the vdev to execute the snapshotting policy
                      (creation/deletion) on.
         cutoff:      any snapshots created before this time are nuked. This
-                     is a tuple, resembling a time.struct_tm.
+                     is a tuple, resembling a `time.struct_tm` object.
         date_format: a strftime(3) compatible date format to look for/destroy
                      snapshots with.
         snapshot:    snapshot name.
@@ -157,7 +157,7 @@ def is_expired_snapshot(vdev, cutoff, date_format, snapshot):
     except ValueError as exc:
         # Date format does not match
         return False
-    return time.struct_time(cutoff) < snapshot_time
+    return snapshot_time < time.struct_time(cutoff)
 
 
 def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
@@ -171,7 +171,7 @@ def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
                      that the script execution was started (e.g. a stable
                      value).
         cutoff:      any snapshots created before this time are nuked. This
-                     is a tuple, resembling a time.struct_tm.
+                     is a tuple, resembling a `time.struct_tm` object.
         date_format: a strftime(3) compatible date format to look for/destroy
                      snapshots with.
         recursive:   execute zfs snapshot create recursively.
@@ -182,7 +182,7 @@ def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
     expired_snapshots = [
         snapshot
         for snapshot in snapshots
-        if is_expired_snapshot(vdev, cutoff, date_format, snapshot)
+        if is_destroyable_snapshot(vdev, cutoff, date_format, snapshot)
     ]
     for snapshot in sorted(expired_snapshots, reverse=True):
         # Destroy snapshots as needed, reverse order so the snapshots will

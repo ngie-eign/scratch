@@ -124,8 +124,8 @@ class TestZfsSnapshot(unittest.TestCase):
         ) as create_snapshot, patch_zfs_snapshot(
             "destroy_snapshot"
         ) as destroy_snapshot, patch_zfs_snapshot(
-            "is_expired_snapshot"
-        ) as is_expired_snapshot, patch_zfs_snapshot(
+            "is_destroyable_snapshot"
+        ) as is_destroyable_snapshot, patch_zfs_snapshot(
             "list_snapshots"
         ) as list_snapshots:
             list_snapshots.return_value = []
@@ -134,7 +134,7 @@ class TestZfsSnapshot(unittest.TestCase):
             )
             # No snapshots means none of these methods (minus create_snapshot)
             # should have been called
-            is_expired_snapshot.assert_not_called()
+            is_destroyable_snapshot.assert_not_called()
             destroy_snapshot.assert_not_called()
             create_snapshot.assert_called_with(
                 test_vdev, time.strftime(test_date_format, now)
@@ -146,12 +146,12 @@ class TestZfsSnapshot(unittest.TestCase):
         ) as create_snapshot, patch_zfs_snapshot(
             "destroy_snapshot"
         ) as destroy_snapshot, patch_zfs_snapshot(
-            "is_expired_snapshot"
-        ) as is_expired_snapshot, patch_zfs_snapshot(
+            "is_destroyable_snapshot"
+        ) as is_destroyable_snapshot, patch_zfs_snapshot(
             "list_snapshots"
         ) as list_snapshots:
             list_snapshots.return_value = test_snapshots
-            is_expired_snapshot.side_effect = [False] * num_snapshots
+            is_destroyable_snapshot.side_effect = [False] * num_snapshots
             zfs_snapshot.execute_snapshot_policy(
                 test_vdev, now, test_cutoff, test_date_format
             )
@@ -166,12 +166,12 @@ class TestZfsSnapshot(unittest.TestCase):
         ) as create_snapshot, patch_zfs_snapshot(
             "destroy_snapshot"
         ) as destroy_snapshot, patch_zfs_snapshot(
-            "is_expired_snapshot"
-        ) as is_expired_snapshot, patch_zfs_snapshot(
+            "is_destroyable_snapshot"
+        ) as is_destroyable_snapshot, patch_zfs_snapshot(
             "list_snapshots"
         ) as list_snapshots:
             list_snapshots.return_value = test_snapshots
-            is_expired_snapshot.side_effect = [True] + [False] * (num_snapshots - 1)
+            is_destroyable_snapshot.side_effect = [True] + [False] * (num_snapshots - 1)
             zfs_snapshot.execute_snapshot_policy(
                 test_vdev, now, test_cutoff, test_date_format
             )
@@ -190,12 +190,14 @@ class TestZfsSnapshot(unittest.TestCase):
         ) as create_snapshot, patch_zfs_snapshot(
             "destroy_snapshot"
         ) as destroy_snapshot, patch_zfs_snapshot(
-            "is_expired_snapshot"
-        ) as is_expired_snapshot, patch_zfs_snapshot(
+            "is_destroyable_snapshot"
+        ) as is_destroyable_snapshot, patch_zfs_snapshot(
             "list_snapshots"
         ) as list_snapshots:
             list_snapshots.return_value = test_snapshots
-            is_expired_snapshot.side_effect = [True] * 2 + [False] * (num_snapshots - 2)
+            is_destroyable_snapshot.side_effect = [True] * 2 + [False] * (
+                num_snapshots - 2
+            )
             zfs_snapshot.execute_snapshot_policy(
                 test_vdev, now, test_cutoff, test_date_format
             )
@@ -209,10 +211,10 @@ class TestZfsSnapshot(unittest.TestCase):
                 test_vdev, time.strftime(test_date_format, now)
             )
 
-    def test_is_expired_snapshot(self):
-        """is_expired_snapshot(..)"""
+    def test_is_destroyable_snapshot(self):
+        """is_destroyable_snapshot(..)"""
 
-        # def is_expired_snapshot(vdev, cutoff, date_format, snapshot):
+        # def is_destroyable_snapshot(vdev, cutoff, date_format, snapshot):
         date_format = "%Y-%m-%d-%H.%M"
         vdev = "vdev"
         nested_vdev = "vdev/nested"
@@ -228,19 +230,23 @@ class TestZfsSnapshot(unittest.TestCase):
         snapshot = zfs_snapshot.snapshot_name(vdev, time.strftime(date_format))
         snapshot_not_dated = zfs_snapshot.snapshot_name(vdev, "before_reboot")
 
-        self.assertFalse(
-            zfs_snapshot.is_expired_snapshot(vdev, future_cutoff, date_format, snapshot)
+        self.assertTrue(
+            zfs_snapshot.is_destroyable_snapshot(
+                vdev, future_cutoff, date_format, snapshot
+            )
         )
         self.assertFalse(
-            zfs_snapshot.is_expired_snapshot(
+            zfs_snapshot.is_destroyable_snapshot(
                 nested_vdev, past_cutoff, date_format, snapshot
             )
         )
         self.assertFalse(
-            zfs_snapshot.is_expired_snapshot(
+            zfs_snapshot.is_destroyable_snapshot(
                 vdev, past_cutoff, date_format, snapshot_not_dated
             )
         )
-        self.assertTrue(
-            zfs_snapshot.is_expired_snapshot(vdev, past_cutoff, date_format, snapshot)
+        self.assertFalse(
+            zfs_snapshot.is_destroyable_snapshot(
+                vdev, past_cutoff, date_format, snapshot
+            )
         )
