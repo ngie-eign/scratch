@@ -44,21 +44,16 @@ def snapshot_name(vdev, date_format):
     return "%s%s%s" % (vdev, SNAPSHOT_SEPARATOR, date_format)
 
 
-def zfs(arg_str, fake=False):
+def zfs(arg_str):
     """A command through zfs(8).
 
     :Parameters:
         arg_str: a flat string with a list of arguments to pass to zfs(8),
                  e.g. -t snapshot.
-        fake:    fake the command call.
 
     :Returns:
         The output from zfs(8).
     """
-
-    if fake:
-        print("Would execute: %s %s" % (ZFS, arg_str))
-        return ""
     output = subprocess.check_output([ZFS] + shlex.split(arg_str))
     try:
         return str(output, encoding="utf-8")
