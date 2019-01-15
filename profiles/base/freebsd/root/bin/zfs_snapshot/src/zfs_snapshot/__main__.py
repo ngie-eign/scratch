@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright (c) 2017-2018, Enji Cooper
+Copyright (c) 2019, Enji Cooper
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@ import argparse
 import collections
 import time
 
-from .zfs_snapshot import execute_snapshot_policy, list_vdevs
+import zfs_snapshot.zfs_snapshot as zfs_snapshot
 
 
 SnapshotMapping = collections.namedtuple(
@@ -39,8 +39,6 @@ SnapshotMapping = collections.namedtuple(
     ["mapping_type", "struct_time_index", "lifetime", "date_format_qualifier"],
 )
 
-ALL_VDEVS = []
-SEPARATOR = "."
 SNAPSHOT_MAPPINGS = [
     SnapshotMapping(
         mapping_type="year", struct_time_index=0, lifetime=1, date_format_qualifier="Y"
@@ -64,6 +62,28 @@ SNAPSHOT_MAPPINGS = [
         date_format_qualifier="M",
     ),
 ]
+SNAPSHOT_SEPARATOR = "."
+
+DEFAULT_SNAPSHOT_PERIOD = "hour"
+DEFAULT_SNAPSHOT_PREFIX = "auto"
+DEFAULT_SNAPSHOT_SUFFIX = ""
+
+
+def execute_snapshot_policy(*args, **kwargs):
+    """Proxy function for testing"""
+    return zfs_snapshot.execute_snapshot_policy(*args, **kwargs)
+
+
+_ALL_VDEVS = None
+
+
+def list_vdevs(*args, **kwargs):
+    """Proxy function for testing"""
+    global _ALL_VDEVS
+
+    if _ALL_VDEVS is None:
+        _ALL_VDEVS = zfs_snapshot.list_vdevs(*args, **kwargs)
+    return _ALL_VDEVS
 
 
 def lifetime_type(optarg):
@@ -102,18 +122,17 @@ def vdev_type(optarg):
        the time the script was executed.
     """
 
+    all_vdevs = list_vdevs()
     value = optarg
-    if value in ALL_VDEVS:
+    if value in all_vdevs:
         return value
-    raise argparse.ArgumentTypeError("Dataset specified, '%s' does not exist" % (value))
+    raise argparse.ArgumentTypeError(
+        "Virtual device specified, '%s', does not exist" % (value)
+    )
 
 
-def main(args=None):
+def parse_args(args=None):
     """main"""
-
-    global ALL_VDEVS
-
-    ALL_VDEVS = list_vdevs()
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -127,13 +146,13 @@ def main(args=None):
     )
     parser.add_argument(
         "--snapshot-period",
-        default="hour",
-        help=("period with which to manage snapshot policies " "with"),
+        default=DEFAULT_SNAPSHOT_PERIOD,
+        help=("period with which to manage snapshot policies with"),
         type=period_type,
     )
     parser.add_argument(
         "--snapshot-prefix",
-        default="auto",
+        default=DEFAULT_SNAPSHOT_PREFIX,
         help="prefix to add to a snapshot",
         type=prefix_type,
     )
@@ -144,7 +163,7 @@ def main(args=None):
     )
     parser.add_argument(
         "--snapshot-suffix",
-        default="",
+        default=DEFAULT_SNAPSHOT_SUFFIX,
         help=(
             "suffix to add to the end of the snapshot; "
             "defaults to the strdate(3)-format qualifier"
@@ -158,10 +177,15 @@ def main(args=None):
         help="dataset or zvol to snapshot",
         type=vdev_type,
     )
+    return parser.parse_args(args)
 
-    opts = parser.parse_args(args)
 
-    date_format = SEPARATOR.join(
+def main(args=None):
+    """self-explanatory"""
+
+    opts = parse_args(args=args)
+
+    date_format = SNAPSHOT_SEPARATOR.join(
         [
             "%" + SNAPSHOT_MAPPINGS[i].date_format_qualifier
             for i in range(opts.snapshot_period + 1)
@@ -185,12 +209,14 @@ def main(args=None):
 
     date_format = "%s-%s%s" % (opts.snapshot_prefix, date_format, snapshot_suffix)
 
+    all_vdevs = list_vdevs()
     if opts.vdevs:
         vdevs = opts.vdevs
         if opts.recursive:
-            vdevs = [vdev for vdev in ALL_VDEVS if vdev.startswith(vdev + "/")]
+            # XXX: this is wrong
+            vdevs = [vdev for vdev in all_vdevs if vdev.startswith(vdev + "/")]
     else:
-        vdevs = ALL_VDEVS
+        vdevs = all_vdevs
 
     for vdev in sorted(vdevs, reverse=True):
         execute_snapshot_policy(
