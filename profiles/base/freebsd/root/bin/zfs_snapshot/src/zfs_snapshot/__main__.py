@@ -26,46 +26,35 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import argparse
 import collections
-import time
+import datetime
+
+from dateutil.relativedelta import relativedelta
 
 from . import zfs_snapshot
 
 
 SnapshotClass = collections.namedtuple(
-    "SnapshotClass",
-    # XXX: rework to use the attribute name, instead of a hardcoded index into
-    # `time.struct_time`:
-    # https://docs.python.org/3/library/time.html#time.struct_time .
-    ["mapping_type", "struct_time_index", "lifetime", "date_format_qualifier"],
+    "SnapshotClass", ["name", "lifetime", "date_format_qualifier"]
 )
 
 DATE_ELEMENT_SEPARATOR = "."
+NOW = datetime.datetime.now()
 # The list order matters. See `main(..)` for more details.
 SNAPSHOT_CATEGORIES = [
     SnapshotClass(
-        mapping_type="year", struct_time_index=0, lifetime=1, date_format_qualifier="Y"
+        name="years", lifetime=relativedelta(years=2), date_format_qualifier="Y"
     ),
     SnapshotClass(
-        mapping_type="month",
-        struct_time_index=1,
-        lifetime=12,
-        date_format_qualifier="m",
+        name="months", lifetime=relativedelta(years=1), date_format_qualifier="m"
     ),
     SnapshotClass(
-        mapping_type="day", struct_time_index=-2, lifetime=30, date_format_qualifier="d"
+        name="days", lifetime=relativedelta(months=1), date_format_qualifier="d"
     ),
     SnapshotClass(
-        mapping_type="hour", struct_time_index=3, lifetime=24, date_format_qualifier="H"
-    ),
-    SnapshotClass(
-        mapping_type="minute",
-        struct_time_index=5,
-        lifetime=15,
-        date_format_qualifier="M",
+        name="hours", lifetime=relativedelta(day=1), date_format_qualifier="H"
     ),
 ]
-
-DEFAULT_SNAPSHOT_PERIOD = "hour"
+DEFAULT_SNAPSHOT_PERIOD = "hours"
 DEFAULT_SNAPSHOT_PREFIX = "auto"
 
 
@@ -96,7 +85,7 @@ def period_type(optarg):
 
     value = optarg.lower()
     for i, mapping_tuple in enumerate(SNAPSHOT_CATEGORIES):
-        if mapping_tuple.mapping_type == value:
+        if mapping_tuple.name == value:
             return i
     raise argparse.ArgumentTypeError("Invalid --snapshot-period: %s" % (optarg))
 
@@ -181,17 +170,13 @@ def main(args=None):
         ]
     )
 
-    snapshot_cutoff = list(time.localtime())
-    struct_tm_offset = SNAPSHOT_CATEGORIES[opts.snapshot_period].struct_time_index
-    if opts.lifetime:
-        lifetime = opts.lifetime
-    else:
-        lifetime = SNAPSHOT_CATEGORIES[opts.snapshot_period].lifetime
-    snapshot_cutoff[struct_tm_offset] -= lifetime
-
-    now = time.localtime()
-
-    snapshot_suffix = SNAPSHOT_CATEGORIES[opts.snapshot_period].date_format_qualifier
+    snapshot_category = SNAPSHOT_CATEGORIES[opts.snapshot_period]
+    lifetime = (
+        relativedelta({snapshot_category.name: opts.lifetime})
+        or snapshot_category.lifetime
+    )
+    snapshot_cutoff = NOW - lifetime
+    snapshot_suffix = snapshot_category.date_format_qualifier
 
     snapshot_name_format = "%s-%s%s" % (
         opts.snapshot_prefix,
@@ -212,7 +197,11 @@ def main(args=None):
 
     for vdev in sorted(vdevs, reverse=True):
         execute_snapshot_policy(
-            vdev, now, snapshot_cutoff, snapshot_name_format, recursive=opts.recursive
+            vdev,
+            NOW.timetuple(),
+            snapshot_cutoff.timetuple(),
+            snapshot_name_format,
+            recursive=opts.recursive,
         )
 
 

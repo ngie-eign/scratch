@@ -47,15 +47,15 @@ class TestArguments(unittest.TestCase):
             parse_args(args=["--lifetime", "apple"])
 
     def test_snapshot_period(self):
-        for i, snapshot_mapping in enumerate(SNAPSHOT_CATEGORIES):
-            mapping_type = snapshot_mapping.mapping_type
-            opts = parse_args(args=["--snapshot-period", mapping_type])
+        for i, snapshot_category in enumerate(SNAPSHOT_CATEGORIES):
+            name = snapshot_category.name
+            opts = parse_args(args=["--snapshot-period", name])
             self.assertEquals(opts.snapshot_period, i)
 
             # Minor optimization: since here, we might as well test the default
             # case instead of trying to precompute the index out-of-band
             # somehow.
-            if mapping_type == DEFAULT_SNAPSHOT_PERIOD:
+            if name == DEFAULT_SNAPSHOT_PERIOD:
                 opts = parse_args(args=[])
                 self.assertEquals(opts.snapshot_period, i)
 
