@@ -29,7 +29,19 @@ import subprocess
 import time
 
 
+SNAPSHOT_SEPARATOR = "@"
 ZFS = "/sbin/zfs"
+
+
+def snapshot_name(vdev, date_format):
+    """Create a properly formatted snapshot name
+
+    :Parameters:
+        vdev:        name of a vdev to take a snapshot with.
+        date_format: strftime(3) compatible date format to assign to the
+                     snapshot.
+    """
+    return "%s%s%s" % (vdev, SNAPSHOT_SEPARATOR, date_format)
 
 
 def zfs(arg_str, fake=False):
@@ -39,6 +51,9 @@ def zfs(arg_str, fake=False):
         arg_str: a flat string with a list of arguments to pass to zfs(8),
                  e.g. -t snapshot.
         fake:    fake the command call.
+
+    :Returns:
+        The output from zfs(8).
     """
 
     if fake:
@@ -55,12 +70,12 @@ def create_snapshot(vdev, date_format):
     """Create a snapshot for a vdev with a given date format.
 
     :Parameters:
-         vdev:        name of a vdev to take a snapshot with.
-         date_format: strftime(3) compatible date format to assign to the
-                      snapshot.
+        vdev:        name of a vdev to take a snapshot with.
+        date_format: strftime(3) compatible date format to assign to the
+                     snapshot.
     """
 
-    zfs("snapshot {}@{}".format(vdev, date_format))
+    zfs("snapshot %s" % (snapshot_name(vdev, date_format)))
 
 
 def destroy_snapshot(snapshot):
@@ -70,7 +85,7 @@ def destroy_snapshot(snapshot):
         snapshot: name of the snapshot to destroy.
     """
 
-    zfs("destroy {}".format(snapshot))
+    zfs("destroy %s" % (snapshot))
 
 
 def list_vdevs():
@@ -97,7 +112,7 @@ def list_snapshots(vdev, recursive=True):
         recursive: list snapshot(s) for the parent and child vdevs.
 
     :Returns:
-        A list of 0 or more snapshots
+        A list of zero or more snapshots
     """
 
     def filter_function(snapshot):
@@ -108,7 +123,7 @@ def list_snapshots(vdev, recursive=True):
             snapshot: full snapshot name
         """
 
-        if snapshot.startswith(vdev + "@"):
+        if snapshot.startswith(vdev + SNAPSHOT_SEPARATOR):
             return True
         if recursive and snapshot.startswith(vdev + "/"):
             return True
@@ -119,30 +134,30 @@ def list_snapshots(vdev, recursive=True):
     return [snap for snap in snapshot_list if filter_function(snap)]
 
 
-def find_expired_snapshots(vdev, cutoff, date_format, snapshot):
+def is_expired_snapshot(vdev, cutoff, date_format, snapshot):
     """Take a snapshot string, unmarshall the date, and determine if it's
        eligible for destruction.
 
     :Parameters:
-         vdev:        name of the vdev to execute the snapshotting policy
-                      (creation/deletion) on.
-         cutoff:      any snapshots created before this time are nuked. This
-                      is a tuple, resembling a time.struct_tm.
-         date_format: a strftime(3) compatible date format to look for/destroy
-                      snapshots with.
-         snapshot: snapshot name.
+        vdev:        name of the vdev to execute the snapshotting policy
+                     (creation/deletion) on.
+        cutoff:      any snapshots created before this time are nuked. This
+                     is a tuple, resembling a time.struct_tm.
+        date_format: a strftime(3) compatible date format to look for/destroy
+                     snapshots with.
+        snapshot:    snapshot name.
 
     :Returns:
-       The name of the snapshot if expired; None otherwise.
+        True if the snapshot is out of date; False otherwise.
     """
 
+    snapshot_formatted = snapshot_name(vdev, date_format)
     try:
-        snapshot_time = time.strptime(snapshot, "{}@{}".format(vdev, date_format))
-        if snapshot_time < time.struct_time(cutoff):
-            return snapshot
-    except ValueError:
-        pass
-    return None
+        snapshot_time = time.strptime(snapshot, snapshot_formatted)
+    except ValueError as exc:
+        # Date format does not match
+        return False
+    return time.struct_time(cutoff) < snapshot_time
 
 
 def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
@@ -150,16 +165,16 @@ def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
        creating a snapshot at the end.
 
     :Parameters:
-         vdev:        name of the vdev to execute the snapshotting policy
-                      (creation/deletion) on.
-         now:         new time to snapshot against. This should be the time
-                      that the script execution was started (e.g. a stable
-                      value).
-         cutoff:      any snapshots created before this time are nuked. This
-                      is a tuple, resembling a time.struct_tm.
-         date_format: a strftime(3) compatible date format to look for/destroy
-                      snapshots with.
-         recursive:   execute zfs snapshot create recursively.
+        vdev:        name of the vdev to execute the snapshotting policy
+                     (creation/deletion) on.
+        now:         new time to snapshot against. This should be the time
+                     that the script execution was started (e.g. a stable
+                     value).
+        cutoff:      any snapshots created before this time are nuked. This
+                     is a tuple, resembling a time.struct_tm.
+        date_format: a strftime(3) compatible date format to look for/destroy
+                     snapshots with.
+        recursive:   execute zfs snapshot create recursively.
     """
 
     snapshots = list_snapshots(vdev, recursive=recursive)
@@ -167,7 +182,7 @@ def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
     expired_snapshots = [
         snapshot
         for snapshot in snapshots
-        if find_expired_snapshots(vdev, cutoff, date_format, snapshot)
+        if is_expired_snapshot(vdev, cutoff, date_format, snapshot)
     ]
     for snapshot in sorted(expired_snapshots, reverse=True):
         # Destroy snapshots as needed, reverse order so the snapshots will
