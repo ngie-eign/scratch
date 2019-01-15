@@ -25,14 +25,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 import unittest
-from unittest.mock import patch
+from unittest.mock import call, patch
+
+from dateutil.relativedelta import relativedelta
 
 from zfs_snapshot.__main__ import (
+    compute_cutoff,
+    compute_vdevs,
     parse_args,
+    period_type,
     DEFAULT_SNAPSHOT_PERIOD,
     DEFAULT_SNAPSHOT_PREFIX,
+    NOW,
     SNAPSHOT_CATEGORIES,
 )
+
+
+def patch_zfs_snapshot(rel_path):
+    return patch("zfs_snapshot.zfs_snapshot.%s" % (rel_path))
 
 
 class TestArguments(unittest.TestCase):
@@ -83,10 +93,10 @@ class TestArguments(unittest.TestCase):
         ]
         test_inputs_outputs_negative = [
             ["--vdev", "doesnotexist"],
-            ["--vdev", vdevs[0] + " "]
+            ["--vdev", vdevs[0] + " "],
         ]
 
-        with patch("zfs_snapshot.zfs_snapshot.list_vdevs") as list_vdevs:
+        with patch_zfs_snapshot("list_vdevs") as list_vdevs:
             list_vdevs.return_value = vdevs
             for args, test_output in test_inputs_outputs_positive:
                 opts = parse_args(args=args)
@@ -95,3 +105,62 @@ class TestArguments(unittest.TestCase):
             for args in test_inputs_outputs_negative:
                 with self.assertRaises(SystemExit):
                     parse_args(args=args)
+
+
+class TestMain(unittest.TestCase):
+    def test_compute_cutoff(self):
+        default_snapshot_type_index = period_type(DEFAULT_SNAPSHOT_PERIOD)
+        default_snapshot_category = SNAPSHOT_CATEGORIES[default_snapshot_type_index]
+        self.assertEquals(
+            compute_cutoff(default_snapshot_category, 42),
+            NOW - relativedelta(**{default_snapshot_category.name: 42}),
+        )
+        self.assertEquals(
+            compute_cutoff(default_snapshot_category, None),
+            NOW - default_snapshot_category.lifetime,
+        )
+
+    def test_compute_vdevs(self):
+        all_vdevs = ["bogus-vdev", "bogus-vdev/nested", "another/bogus/vdev"]
+
+        with patch_zfs_snapshot("list_vdevs") as list_vdevs, patch_zfs_snapshot(
+            "zfs"
+        ) as zfs:
+            list_vdevs.return_value = all_vdevs
+
+            zfs.side_effect = ["bogus-vdev\nbogus-vdev/nested\n"]
+            # Recursive with --vdev
+            self.assertEquals(
+                compute_vdevs(["bogus-vdev"], True), ["bogus-vdev", "bogus-vdev/nested"]
+            )
+            zfs.assert_has_calls([call("list -H -o name -r %s" % ("bogus-vdev"))])
+            zfs.reset_mock()
+
+            # Recursive with --vdev, redux
+            zfs.side_effect = [
+                "bogus-vdev\nbogus-vdev/nested\n",
+                "another/bogus/vdev\n",
+            ]
+            self.assertEquals(
+                compute_vdevs(["bogus-vdev", "another/bogus/vdev"], True),
+                ["bogus-vdev", "bogus-vdev/nested", "another/bogus/vdev"],
+            )
+            zfs.assert_has_calls(
+                [
+                    call("list -H -o name -r %s" % ("bogus-vdev")),
+                    call("list -H -o name -r %s" % ("another/bogus/vdev")),
+                ]
+            )
+            zfs.reset_mock()
+
+            # Non-recursive with --vdev
+            self.assertEquals(
+                compute_vdevs(["bogus-vdev", "another/bogus/vdev"], False),
+                ["bogus-vdev", "another/bogus/vdev"],
+            )
+
+            # Non-recursive with --vdev
+            self.assertEquals(compute_vdevs(["bogus-vdev"], False), ["bogus-vdev"])
+
+            # All vdevs
+            self.assertEquals(compute_vdevs([], False), all_vdevs)

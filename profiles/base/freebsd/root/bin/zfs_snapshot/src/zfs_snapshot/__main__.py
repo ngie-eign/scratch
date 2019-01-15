@@ -154,6 +154,25 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
+def compute_cutoff(snapshot_category, lifetime_override):
+    if lifetime_override:
+        lifetime = relativedelta(**{snapshot_category.name: lifetime_override})
+    else:
+        lifetime = snapshot_category.lifetime
+    return NOW - lifetime
+
+
+def compute_vdevs(vdevs, recursive):
+    if recursive and vdevs:
+        target_vdevs = []
+        for vdev in vdevs:
+            target_vdevs.extend(
+                zfs_snapshot.zfs("list -H -o name -r %s" % (vdev)).splitlines()
+            )
+        return target_vdevs
+    return vdevs or list_vdevs()
+
+
 def main(args=None):
     """self-explanatory"""
 
@@ -171,29 +190,14 @@ def main(args=None):
     )
 
     snapshot_category = SNAPSHOT_CATEGORIES[opts.snapshot_period]
-    lifetime = (
-        relativedelta({snapshot_category.name: opts.lifetime})
-        or snapshot_category.lifetime
-    )
-    snapshot_cutoff = NOW - lifetime
     snapshot_suffix = snapshot_category.date_format_qualifier
-
     snapshot_name_format = "%s-%s%s" % (
         opts.snapshot_prefix,
         date_format,
         snapshot_suffix,
     )
-
-    if opts.recursive and opts.vdevs:
-        vdevs = []
-        for vdev in opts.vdevs:
-            vdevs.extend(
-                zfs_snapshot.zfs("list -H -o name -r %s" % (vdev)).splitlines()
-            )
-    elif opts.vdevs:
-        vdevs = opts.vdevs
-    else:
-        vdevs = list_vdevs()
+    snapshot_cutoff = compute_cutoff(snapshot_category, opts.lifetime)
+    vdevs = compute_vdevs(opts.vdevs, opts.recursive)
 
     for vdev in sorted(vdevs, reverse=True):
         execute_snapshot_policy(
