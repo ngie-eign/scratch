@@ -211,10 +211,12 @@ def main(args=None):
 
     all_vdevs = list_vdevs()
     if opts.vdevs:
-        vdevs = opts.vdevs
         if opts.recursive:
-            # XXX: this is wrong
-            vdevs = [vdev for vdev in all_vdevs if vdev.startswith(vdev + "/")]
+            vdevs = []
+            for vdev in opts.vdevs:
+                vdevs.extend(zfs("list -H -o name %s %s" % (vdevs)).splitlines())
+        else:
+            vdevs = opts.vdevs
     else:
         vdevs = all_vdevs
 

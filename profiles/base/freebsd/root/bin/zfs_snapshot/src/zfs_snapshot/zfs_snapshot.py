@@ -115,23 +115,9 @@ def list_snapshots(vdev, recursive=True):
         A list of zero or more snapshots
     """
 
-    def filter_function(snapshot):
-        """Filter by parent vdev or nested vdev (depending on how the
-           function was called).
+    recursive_flag = " -r" if recursive else ""
 
-        :Parameters:
-            snapshot: full snapshot name
-        """
-
-        if snapshot.startswith(vdev + SNAPSHOT_SEPARATOR):
-            return True
-        if recursive and snapshot.startswith(vdev + "/"):
-            return True
-        return False
-
-    snapshot_list = zfs("list -H -t snapshot -o name").splitlines()
-
-    return [snap for snap in snapshot_list if filter_function(snap)]
+    return zfs("list -H -t snapshot %s -o name %s" % (recursive_flag, vdev)).splitlines()
 
 
 def is_destroyable_snapshot(vdev, cutoff, date_format, snapshot):
@@ -154,7 +140,7 @@ def is_destroyable_snapshot(vdev, cutoff, date_format, snapshot):
     snapshot_formatted = snapshot_name(vdev, date_format)
     try:
         snapshot_time = time.strptime(snapshot, snapshot_formatted)
-    except ValueError as exc:
+    except ValueError:
         # Date format does not match
         return False
     return snapshot_time < time.struct_time(cutoff)

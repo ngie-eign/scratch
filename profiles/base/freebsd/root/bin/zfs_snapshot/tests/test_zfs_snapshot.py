@@ -64,18 +64,30 @@ class TestZfsSnapshot(unittest.TestCase):
         test_snapshots = [
             zfs_snapshot.snapshot_name(test_vdev, "date1"),
             zfs_snapshot.snapshot_name("%s/nested" % (test_vdev), "date1"),
-            zfs_snapshot.snapshot_name("i/will/not/match", "date3"),
+            zfs_snapshot.snapshot_name("%s/nested" % (test_vdev), "date2"),
+            zfs_snapshot.snapshot_name("%s.trailer", "date1"),
         ]
         test_input_outputs = [
-            ((test_vdev,), test_snapshots[:2]),
+            ((test_vdev,), test_snapshots[:3]),
             ((test_vdev, False), test_snapshots[0:1]),
-            ((test_vdev, True), test_snapshots[:2]),
-            (("nonexistent-vdev", False), []),
-            (("nonexistent-vdev", True), []),
+            ((test_vdev, True), test_snapshots[:3]),
         ]
         for test_inputs, test_outputs in test_input_outputs:
+            if len(test_inputs) == 1:
+                recursive = True
+            else:
+                recursive = test_inputs[-1]
             with patch_zfs_snapshot("zfs") as zfs:
-                zfs.return_value = "\n".join(test_snapshots)
+                zfs.return_value = "\n".join(
+                    [
+                        snapshot
+                        for snapshot in test_snapshots
+                        if snapshot.startswith(
+                            test_vdev + zfs_snapshot.SNAPSHOT_SEPARATOR
+                        )
+                        or (recursive and snapshot.startswith(test_vdev + "/"))
+                    ]
+                )
                 self.assertEqual(
                     zfs_snapshot.list_snapshots(*test_inputs),
                     test_outputs,
