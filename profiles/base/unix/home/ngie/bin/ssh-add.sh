@@ -20,8 +20,7 @@ if [ ! -f $SSH_AGENT_ENV ]; then
 	fi
 fi
 . $SSH_AGENT_ENV >/dev/null
-ssh-add
-for extra_ssh_key in ~/.ssh/id_rsa_FreeBSD; do
+for extra_ssh_key in $(find ~/.ssh/ -name \*.pub | sed -e 's/\.pub//'); do
 	if [ -e $extra_ssh_key ]; then
 		ssh-add $extra_ssh_key
 	fi
