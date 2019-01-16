@@ -21,10 +21,10 @@ do
 		;;
 	esac
 	git checkout $branch && git merge --no-edit $branch &&
-	git merge --no-edit $parent_branch || exit 1
+	git rebase $parent_branch || exit 1
 done
 if ${AUTO_PUSH:-true}
 then
-	git push --all
+	git push --all -f
 fi
 git gc
