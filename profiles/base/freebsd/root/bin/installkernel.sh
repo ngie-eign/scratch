@@ -85,10 +85,11 @@ export DESTDIR
 
 KERNCONF=$(make -VKERNCONF -f $SRCCONF)
 KERNCONF=${KERNCONF:-GENERIC}
+VCS_VERSION="${svn:-$svn}${git:-$git}"
+[ -n "$VCS_VERSION" ] && VCS_VERSION=".${VCS_VERSION}"
 set -e
-for _kc in ${KERNCONF}
-do
-	instkernname=$_kc.${svn:-$svn}${git:-$git}
+for _kc in ${KERNCONF}; do
+	instkernname=$_kc${VCS_VERSION}
 	make installkernel INSTKERNNAME="$instkernname" KERNCONF=$_kc
 done
 if [ -n "${DEFAULT_KERNCONF}" ]; then
