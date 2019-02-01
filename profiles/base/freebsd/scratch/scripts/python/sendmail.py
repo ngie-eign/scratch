@@ -11,7 +11,7 @@ echo 'hello world!' | \
      python sendmail.py -d gmail.com -m mail.zonarsystems.com -p 587 \
                         -s 'Hello world'
 
-Ngie Cooper, October 2013
+Enji Cooper, October 2013
 """
 
 from email.mime.multipart import MIMEMultipart
