@@ -1,6 +1,7 @@
 #!/bin/sh
 
-SSH_AGENT_ENV=/tmp/ssh-agent-env.$(whoami)
+: ${TMPDIR=/tmp}
+SSH_AGENT_ENV=$TMPDIR/ssh-agent-env.$(whoami)
 if [ -f $SSH_AGENT_ENV ]; then
 	(
 	. $SSH_AGENT_ENV >/dev/null
