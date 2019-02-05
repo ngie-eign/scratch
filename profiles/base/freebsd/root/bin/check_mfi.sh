@@ -8,11 +8,16 @@ EOF
 	exit 1
 }
 
+QUIET=false
 UNITS=$(cd /dev; ls mfi* | grep -v d | sed -e 's/mfi//g')
 VERBOSE=false
-while getopts 'v' optch
+while getopts 'quv' optch
 do
 	case "$optch" in
+	*q*)
+		QUIET=true
+		VERBOSE=false
+		;;
 	*u*)
 		UNITS="$OPTARG"
 		;;
@@ -25,6 +30,7 @@ do
 	esac
 done
 
+exit_code=0
 for unit in $UNITS
 do
 	if ! drives="$(mfiutil -u $unit show drives)"
@@ -43,7 +49,9 @@ The following drives are unhealthy for unit $unit
 Drive	State
 $unhealthy_drives
 EOF
-	else
+		exit_code=1
+	elif ! $QUIET; then
 		echo "All drives for controller $unit are healthy"
 	fi
 done
+exit $exit_code
