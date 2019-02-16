@@ -28,8 +28,6 @@ import argparse
 import collections
 import datetime
 
-from dateutil.relativedelta import relativedelta
-
 from . import zfs_snapshot
 
 
@@ -39,19 +37,30 @@ SnapshotClass = collections.namedtuple(
 
 DATE_ELEMENT_SEPARATOR = "."
 NOW = datetime.datetime.now()
+# These are very much approximations of reality.
+#
+# XXX: I really wish `dateutil.relativedelta(..)` actually worked reliably (it
+# was screwing up the difference between a datetime and the value in the
+# relativedelta).
+WEEKS_IN_A_MONTH = 4
+WEEKS_IN_A_YEAR = 52
 # The list order matters. See `main(..)` for more details.
 SNAPSHOT_CATEGORIES = [
     SnapshotClass(
-        name="years", lifetime=relativedelta(years=2), date_format_qualifier="Y"
+        name="years", lifetime=datetime.timedelta(weeks=2 * WEEKS_IN_A_YEAR),
+        date_format_qualifier="Y"
     ),
     SnapshotClass(
-        name="months", lifetime=relativedelta(years=1), date_format_qualifier="m"
+        name="months", lifetime=datetime.timedelta(weeks=1 * WEEKS_IN_A_YEAR),
+        date_format_qualifier="m"
     ),
     SnapshotClass(
-        name="days", lifetime=relativedelta(months=1), date_format_qualifier="d"
+        name="days", lifetime=datetime.timedelta(weeks=1 * WEEKS_IN_A_MONTH),
+        date_format_qualifier="d"
     ),
     SnapshotClass(
-        name="hours", lifetime=relativedelta(day=1), date_format_qualifier="H"
+        name="hours", lifetime=datetime.timedelta(days=1),
+        date_format_qualifier="H"
     ),
 ]
 DEFAULT_SNAPSHOT_PERIOD = "hours"
@@ -156,7 +165,14 @@ def parse_args(args=None):
 
 def compute_cutoff(snapshot_category, lifetime_override):
     if lifetime_override:
-        lifetime = relativedelta(**{snapshot_category.name: lifetime_override})
+        category_name = snapshot_category.name
+        if category_name == "years":
+            category_name = "weeks"
+            lifetime_override *= WEEKS_IN_A_YEAR
+        elif category_name == "months":
+            category_name = "weeks"
+            lifetime_override *= WEEKS_IN_A_MONTH
+        lifetime = datetime.timedelta(**{category_name: lifetime_override})
     else:
         lifetime = snapshot_category.lifetime
     return NOW - lifetime
@@ -207,5 +223,3 @@ def main(args=None):
             snapshot_name_format,
             recursive=opts.recursive,
         )
-
-

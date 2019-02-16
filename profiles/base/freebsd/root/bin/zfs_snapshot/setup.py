@@ -12,7 +12,4 @@ setup(
     packages=["zfs_snapshot"],
     package_dir={"zfs_snapshot": "src/zfs_snapshot"},
     entry_points={"console_scripts": ["zfs_snapshot=zfs_snapshot.__main__:main"]},
-    install_requires=[
-        "python-dateutil"
-    ]
 )
