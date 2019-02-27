@@ -60,8 +60,9 @@ main(void)
 		if (matched) {
 			int i = 0;
 			for (auto& match_str: str_matches) {
-				cout << "  [" << i++ << "]: '" << match_str
+				cout << "  [" << i << "]: '" << match_str
 				     << "'" << endl;
+				i++;
 			}
 		}
 	}
