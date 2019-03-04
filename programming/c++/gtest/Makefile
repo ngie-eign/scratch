@@ -1,4 +1,5 @@
 PROGS+=	expect_nonfatal_failure_demo
+PROGS+=	skip_demo
 
 CXXFLAGS+=	-Wall -Wunused -std=c++11
 
