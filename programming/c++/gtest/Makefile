@@ -10,4 +10,4 @@ LDLIBS+=	-lgtest -lgtest_main
 all: ${PROGS}
 
 clean:
-	rm -f ${PROGS}
+	rm -f *.core ${PROGS}
