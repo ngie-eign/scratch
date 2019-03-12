@@ -4,7 +4,10 @@ import time
 
 import cProfile
 import pstats
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 def loopy():
     for i in range(20):
@@ -17,7 +20,7 @@ profiler.enable()
 loopy()
 
 profiler.disable()
-stream = StringIO.StringIO()
+stream = StringIO()
 stats = pstats.Stats(profiler,
                      stream=stream).sort_stats(*stats_keys)
 stats.print_stats()
