@@ -59,11 +59,11 @@ def main():
     if args.input:
         cmd = 'cat %s' % (args.input)
     else:
-        cmd = 'git diff --dst-prefix= --src-prefix= %s %s 2>/dev/null' % \
+        cmd = 'git diff --dst-prefix= --src-prefix= %s..%s -- 2>/dev/null' % \
             (args.src, args.dest)
     output = subprocess.check_output('%s | diffstat -qt' % (cmd),
                                      shell=True)
-    with io.StringIO(unicode(output)) as input_fp:
+    with io.StringIO(output.decode("utf-8")) as input_fp:
         csv_reader = csv.DictReader(input_fp)
         rows = []
 
