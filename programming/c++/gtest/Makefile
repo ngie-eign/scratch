@@ -1,3 +1,4 @@
+PROGS+=	disabled_demo
 PROGS+=	expect_nonfatal_failure_demo
 PROGS+=	fixture_fail_demo
 PROGS+=	pass_fail_demo
