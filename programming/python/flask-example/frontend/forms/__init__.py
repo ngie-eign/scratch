@@ -6,6 +6,8 @@ TODO:
    is really clunky right now.
 """
 
+import importlib
+from importlib.util import spec_from_file_location
 import inspect
 import logging
 
@@ -22,19 +24,17 @@ app = Flask(__name__)
 def form_to_model(api_version, stack=1):
     """Convert a form name to a model name"""
 
-    __, filename, __, func, __, __ = \
-        inspect.getouterframes(inspect.currentframe())[stack]
-
-    form_module = inspect.getmoduleinfo(filename).name
-    model_module = 'frontend.models.v%d.%s' % (api_version, form_module)
-
-    __import__(model_module)
-    exec('model_func = %s.%s' % (model_module, func, ))
+    frame_record = inspect.getouterframes(inspect.currentframe())[stack]
+    form_module = inspect.getmodulename(frame_record.filename)
+    model_module = importlib.import_module(
+        ".%s" % (form_module), "frontend.models.v%d" % (api_version)
+    )
+    model_func = getattr(model_module, frame_record.function)
 
     return model_func
 
 
-# This lambda makes item 2. noted above a bit more transparent.
+# This function makes item 2. noted above a bit more transparent.
 #
 # NOTES:
 # - The adds 1 to the stack (hence stack=2).

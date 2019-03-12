@@ -12,9 +12,7 @@ def em_obfuscate(username, domain):
 
 
 # Email logging settings.
-SITE_ADMINS = map(lambda x: em_obfuscate(x[0], x[1]), [
-                   ('yaneurabeya', 'gmail.com'),
-                  ])
+SITE_ADMINS = [em_obfuscate('yaneurabeya', 'gmail.com')]
 SITE_HTTP_LISTEN_ADDRESS = '0.0.0.0'
 SITE_HTTP_LISTEN_PORT = 80
 SITE_HOSTNAME = socket.getfqdn()
