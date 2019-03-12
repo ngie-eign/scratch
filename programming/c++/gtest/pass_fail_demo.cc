@@ -1,5 +1,4 @@
 #include <gtest/gtest.h>
-#include <gtest/gtest-spi.h>
 
 TEST(PassFailTest, Passes) {
   EXPECT_EQ(true, true);
