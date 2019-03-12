@@ -23,12 +23,12 @@ def foo():
     assert(inspect.stack()[0][0].f_globals == globals())
     assert(inspect.stack()[0][0].f_locals == locals())
 
-    in_a_haystack = lambda: value == needle and key != 'needle'
+    in_a_haystack = lambda key, value: value == needle and key != 'needle'
 
     for needle in (a, foo, bar, d, f, ):
         print("needle => '%r'" % (needle, ))
-        print([key for key, value in locals().iteritems() if in_a_haystack()])
-        print([key for key, value in globals().iteritems() if in_a_haystack()])
+        print([key for key, value in locals().items() if in_a_haystack(key, value)])
+        print([key for key, value in globals().items() if in_a_haystack(key, value)])
 
 
 foo()
