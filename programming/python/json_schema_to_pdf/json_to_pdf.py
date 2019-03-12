@@ -166,7 +166,7 @@ def json_to_pdf(instance, schema, pdf_filename):
     #print(json.dumps(schema_tables, indent=4))
     for schema_description, schema_table in schema_tables:
 
-        #print schema_description
+        #print(schema_description)
 
         # XXX: the ` ` paragraphs are hacks around the fact that I don't know
         # how to flow text properly to pad the tables.
