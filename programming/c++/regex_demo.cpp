@@ -29,10 +29,12 @@ main(void)
 		// Positive cases
 		Matcher("fox"),
 		Matcher("The.+"),
+		Matcher("^The .+"),
 		Matcher("dog"),
 		Matcher("jumped[[:space:]]+([^[:space:]]+)"),
 		// Negative cases
 		Matcher("fox quick"),
+		Matcher("([^\n]+)"),
 		Matcher("Never matches")
 	};
 	// smatch - string iterator; cmatch is for `char *`.
