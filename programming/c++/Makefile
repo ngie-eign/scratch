@@ -3,7 +3,7 @@ PROGS+=	regex_demo
 PROGS+=	set_demo
 PROGS+=	string_trim_demo
 
-CXXFLAGS+=	-Wall -Wunused -std=c++11
+CXXFLAGS+=	-g -W -Wall -Wunused -Werror -std=c++11
 
 all: ${PROGS}
 
