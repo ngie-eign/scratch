@@ -1,0 +1,71 @@
+## pyspark
+
+### Introduction
+
+The pyspark shell provided by the apache-spark homebrew formula seems to run
+python 2.7, so some additional features will need to be pulled in for py3
+goodness:
+
+```
+>>> from __future__ import print_function
+```
+
+Much of the inspiration/poking around comes from
+*Learning Spark, Lightning-Fast Big Data Analysis* (O'Reilly).
+
+Some of the tests were run from an apache/spark checkout and differed from the
+book, due to its age and the evolution of the project:
+```
+$ git log -n 1 --format=oneline master
+61561c1c2d4e47191fdfe9bf3539a3db29e89fa9 (HEAD -> master, origin/master, origin/HEAD) [SPARK-27252][SQL][FOLLOWUP] Calculate min and max days independently from time zone in ComputeCurrentTimeSuite
+```
+
+### Manipulating RDDs
+
+```
+>>> lines = sc.textFile("README.md")
+>>> lines_with_python = lines.filter(lambda v: "Python" in v)
+>>> lines_with_python.foreach(lambda v: print(v))
+high-level APIs in Scala, Java, Python, and R, and an optimized engine that
+## Interactive Python Shell
+Alternatively, if you prefer Python, you can use the Python shell:
+>>> lines_with_python.take(3)
+[u'high-level APIs in Scala, Java, Python, and R, and an optimized engine that', u'## Interactive Python Shell', u'Alternatively, if you prefer Python, you can use the Python shell:']
+>>> lines_with_python.first()
+u'high-level APIs in Scala, Java, Python, and R, and an optimized engine that'
+>>> lines.first()
+u'# Apache Spark'
+>>> lines.count()
+109
+>>> a_range_rdd = sc.parallelize(range(20))
+>>> a_range_rdd.map(lambda v: v * v).collect()
+[0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225, 256, 289, 324, 361]
+>>> a_range_rdd.map(lambda v: v * v).foreach(print)
+100
+121
+256
+289
+324
+361
+144
+169
+196
+225
+16
+25
+0
+1
+4
+9
+36
+49
+64
+81
+```
+
+In the above lines, per the book, `.count()`, `.first()`, and `.take(3)` are
+actions, whereas `.filter()` and `.map()` are transforms (the former return
+non-RDD types, whereas the latter return RDD types).
+
+Interestingly enough, `.collect()` seems to serialize the values in a FIFO
+manner, whereas `.foreach()` seems to handle them asynchronously.
