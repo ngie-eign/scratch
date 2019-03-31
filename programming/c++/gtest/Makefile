@@ -8,7 +8,6 @@ PROGS+=	setup_environment_nonfatal_fail_demo
 PROGS+=	setup_environment_skip_demo
 PROGS+=	skip_demo
 PROGS+=	teardown_environment_fail_demo
-PROGS+=	type_parameterized_test_suite_demo
 PROGS+=	typed_test_suite_demo
 
 CXXFLAGS+=	-Werror -W -Wall -Wunused
