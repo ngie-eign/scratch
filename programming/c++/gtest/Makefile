@@ -28,7 +28,7 @@ endif
 
 CPP_LIB?=
 
-#LDLIBS+=	-lgtest -lgtest_main
+#LDLIBS+=	-lgtest -lgtest_main ${CPP_LIB}
 LDLIBS+=	-lgtest -lgtest_main -lpthread ${CPP_LIB}
 
 all: ${PROGS}
