@@ -68,4 +68,5 @@ actions, whereas `.filter()` and `.map()` are transforms (the former return
 non-RDD types, whereas the latter return RDD types).
 
 Interestingly enough, `.collect()` seems to serialize the values in a FIFO
-manner, whereas `.foreach()` seems to handle them asynchronously.
+manner, whereas `.foreach()` seems to handle them asynchronously. It might be
+because `.collect()` is an action, whereas `.foreach()` is a transform.
