@@ -6,15 +6,16 @@ original_branch=$(git branch -l | awk '$1 == "*" { print $NF }')
 trap "git checkout $original_branch" EXIT
 cd "$(git rev-parse --show-toplevel)"
 : ${GIT_MASTER=master}
+: ${GIT_UPSTREAM=upstream}
 git checkout $GIT_MASTER
 git pull --all
-git merge upstream/$GIT_MASTER
-branches=$(git branch -l | grep -v master | grep -v $GIT_MASTER | sort -du || :)
+git merge $GIT_UPSTREAM/$GIT_MASTER
+branches=$(git branch -l | awk '$1 != "*" { print $NF }' | sort -du || :)
 for branch in $branches
 do
 	case "$branch" in
 	*/*)
-		parent_branch=upstream/$branch
+		parent_branch=$GIT_UPSTREAM/$branch
 		;;
 	*)
 		parent_branch=$GIT_MASTER
@@ -27,4 +28,7 @@ if ${AUTO_PUSH:-true}
 then
 	git push --all -f
 fi
-git gc
+if ${AUTO_GC:-true}
+then
+	git gc
+fi
