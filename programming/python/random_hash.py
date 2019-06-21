@@ -17,7 +17,7 @@ if is_py3:
 else:
     CHR_MAX = 128
     CONV_FUNC = lambda x: chr(x)
-MINIMUM_LENGTH = 12
+MINIMUM_LENGTH = 6
 
 
 def length_type(arg):
