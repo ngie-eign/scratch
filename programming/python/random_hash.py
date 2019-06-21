@@ -23,7 +23,7 @@ MINIMUM_LENGTH = 12
 def length_type(arg):
     value = int(arg)
     if value <= MINIMUM_LENGTH:
-        raise ValueError(
+        raise argparse.ArgumentTypeError(
             "The --length argument (%d) must be greater than %d"
             % (value, MINIMUM_LENGTH)
         )
