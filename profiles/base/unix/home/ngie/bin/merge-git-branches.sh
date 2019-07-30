@@ -13,6 +13,10 @@ git merge $GIT_UPSTREAM/$GIT_MASTER
 branches=$(git branch -l | awk '$1 != "*" { print $NF }' | sort -du || :)
 for branch in $branches
 do
+	git checkout $branch
+	# Pull in the latest committed changes so they don't get stomped on by
+	# another force-pushed set of changes.
+	git rebase origin/$branch
 	case "$branch" in
 	*/*)
 		parent_branch=$GIT_UPSTREAM/$branch
@@ -21,8 +25,8 @@ do
 		parent_branch=$GIT_MASTER
 		;;
 	esac
-	git checkout $branch && git merge --no-edit $branch &&
-	git rebase $parent_branch || exit 1
+	git merge --no-edit $branch
+	git rebase $parent_branch
 done
 if ${AUTO_PUSH:-true}
 then
