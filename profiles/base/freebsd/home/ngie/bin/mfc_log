@@ -29,7 +29,7 @@ for rev in $revisions; do
 		   -e '/^MFC after:/d' \
 		   -e '/Differential Revision:/d' \
 		   -e '/(Approved|Reported|Reviewed|Sponsored|Submitted) by:/d' \
-		   -e '/X-MFC.*with:/d' \
+		   -e '/^(X\-)?MFC.*with:/d' \
 		   -e 's/^ *$//g' \
 		   -e "/^r${rev}/s/^//" \
 		   -e '/\-{72}/d' | \
