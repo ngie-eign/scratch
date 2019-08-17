@@ -68,3 +68,7 @@ pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | egrep -v 'git|mercurial' 
 A link to comparator methods and such: https://rszalski.github.io/magicmethods/
 
 ==============================
+
+Secrets, dealing with PyPI, etc: https://glyph.twistedmatrix.com/2017/10/careful-with-that-pypi.html
+
+==============================
