@@ -16,7 +16,8 @@ do
 	git checkout $branch
 	# Pull in the latest committed changes so they don't get stomped on by
 	# another force-pushed set of changes.
-	git rebase origin/$branch
+	tracking_branch_repo=`git config branch.$branch.remote`
+	git rebase $tracking_branch_repo/$branch
 	case "$branch" in
 	*/*)
 		parent_branch=$GIT_UPSTREAM/$branch
