@@ -1,0 +1,5 @@
+htmlcov[23]/
+*.egg-info*
+.coverage
+.mypy_cache/
+.tox/
