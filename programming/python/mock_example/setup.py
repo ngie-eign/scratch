@@ -9,13 +9,16 @@ setup(
     author="Enji Cooper",
     author_email="yaneurabeya@gmail.com",
     packages=["fizzbuzz"],
-    package_dir={"fizzbuzz": "src"},
+    package_dir={
+        "fizzbuzz": "src",
+        "fizzbuzz.tests": "tests",
+    },
     entry_points={"console_scripts": ["fizzbuzz=fizzbuzz.__main__:main"]},
     install_requires=[
         "future",
         "typing;python_version<'3'",
     ],
-    test_suite="fizzbuzz.test",
+    test_suite="fizzbuzz.tests",
     tests_require=[
         "mock;python_version<'3'",
     ]
