@@ -1,0 +1,3 @@
+From https://superuser.com/a/908310 :
+
+% gsettings set org.gnome.desktop.notifications show-banners false
