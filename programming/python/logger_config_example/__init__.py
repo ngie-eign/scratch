@@ -41,7 +41,7 @@ DEFAULT_CONFIG = {
     "loggers": {
         "foo.bar.baz": {
             "level": "DEBUG",
-            "handlers": ["stdout", "syslog_file"],
+            "handlers": ["stdout", "syslog_file", "syslog_network"],
         }
     },
     "root": {
