@@ -1,5 +1,9 @@
 #!/usr/bin/env python
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
 import logging
 import logging.config
 import logging.handlers
@@ -52,6 +56,11 @@ DEFAULT_CONFIG = {
 }
 
 
-def logger(name):
+@lru_cache(maxsize=1)
+def _init_logger():
     logging.config.dictConfig(DEFAULT_CONFIG)
+
+
+def logger(name):
+    _init_logger()
     return logging.getLogger(name)
