@@ -22,16 +22,39 @@ set -e
 original_branch=$(git branch -l | awk '$1 == "*" { print $NF }')
 trap "git checkout $original_branch" EXIT
 cd "$(git rev-parse --show-toplevel)"
+: ${AUTO_PUSH=false}
 : ${DO_NOT_MIRROR_UPSTREAM_IN_CLONE=false}
 : ${GIT_MASTER=master}
 : ${GIT_UPSTREAM=upstream}
+git fetch --all
 if $DO_NOT_MIRROR_UPSTREAM_IN_CLONE; then
 	debug "Not mirroring $GIT_UPSTREAM/$GIT_MASTER in clone. Fetching all repos instead."
-	git fetch --all
 else
 	git checkout $GIT_MASTER
-	git pull --all
-	git merge $GIT_UPSTREAM/$GIT_MASTER
+	# Pull in the latest committed changes so they don't get stomped on by
+	# another force-pushed set of changes.
+	branch="$GIT_MASTER"
+	if ! branch_remote=$(git config branch.$branch.remote); then
+		error "Could not determine remote for $branch"
+	fi
+	git merge --no-edit $branch
+	if parent_branch=$(git config branch.$branch.parent); then
+		error "Could not determine remote for $branch"
+	else
+		case "$branch" in
+		*/*)
+			parent_branch=$GIT_UPSTREAM/$branch
+			;;
+		*)
+			parent_branch=$GIT_MASTER
+			;;
+		esac
+		debug "Guessing $branch's parent is $parent_branch"
+		git rebase $GIT_UPSTREAM/$parent_branch
+	fi
+	if ${AUTO_PUSH}; then
+		git push -f $branch_remote $branch
+	fi
 fi
 branches=$(git branch -l | awk '$1 != "*" { print $NF }' | sort -du || :)
 # If the end-user asked for a particular expression to whitelist
@@ -69,7 +92,7 @@ for branch in $branches; do
 		debug "Guessing $branch's parent is $parent_branch"
 	fi
 	git rebase $parent_branch
-	if ${AUTO_PUSH:-true}; then
+	if ${AUTO_PUSH}; then
 		git push -f $branch_remote $branch
 	fi
 done
