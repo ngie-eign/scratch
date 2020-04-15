@@ -1,6 +1,8 @@
 #!/bin/sh
 
-. "$HOME/.bashrc"
+for rc in .bashrc .bash_login; do
+	[ -e "$HOME/$rc" ] && . "$HOME/$rc"
+done
 
 if out=$(for verb in update upgrade cleanup; do brew $verb; done); then
 	message=""
