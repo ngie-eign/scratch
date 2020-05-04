@@ -7,9 +7,7 @@ Module for defining daemons and services.
 
 from argparse import ArgumentParser
 from ConfigParser import RawConfigParser
-#import grp
 import os
-#import pwd
 import sys
 
 import daemon
@@ -96,7 +94,6 @@ class Service(object):
 
         parser.add_argument('--conf', '-C', dest='config_file',
                             help='configuration file',
-                            #default=PATH,
                             )
 
         self.parse_args_pre(parser)
@@ -181,8 +178,8 @@ class Daemon(Service):
         self.pidfile = args.pidfile
         # XXX: doesn't work; always fails with EPERM because python exe doesn't
         # have setuid/setgid perms
-        self.runas_group = None #grp.getgrnam(args.runas_group).gr_gid
-        self.runas_user = None #pwd.getpwnam(args.runas_user).pw_uid
+        self.runas_group = None
+        self.runas_user = None
 
         super(Daemon, self).parse_args_post(args)
 
@@ -209,7 +206,7 @@ class Daemon(Service):
         self.logger.info('Starting daemon')
         try:
             pidlock_obj = pidlockfile.PIDLockFile(self.pidfile, timeout=0)
-        except:
+        except Exception:
             self.logger.exception('Failed to create the pidfile object')
             raise
 
@@ -221,7 +218,7 @@ class Daemon(Service):
                 self.run()
         except (KeyboardInterrupt, SystemExit):
             pass
-        except:
+        except Exception:
             self.logger.exception('Failed to daemonize')
             raise
 
