@@ -2,14 +2,16 @@
 or under another daemonizing script/infrastructure) and exits
 """
 
-from zms.core.service import Daemon
+from .service import Daemon
+
 
 class HelloWorldDaemon(Daemon):
     def __init__(self):
-        super(HelloWorldDaemon, self).__init__('hello_world')
+        super(HelloWorldDaemon, self).__init__("hello_world")
 
     def run(self):
         self.logger.info("hello world!")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     HelloWorldDaemon().main()

@@ -8,15 +8,22 @@ Logger module
 import logging
 from logging.handlers import SysLogHandler
 
-# pylint: disable=C0103
-_logger = None
 
-FORMAT_VERBOSE = \
-    '[%(name)s] [%(process)d] [%(threadName)s] %(module)s %(funcName)s %(levelname)s: %(message)s'
+_LOGGER = None
 
-def init_logger(name=None,
-                address='/dev/log', facility=SysLogHandler.LOG_LOCAL5,
-                format=FORMAT_VERBOSE, level=logging.DEBUG):
+FORMAT_VERBOSE = (
+    "[%(name)s] [%(process)d] [%(threadName)s] %(module)s %(funcName)s %(levelname)s: "
+    "%(message)s"
+)
+
+
+def init_logger(
+    name=None,
+    address="/dev/log",
+    facility=SysLogHandler.LOG_LOCAL5,
+    format=FORMAT_VERBOSE,
+    level=logging.DEBUG,
+):
     """Initialize the static logger instance
 
     Will reinitialize static logger instance if it is already set.
@@ -34,7 +41,7 @@ def init_logger(name=None,
     :returns: logging.SysLogHandler object
     """
 
-    global _logger
+    global _LOGGER
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
@@ -44,9 +51,9 @@ def init_logger(name=None,
 
     logger.addHandler(handler)
 
-    _logger = logger
+    _LOGGER = logger
 
-    return _logger
+    return _LOGGER
 
 
 def get_logger():
@@ -57,9 +64,7 @@ def get_logger():
 
     :returns: logging.SysLogHandler object
     """
-    if _logger is None:
+    if _LOGGER is None:
         init_logger(name="Default_Logger", level=logging.DEBUG)
-        _logger.debug("Created default logger")
-    return _logger
-
-
+        _LOGGER.debug("Created default logger")
+    return _LOGGER
