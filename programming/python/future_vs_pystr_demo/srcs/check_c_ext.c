@@ -1,7 +1,7 @@
 #include <sys/param.h>
 
 #include <Python.h>
-#include <py3c/py3c.h>
+#include "py3c/py3c.h"
 
 PyDoc_STRVAR(Module_Doc,
 "Module for helping verify string-related *Check functions."
@@ -80,13 +80,13 @@ static PyMethodDef Module_Methods[] = {
 
 static PyModuleDef module_definition = {
 	.m_base = PyModuleDef_HEAD_INIT,
-	.m_name = "pystr_demo.c_ext",
+	.m_name = "pystr_demo_c_ext",
 	.m_doc = Module_Doc,
 	.m_size = -1,
 	.m_methods = Module_Methods
 };
 
-MODULE_INIT_FUNC(c_ext)
+MODULE_INIT_FUNC(pystr_demo_c_ext)
 {
 	PyObject *mod = NULL;
 

@@ -1,5 +1,16 @@
+import os.path
 import setuptools
+import site
+import sys
 import sysconfig
+
+
+try:
+    prefix = os.path.commonprefix([site.getsitepackages()[-1], sys.executable])
+except AttributeError:
+    prefix = site.PREFIXES[-1]
+site_includedir = os.path.join(prefix, "include", "site", "python{}".format(sysconfig.get_python_version()))
+
 
 if __name__ == "__main__":
     setuptools.setup(
@@ -9,11 +20,11 @@ if __name__ == "__main__":
         author="Enji Cooper",
         author_email="yaneurabeya@gmail.com",
         requires=["future", "six"],
-        install_requires=["py3c"],
-        packages=setuptools.find_packages(),
+        build_requires=["py3c"],
         ext_modules=[
             setuptools.Extension(
-                name="pystr_demo.c_ext",
+                include_dirs=[site_includedir],
+                name="pystr_demo_c_ext",
                 sources=["srcs/check_c_ext.c"],
             )
         ],
