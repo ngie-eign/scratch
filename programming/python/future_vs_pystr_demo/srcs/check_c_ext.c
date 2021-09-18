@@ -69,12 +69,12 @@ is_pyunicode(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef Module_Methods[] = {
-	{"is_pybytes", is_pybytes, METH_VARARGS, "Run PyBytes_Check"},
-	{"is_pystr", is_pystr, METH_VARARGS, "Run PyStr_Check."},
+	{"is_PyBytes", is_pybytes, METH_VARARGS, "Run PyBytes_Check"},
+	{"is_PyStr", is_pystr, METH_VARARGS, "Run PyStr_Check."},
 #if	PY2
-	{"is_pystring", is_pystring, METH_VARARGS, "Run PyString_Check."},
+	{"is_PyString", is_pystring, METH_VARARGS, "Run PyString_Check."},
 #endif
-	{"is_pyunicode", is_pyunicode, METH_VARARGS, "Run PyUnicode_Check."},
+	{"is_PyUnicode", is_pyunicode, METH_VARARGS, "Run PyUnicode_Check."},
 	{}
 };
 
