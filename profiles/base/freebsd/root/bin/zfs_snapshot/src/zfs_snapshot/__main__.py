@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright (c) 2019, Enji Cooper
+Copyright (c) 2019-2023, Enji Cooper
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import argparse
 import collections
 import datetime
+from typing import Any
+from typing import Optional
+from typing import Union
 
 from . import zfs_snapshot
 
@@ -47,39 +50,40 @@ WEEKS_IN_A_YEAR = 52
 # The list order matters. See `main(..)` for more details.
 SNAPSHOT_CATEGORIES = [
     SnapshotClass(
-        name="years", lifetime=datetime.timedelta(weeks=2 * WEEKS_IN_A_YEAR),
-        date_format_qualifier="Y"
+        name="years",
+        lifetime=datetime.timedelta(weeks=2 * WEEKS_IN_A_YEAR),
+        date_format_qualifier="Y",
     ),
     SnapshotClass(
-        name="months", lifetime=datetime.timedelta(weeks=1 * WEEKS_IN_A_YEAR),
-        date_format_qualifier="m"
+        name="months",
+        lifetime=datetime.timedelta(weeks=1 * WEEKS_IN_A_YEAR),
+        date_format_qualifier="m",
     ),
     SnapshotClass(
-        name="days", lifetime=datetime.timedelta(weeks=1 * WEEKS_IN_A_MONTH),
-        date_format_qualifier="d"
+        name="days",
+        lifetime=datetime.timedelta(weeks=1 * WEEKS_IN_A_MONTH),
+        date_format_qualifier="d",
     ),
     SnapshotClass(
-        name="hours", lifetime=datetime.timedelta(days=1),
-        date_format_qualifier="H"
+        name="hours", lifetime=datetime.timedelta(days=1), date_format_qualifier="H"
     ),
 ]
 DEFAULT_SNAPSHOT_PERIOD = "hours"
 DEFAULT_SNAPSHOT_PREFIX = "auto"
 
 
-def execute_snapshot_policy(*args, **kwargs):
+def execute_snapshot_policy(*args: Any, **kwargs: Any) -> None:
     """Proxy function for testing"""
     return zfs_snapshot.execute_snapshot_policy(*args, **kwargs)
 
 
-def list_vdevs(*args, **kwargs):
-    """Proxy function for testing"""
+def list_vdevs(*args: Any, **kwargs: Any) -> list[str]:
+    """Proxy function for testing."""
     return zfs_snapshot.list_vdevs(*args, **kwargs)
 
 
-def lifetime_type(optarg):
-    """Validate --lifetime to ensure that it's > 0.
-    """
+def lifetime_type(optarg: str) -> int:
+    """Validate --lifetime to ensure that it's > 0."""
 
     value = int(optarg)
     if value <= 0:
@@ -89,7 +93,7 @@ def lifetime_type(optarg):
     return value
 
 
-def period_type(optarg):
+def period_type(optarg: str) -> int:
     """Validate --snapshot-period to ensure that the value passed is valid."""
 
     value = optarg.lower()
@@ -99,7 +103,7 @@ def period_type(optarg):
     raise argparse.ArgumentTypeError("Invalid --snapshot-period: %s" % (optarg))
 
 
-def prefix_type(optarg):
+def prefix_type(optarg: str) -> str:
     """Validate --prefix to ensure that it's a non-nul string"""
 
     value = optarg
@@ -108,9 +112,11 @@ def prefix_type(optarg):
     raise argparse.ArgumentTypeError("Snapshot prefix must be a non-zero length string")
 
 
-def vdev_type(optarg):
-    """Validate --vdev to ensure that the vdev provided exist(ed) at
-       the time the script was executed.
+def vdev_type(optarg: str) -> str:
+    """Validate --vdev.
+
+    This ensures that the vdev provided on the CLI exist(ed) at the time the script was
+    executed.
     """
 
     all_vdevs = list_vdevs()
@@ -122,7 +128,7 @@ def vdev_type(optarg):
     )
 
 
-def parse_args(args=None):
+def parse_args(args: Optional[list[str]] = None) -> argparse.Namespace:
     """main"""
 
     parser = argparse.ArgumentParser()
@@ -163,7 +169,10 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
-def compute_cutoff(snapshot_category, lifetime_override):
+def compute_cutoff(
+    snapshot_category: SnapshotClass,
+    lifetime_override: Union[int, float],
+) -> datetime.datetime:
     if lifetime_override:
         category_name = snapshot_category.name
         if category_name == "years":
@@ -178,18 +187,18 @@ def compute_cutoff(snapshot_category, lifetime_override):
     return NOW - lifetime
 
 
-def compute_vdevs(vdevs, recursive):
+def compute_vdevs(vdevs: list[str], recursive: bool) -> list[str]:
     if recursive and vdevs:
         target_vdevs = []
         for vdev in vdevs:
             target_vdevs.extend(
-                zfs_snapshot.zfs("list -H -o name -r %s" % (vdev)).splitlines()
+                zfs_snapshot.zfs(f"list -H -o name -r {vdev}").splitlines()
             )
         return target_vdevs
     return vdevs or list_vdevs()
 
 
-def main(args=None):
+def main(args: Optional[list[str]] = None) -> None:
     """self-explanatory"""
 
     opts = parse_args(args=args)

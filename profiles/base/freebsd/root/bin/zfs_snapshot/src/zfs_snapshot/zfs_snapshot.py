@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Copyright (c) 2012-2019, Enji Cooper
+Copyright (c) 2012-2023, Enji Cooper
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -33,7 +33,7 @@ SNAPSHOT_SEPARATOR = "@"
 ZFS = "/sbin/zfs"
 
 
-def snapshot_name(vdev, date_format):
+def snapshot_name(vdev: str, date_format: str) -> str:
     """Create a properly formatted snapshot name
 
     :Parameters:
@@ -44,7 +44,7 @@ def snapshot_name(vdev, date_format):
     return "%s%s%s" % (vdev, SNAPSHOT_SEPARATOR, date_format)
 
 
-def zfs(arg_str):
+def zfs(arg_str: str) -> str:
     """A command through zfs(8).
 
     :Parameters:
@@ -54,14 +54,14 @@ def zfs(arg_str):
     :Returns:
         The output from zfs(8).
     """
-    output = subprocess.check_output([ZFS] + shlex.split(arg_str))
-    try:
-        return str(output, encoding="utf-8")
-    except TypeError:
-        return output
+    return subprocess.check_output(
+        [ZFS] + shlex.split(arg_str),
+        encoding="utf-8",
+        errors="surrogateescape",
+    )
 
 
-def create_snapshot(vdev, date_format):
+def create_snapshot(vdev: str, date_format: str) -> None:
     """Create a snapshot for a vdev with a given date format.
 
     :Parameters:
@@ -69,21 +69,20 @@ def create_snapshot(vdev, date_format):
         date_format: strftime(3) compatible date format to assign to the
                      snapshot.
     """
+    snap_name = snapshot_name(vdev, date_format)
+    zfs(f"snapshot {snap_name}")
 
-    zfs("snapshot %s" % (snapshot_name(vdev, date_format)))
 
-
-def destroy_snapshot(snapshot):
+def destroy_snapshot(snapshot: str) -> None:
     """Destroy a snapshot
 
     :Parameters:
         snapshot: name of the snapshot to destroy.
     """
+    zfs(f"destroy {snapshot}")
 
-    zfs("destroy %s" % (snapshot))
 
-
-def list_vdevs():
+def list_vdevs() -> list[str]:
     """Return all vdevs.
 
     :Raises:
@@ -99,7 +98,7 @@ def list_vdevs():
     return vdevs
 
 
-def list_snapshots(vdev, recursive=True):
+def list_snapshots(vdev: str, recursive: bool = True) -> list[str]:
     """Get a list of ZFS snapshots for a given vdev
 
     :Parameters:
@@ -109,13 +108,17 @@ def list_snapshots(vdev, recursive=True):
     :Returns:
         A list of zero or more snapshots
     """
-
     recursive_flag = " -r" if recursive else ""
 
-    return zfs("list -H -t snapshot %s -o name %s" % (recursive_flag, vdev)).splitlines()
+    return zfs(f"list -H -t snapshot {recursive_flag} -o name {vdev}").splitlines()
 
 
-def is_destroyable_snapshot(vdev, cutoff, date_format, snapshot):
+def is_destroyable_snapshot(
+    vdev: str,
+    cutoff: time.struct_time,
+    date_format: str,
+    snapshot: str,
+) -> bool:
     """Take a snapshot string, unmarshall the date, and determine if it's
        eligible for destruction.
 
@@ -123,7 +126,7 @@ def is_destroyable_snapshot(vdev, cutoff, date_format, snapshot):
         vdev:        name of the vdev to execute the snapshotting policy
                      (creation/deletion) on.
         cutoff:      any snapshots created before this time are nuked. This
-                     is a tuple, resembling a `time.struct_tm` object.
+                     is a tuple, resembling a `time.struct_time` object.
         date_format: a strftime(3) compatible date format to look for/destroy
                      snapshots with.
         snapshot:    snapshot name.
@@ -141,7 +144,13 @@ def is_destroyable_snapshot(vdev, cutoff, date_format, snapshot):
     return snapshot_time < time.struct_time(cutoff)
 
 
-def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
+def execute_snapshot_policy(
+    vdev: str,
+    now: time.struct_time,
+    cutoff: time.struct_time,
+    date_format: str,
+    recursive: bool = True,
+) -> None:
     """Execute snapshot policy on a vdev -- destroying as necessary and
        creating a snapshot at the end.
 
@@ -149,10 +158,10 @@ def execute_snapshot_policy(vdev, now, cutoff, date_format, recursive=True):
         vdev:        name of the vdev to execute the snapshotting policy
                      (creation/deletion) on.
         now:         new time to snapshot against. This should be the time
-                     that the script execution was started (e.g. a stable
-                     value).
+                     that the script execution was started, i.e., a stable
+                     value.
         cutoff:      any snapshots created before this time are nuked. This
-                     is a tuple, resembling a `time.struct_tm` object.
+                     is a tuple, resembling a `time.struct_time` object.
         date_format: a strftime(3) compatible date format to look for/destroy
                      snapshots with.
         recursive:   execute zfs snapshot create recursively.

@@ -1,5 +1,5 @@
 """
-Copyright (c) 2019, Enji Cooper
+Copyright (c) 2019-2023, Enji Cooper
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
