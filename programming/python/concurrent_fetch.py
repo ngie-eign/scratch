@@ -58,7 +58,7 @@ def fetch_concurrent(
     return failed_fetches
 
 
-def main(argv: Optional[str] = None) -> int:
+def main(argv: Optional[list[str]] = None) -> int:
     def positive_number(value: str) -> int:
         int_value = int(value)
         if int_value <= 0:
