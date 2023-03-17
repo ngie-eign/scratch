@@ -13,7 +13,7 @@ import requests
 BS4_PARSER = "html5lib"
 
 
-def parse_args(argv : Optional[str] = None) -> argparse.Namespace:
+def parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("url")
 
@@ -33,7 +33,7 @@ def extract_libcall_links_from_page(text: str) -> str:
     ]
 
 
-def main(argv : Optional[str] = None) -> None:
+def main(argv: Optional[list[str]] = None) -> None:
     args = parse_args(argv)
     text = get_manpage_html_text(args.url)
     parsed_links = extract_libcall_links_from_page(text)
