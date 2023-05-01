@@ -54,5 +54,5 @@ setup(
         license=frontend.__license__,
         platforms="Posix; Mac OS X",
         url="http://dev.null/",
-        install_requires=['flask==1.0.2'],
+        install_requires=['flask==2.3.2'],
 )
