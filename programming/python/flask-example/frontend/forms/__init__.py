@@ -17,6 +17,7 @@ import frontend.settings as settings
 
 app = Flask(__name__)
 
+
 # The gist of any call from the forms to the models should be something like:
 # 1. Grab the request (flask)
 # 2. Punt it over to the model logic (us)
@@ -43,7 +44,6 @@ def form_to_model(api_version, stack=1):
 #      need to write another decorator to make versioned APIs transparent
 #      first.
 def get_json_from_api(api_version):
-
     model_callee = form_to_model(api_version, stack=2)
 
     return jsonify(model_callee(**dict(request.args)))
