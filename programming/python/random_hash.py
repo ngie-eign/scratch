@@ -13,7 +13,7 @@ import sys
 is_py3 = sys.version_info >= (3, )  # XXX: use six package instead.
 if is_py3:
     CHR_MAX = 0x10FFFF
-    CONV_FUNC = lambda x: str(chr(x))
+    CONV_FUNC = lambda x: chr(x).encode()
 else:
     CHR_MAX = 128
     CONV_FUNC = lambda x: chr(x)
@@ -45,12 +45,9 @@ def main():
     random.seed()
 
     m = hashlib.sha512()
-    rand_str = "".join([
-        CONV_FUNC(random.randrange(CHR_MAX - 1))
-                  for _ in range(args.length)
-    ])
-    if is_py3:  # use six
-        rand_str = rand_str.encode("utf-8")
+    rand_str = b"".join(
+        CONV_FUNC(random.randrange(CHR_MAX - 1)) for _ in range(args.length)
+    )
 
     m.update(rand_str)
     # NB: python 2.x doesn't support `.hexdigest(length)`
