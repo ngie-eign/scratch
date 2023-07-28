@@ -1,0 +1,8 @@
+# From https://doc.rust-lang.org/cargo/reference/manifest.html
+[package]
+name = "hello_world"
+version = "0.0.1"
+authors = ["Enji Cooper <yaneurabeya AT DONTSPAMME gmail DOT com"]
+keywords = ["examples"]
+categories = ["command-line-utilities"]
+publish = false
