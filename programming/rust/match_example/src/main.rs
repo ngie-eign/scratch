@@ -1,4 +1,4 @@
-fn pick_needle(haystack: String, needle_num: usize) -> String {
+fn pick_needle(haystack: &String, needle_num: usize) -> String {
     let needle_in_haystack = haystack.chars().nth(needle_num);
 
     return match needle_in_haystack {
@@ -10,8 +10,8 @@ fn pick_needle(haystack: String, needle_num: usize) -> String {
 fn main() {
     let haystack: String = String::from("This is a haystack");
 
-    let last_needle_in_haystack_s = pick_needle(haystack.clone(), haystack.len() - 1);
-    let needle_not_in_haystack_s = pick_needle(haystack.clone(), haystack.len());
+    let last_needle_in_haystack_s = pick_needle(&haystack, haystack.len() - 1);
+    let needle_not_in_haystack_s = pick_needle(&haystack, haystack.len());
 
     println!("Haystack contents: \"{}\".", haystack);
     println!("{}", last_needle_in_haystack_s);
