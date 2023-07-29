@@ -5,6 +5,9 @@ fn fizzbuzz(i: i64) -> String
 {
     let mut result: String = String::new();
 
+    if i <= 0 {
+        return result;
+    }
     if i % 3 == 0 {
         result += "fizz";
     }
@@ -44,4 +47,22 @@ fn main()
     fb_result = fizzbuzz(arg_i);
 
     println!("{}", fb_result);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_fizzbuzz() {
+        let test_tuples = [
+            (3, "fizz"),
+            (5, "buzz"),
+            (15, "fizzbuzz"),
+            (-15, ""),
+        ];
+        for test_tuple in test_tuples.iter() {
+            assert_eq!(fizzbuzz(test_tuple.0), test_tuple.1.to_string());
+        }
+    }
 }
