@@ -22,7 +22,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         print(
             "CARGO_CRATES=    {}".format(
                 " \\\n\t".join(
-                    p["name"] + "-" + p["version"] for p in toml.load(fp)["package"]
+                    p["name"] + "-" + p["version"] for p in tomllib.load(fp)["package"]
                 )
             )
         )
