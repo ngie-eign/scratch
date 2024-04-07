@@ -8,7 +8,7 @@ HAYSTACK=$(mktemp -u)
 trap "rm -f '$HAYSTACK' '$NEEDLE'" EXIT INT TERM
 
 seq 1 1024 | tr -d ' ' | dd of="$NEEDLE" bs=1k 2>/dev/null || exit
-dd if=/dev/urandom bs=128m of="$HAYSTACK" count=1 2>/dev/null || exit
+dd if=/dev/urandom bs=128M of="$HAYSTACK" count=1 2>/dev/null
 
 system_summary
 
