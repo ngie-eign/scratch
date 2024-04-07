@@ -30,7 +30,7 @@ def length_type(arg):
     return value
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser()
     # TODO: support other hashlib-supported algorithms.
     # ap.add_argument("--algorithm")
@@ -40,7 +40,7 @@ def main():
         default=MINIMUM_LENGTH,
         help="Hash string length"
     )
-    args = ap.parse_args()
+    args = ap.parse_args(args=argv)
 
     random.seed()
 
@@ -51,8 +51,8 @@ def main():
 
     m.update(rand_str)
     # NB: python 2.x doesn't support `.hexdigest(length)`
-    print(m.hexdigest()[:args.length])
+    return m.hexdigest()[:args.length]
 
 
 if __name__ == "__main__":
-    main()
+    print(main())
