@@ -1,10 +1,13 @@
 #!/bin/sh
 
+
+_SCRIPTNAME="$(basename "$0")"
+
 _msg()
 {
 	local levelname=$1; shift
 
-	echo "${0##/*}: $levelname: $@"
+	echo "$_SCRIPTNAME: $levelname: $@"
 }
 
 debug()
