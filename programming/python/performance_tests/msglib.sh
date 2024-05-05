@@ -1,5 +1,6 @@
 #!/bin/sh
 
+
 _SCRIPTNAME="$(basename "$0")"
 
 _msg()
