@@ -1,44 +1,31 @@
 #!/usr/bin/env python
+"""Generate a 6+ character hash using SHA512 from hashlib."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
+from __future__ import annotations
 import argparse
-import binascii
 import hashlib
 import random
-import sys
 
-
-is_py3 = sys.version_info >= (3, )  # XXX: use six package instead.
-if is_py3:
-    CHR_MAX = 0x10FFFF
-    CONV_FUNC = lambda x: chr(x).encode()
-else:
-    CHR_MAX = 128
-    CONV_FUNC = lambda x: chr(x)
+CHR_MAX = 0x10FFFF
 MINIMUM_LENGTH = 6
 
 
-def length_type(arg):
+def length_type(arg: str) -> int:
     value = int(arg)
-    if value <= MINIMUM_LENGTH:
-        raise argparse.ArgumentTypeError(
-            "The --length argument (%d) must be greater than %d"
-            % (value, MINIMUM_LENGTH)
-        )
-    return value
+    if value >= MINIMUM_LENGTH:
+        return value
+    msg = f"The --length argument ({value}) must be greater than ({MINIMUM_LENGTH})"
+    raise argparse.ArgumentTypeError(msg)
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> str:
+    """Eponymous main."""
     ap = argparse.ArgumentParser()
-    # TODO: support other hashlib-supported algorithms.
-    # ap.add_argument("--algorithm")
     ap.add_argument(
         "--length",
         type=length_type,
         default=MINIMUM_LENGTH,
-        help="Hash string length"
+        help="Hash string length",
     )
     args = ap.parse_args(args=argv)
 
@@ -46,11 +33,10 @@ def main(argv=None):
 
     m = hashlib.sha512()
     rand_str = b"".join(
-        CONV_FUNC(random.randrange(CHR_MAX - 1)) for _ in range(args.length)
+        chr(random.randrange(CHR_MAX - 1)).encode() for _ in range(args.length)
     )
 
     m.update(rand_str)
-    # NB: python 2.x doesn't support `.hexdigest(length)`
     return m.hexdigest()[:args.length]
 
 
