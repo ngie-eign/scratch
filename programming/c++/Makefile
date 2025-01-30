@@ -2,8 +2,9 @@ PROGS+=	map_demo
 PROGS+=	regex_demo
 PROGS+=	set_demo
 PROGS+=	string_trim_demo
+PROGS+=	time_demo
 
-CXXFLAGS+=	-g -W -Wall -Wunused -Werror -std=c++11
+CXXFLAGS+=	-g -O0 -W -Wall -Wunused -Werror -std=c++20
 
 CPP_LIB?=
 
