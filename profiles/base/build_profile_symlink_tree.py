@@ -14,7 +14,7 @@ class NoBaseProfileException(Exception):
 
 def build_link_tree_for_path(destdir):
     """Build a link tree with paths relative to common root directory, e.g.,
-    ./base/osx/home -> ../../unix/home
+    ./base/macos/home -> ../../unix/home
     """
 
     destdir_abs = os.path.abspath(destdir)
