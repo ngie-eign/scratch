@@ -1,3 +1,4 @@
+PROGS+=	default_copy_move_behavior_demo
 PROGS+=	default_destructor_demo
 PROGS+=	map_demo
 PROGS+=	regex_demo
