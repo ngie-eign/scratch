@@ -1,1 +1,0 @@
-../../../../unix/home/ngie/bin/merge-git-branches.sh
