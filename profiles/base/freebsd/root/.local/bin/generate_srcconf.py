@@ -1,11 +1,14 @@
-#!/usr/bin/env python3.11
+#!/usr/bin/env python3
 """A helper script for generating /etc/src.conf."""
+
+# ruff: noqa: D107, FBT001, S607, T201
 
 from __future__ import annotations
 
 import argparse
 import functools
 import logging
+import pathlib
 import re
 import subprocess
 import sys
@@ -67,7 +70,7 @@ class Truthy:
 
     @property
     def value(self) -> bool:
-        """`self._value` proxy property."""
+        """Proxy property for `self._value`."""
         return self._value
 
 
@@ -92,7 +95,11 @@ class MakeOption(Truthy):
             return NotImplemented
         return self.name == other.name
 
-    def __lt__(self, other: typing.Any) -> bool:
+    def __hash__(self) -> str:
+        """hash(..) magic method."""
+        return hash(f"{self.name}={self.value}")
+
+    def __lt__(self, other: object) -> bool:
         """`self < other` magic method."""
         if not isinstance(other, MakeOption):
             return NotImplemented
@@ -104,7 +111,7 @@ class MakeOption(Truthy):
         return f"{prefix}_{self.name}"
 
 
-def get_make_options() -> list[MakeOption]:
+def get_make_options(srcdir: pathlib.Path) -> list[MakeOption]:
     """Generate make options from `make showconfig`.
 
     Returns:
@@ -115,21 +122,28 @@ def get_make_options() -> list[MakeOption]:
         ["make", "showconfig"],
         capture_output=True,
         check=True,
+        cwd=str(srcdir),
         encoding="utf-8",
         text=True,
     )
     output = config_proc.stdout.rstrip()
     matches = re.findall(
-        r"MK_(\S+)\s+=\s+(yes|no)", output, re.IGNORECASE | re.MULTILINE,
+        r"MK_(\S+)\s+=\s+(yes|no)",
+        output,
+        re.IGNORECASE | re.MULTILINE,
     )
 
     return [MakeOption(option_name, enabled) for option_name, enabled in matches]
 
 
-def option_prompt(
-    option: str, new_value_default: Truthy | None, interactive: bool,
+def toggle_make_option(
+    option: str,
+    new_value_default: Truthy | None,
+    interactive: bool,
 ) -> MakeOption:
     """Provide an interactive prompt for enabling/disabling `MK_*` flags.
+
+    Optionally interactive.
 
     Args:
         option:            the build option name.
@@ -163,7 +177,7 @@ def option_prompt(
 
 
 def _main(argv: list[str] | None = None) -> int:
-    """Eponymous main.
+    """Eponymous main (bottom layer).
 
     Returns:
         Always returns 0 on success.
@@ -180,10 +194,16 @@ def _main(argv: list[str] | None = None) -> int:
     )
     argparser.add_argument("--default", choices=("no", "yes"), dest="default")
     argparser.add_argument(
-        "-i", "--interactive", action="store_true", dest="interactive",
+        "-i",
+        "--interactive",
+        action="store_true",
+        dest="interactive",
     )
     argparser.add_argument(
-        "-n", "--non-interactive", action="store_false", dest="interactive",
+        "-n",
+        "--non-interactive",
+        action="store_false",
+        dest="interactive",
     )
     argparser.add_argument(
         "-o",
@@ -196,12 +216,22 @@ def _main(argv: list[str] | None = None) -> int:
         "--quiet",
         action="store_true",
     )
+    argparser.add_argument(
+        "--srcdir",
+        default="/usr/src",
+        type=str,
+    )
     args = argparser.parse_args(args=argv)
 
     new_value_default = None if args.default is None else Truthy(args.default)
-    make_options = get_make_options()
+    srcdir = pathlib.Path(args.srcdir)
+    make_options = get_make_options(srcdir)
     for i, make_option in enumerate(make_options):
-        new_value = option_prompt(make_option.name, new_value_default, args.interactive)
+        new_value = toggle_make_option(
+            make_option.name,
+            new_value_default,
+            args.interactive,
+        )
         make_options[i] = new_value
 
     for make_option in sorted(make_options):
@@ -211,7 +241,7 @@ def _main(argv: list[str] | None = None) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Eponymous main.
+    """Eponymous main (top layer).
 
     This method handles wrapping the `_main(..)` function so any return values
     are normalized to 0 if successful and 1 if unsuccessful.
@@ -222,8 +252,9 @@ def main(argv: list[str] | None = None) -> int:
     """
     try:
         return _main(argv)
+    # pylint: disable=broad-exception-caught
     # ruff: noqa: BLE001
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:
         traceback.print_exc()
         return 1
 
