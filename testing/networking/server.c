@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include "common.h"
 
 int
 main(void)
@@ -24,7 +25,7 @@ main(void)
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = INADDR_ANY;
-	addr.sin_port = htons(42000);
+	addr.sin_port = htons(PORT);
 
 	assert(bind(fd, (const struct sockaddr*)&addr, sizeof(addr)) == 0);
 

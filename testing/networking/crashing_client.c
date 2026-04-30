@@ -5,6 +5,7 @@
 #include <netdb.h>
 #include <stdlib.h>
 #include <string.h>
+#include "common.h"
 
 int
 main(void)
@@ -22,7 +23,7 @@ main(void)
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	memcpy(server->h_addr, &addr.sin_addr.s_addr, server->h_length);
-	addr.sin_port = htons(42000);
+	addr.sin_port = htons(PORT);
 
 	assert(connect(fd, (const struct sockaddr*)&addr, sizeof(addr)) == 0);
 

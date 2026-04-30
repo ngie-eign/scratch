@@ -1,5 +1,7 @@
 MAN=
 
+CFLAGS+=	-I${.CURDIR}
+
 CLEANFILES+=	*.core
 
 PROGS=	client crashing_client server
