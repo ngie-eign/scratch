@@ -25,7 +25,7 @@ setup(
     maintainer_email="dev@null",
     packages=find_packages(exclude=["*test*"]),
     license=frontend.__license__,
-    platforms="Posix; Mac OS X",
+    platforms="Posix; macOS",
     url="http://dev.null/",
-    install_requires=["flask~=2.0"],
+    install_requires=["flask>=3.1.3"],
 )
