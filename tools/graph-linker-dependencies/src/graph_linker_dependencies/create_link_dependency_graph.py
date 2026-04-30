@@ -1,31 +1,29 @@
 #!/usr/bin/env python
+"""CLI frontend."""
 
 import argparse
 import collections
-import os
 import pathlib
-
-# import pprint
-import pkg_resources
 import re
 import subprocess
+from collections.abc import Mapping
 
-from jinja2 import Environment
-from jinja2 import FileSystemLoader
-from jinja2 import Template
-from jinja2 import select_autoescape
-
+import pkg_resources
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 LIBDEPS_CACHE = collections.defaultdict(list)
 LDCONFIG_HINT_RE = re.compile(r".+\s+=>\s+(.+)")
 NEEDED_SHLIB_RE = re.compile(r".+NEEDED\s+Shared library: \[(.+)\]")
 
 
-def build_library_path_cache():
+# ruff: noqa: FBT003, S101, S603, S607, T201
+
+
+def build_library_path_cache() -> Mapping[str, str]:
     ldconfig_hints_map = {}
 
     all_ldconfig_hints = subprocess.check_output(["ldconfig", "-r"], text=True)
-    for ldconfig_hint in all_ldconfig_hints.splitlines(False):
+    for ldconfig_hint in all_ldconfig_hints.splitlines(keepends=False):
         matches = LDCONFIG_HINT_RE.match(ldconfig_hint)
         if matches is None:
             continue
@@ -33,17 +31,21 @@ def build_library_path_cache():
         so_full = so_split = matches.group(1)
         ldconfig_hints_map[so_full] = so_full
 
+        so_split = pathlib.Path(so_split)
         while True:
-            so_short = os.path.basename(so_split)
+            so_short = so_split.name
             ldconfig_hints_map[so_short] = ldconfig_hints_map[so_split] = so_full
-            so_split, ext = os.path.splitext(so_split)
-            if ext == ".so":
+            if so_split.stem == ".so":
                 break
 
     return ldconfig_hints_map
 
 
-def find_library_dependencies(library_, ldconfig_hints_map, libdep_cache):
+def find_library_dependencies(
+    library_: str,
+    ldconfig_hints_map: Mapping[str, str],
+    libdep_cache: Mapping[str, str],
+) -> None:
     if library_ in libdep_cache:
         return
 
@@ -59,7 +61,8 @@ def find_library_dependencies(library_, ldconfig_hints_map, libdep_cache):
         find_library_dependencies(libdep, ldconfig_hints_map, libdep_cache)
 
 
-def main(argv=None):
+def main(argv: list[str] | None = None) -> None:
+    """Eponymous main."""
     parser = argparse.ArgumentParser()
     parser.add_argument("library")
     parser.add_argument("--graph-generator-file")
@@ -71,9 +74,9 @@ def main(argv=None):
     ldconfig_hints_map = build_library_path_cache()
 
     library_full_path = str(pathlib.Path(args.library).resolve())
-    assert (
-        library_full_path in ldconfig_hints_map
-    ), f"{library_full_path} not found in ldconfig cache"
+    assert library_full_path in ldconfig_hints_map, (
+        f"{library_full_path} not found in ldconfig cache"
+    )
 
     find_library_dependencies(library_full_path, ldconfig_hints_map, libdep_cache)
 
@@ -82,7 +85,7 @@ def main(argv=None):
             pkg_resources.resource_filename(
                 "graph_linker_dependencies",
                 "templates",
-            )
+            ),
         ),
         autoescape=select_autoescape(),
     )
@@ -95,12 +98,12 @@ def main(argv=None):
     graph_output_file = (
         args.graph_output_file or f"{library_name}_dependencies_graph.png"
     )
-    with open(graph_py_filename, "w") as filep:
-        filep.write(
-            template.render(
-                libdep_cache=libdep_cache, output_file=args.graph_output_file
-            )
-        )
+    pathlib.Path(graph_py_filename, "w").write_text(
+        template.render(
+            libdep_cache=libdep_cache,
+            output_file=graph_output_file,
+        ),
+    )
     print(f"Please run {graph_py_filename} on host where python-graphviz is installed.")
 
 

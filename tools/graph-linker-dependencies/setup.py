@@ -2,9 +2,8 @@
 
 import platform
 import sys
-from setuptools import find_packages
-from setuptools import setup
 
+from setuptools import find_packages, setup
 
 osname = platform.system().lower()
 if osname not in "freebsd":
@@ -25,8 +24,8 @@ setup(
     package_dir={"": "src"},
     entry_points={
         "console_scripts": [
-            f"create_link_dependency_graph={GLD}.create_link_dependency_graph:main"
-        ]
+            f"create_link_dependency_graph={GLD}.create_link_dependency_graph:main",
+        ],
     },
     requirements=["jinja2"],
 )
