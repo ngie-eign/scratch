@@ -31,48 +31,48 @@ err() {
 	exit 1
 }
 
-SCRIPTDIR=$(dirname $(realpath $0))
-NANOBSDDIR=$(realpath $SCRIPTDIR/../nanobsd/)
+SCRIPTDIR="$(dirname "$(realpath "$0")")"
+NANOBSDDIR="$(realpath "${SCRIPTDIR}/../nanobsd/")"
 
 # XXX: someday, hopefully nanobsd will support non-root installs/gpart/makefs, but
 # until then..
-if [ $(id -u) -ne 0 ]
+if [ "$(id -u)" -ne 0 ]
 then
 	err "you must be root when executing this script!"
 fi
-if [ ! -d $NANOBSDDIR ]
+if [ ! -d "${NANOBSDDIR}" ]
 then
-	err "couldn't find nanobsd; did you check out $NANOBSDDIR too?"
+	err "couldn't find nanobsd; did you check out ${NANOBSDDIR} too?"
 fi
 
 set -e
 
-: ${FBSD_BRANCH=releng/7.3}
-: ${NANO_ARCH=$(uname -p)}
-: ${TMPDIR=$(mktemp -d /tmp/tmp.XXXXXX)}
-_nanobsd_conf="$TMPDIR/nanobsd.conf"
-NANO_SRC="$TMPDIR/src"
+: "${FBSD_BRANCH=releng/15.0}"
+: "${NANO_ARCH="$(uname -p)"}"
+: "${TMPDIR="$(mktemp -d /tmp/tmp.XXXXXX)"}"
+_nanobsd_conf="${TMPDIR}/nanobsd.conf"
+NANO_SRC="${TMPDIR}/src"
 
-NANO_LABEL=$(echo "$FBSD_BRANCH" | sed -e 's,/,,g' -e 's,\.,,')
+NANO_LABEL="$(echo "${FBSD_BRANCH}" | sed -e 's,/,,g' -e 's,\.,,')"
 
-cat > $_nanobsd_conf <<EOF
+cat > "${_nanobsd_conf}" <<EOF
 #!/bin/sh
 
 NANO_RAM_TMPVARSIZE=$(( 1024 * 1024 / 2 ))
 FlashDevice generic 768m
-MAKEOBJDIRPREFIX="$TMPDIR/obj"
+MAKEOBJDIRPREFIX="${TMPDIR}/obj"
 NANO_BOOT2CFG="-Dh"
 NANO_BOOTLOADER=boot/boot0
 NANO_IMAGES=1
-NANO_ARCH="$NANO_ARCH"
-NANO_LABEL="$NANO_LABEL"
-NANO_OBJ="$TMPDIR/nobj"
-NANO_SRC="$NANO_SRC"
-NANO_TOOLS="$NANOBSDDIR"
+NANO_ARCH="${NANO_ARCH}"
+NANO_LABEL="${NANO_LABEL}"
+NANO_OBJ="${TMPDIR}/nobj"
+NANO_SRC="${NANO_SRC}"
+NANO_TOOLS="${NANOBSDDIR}"
 
 EOF
 
-cat >> $_nanobsd_conf <<"EOF"
+cat >> "${_nanobsd_conf}" <<"EOF"
 CONF_BUILD="
 WITHOUT_ATM=
 WITHOUT_AUDIT=
@@ -131,36 +131,36 @@ CONF_INSTALL="$CONF_BUILD
 
 setup_nanobsd_etc2() {
 
-    cd $NANO_WORLDDIR/etc
-    cat > rc.conf <<"EOF2"
+	cd "${NANO_WORLDDIR}/etc"
+	cat > rc.conf <<"EOF2"
 ifconfig_cxgb0="up"
 ifconfig_cxgb1="up"
 ifconfig_em1="up"
 ifconfig_igb1="up"
 case "$(uname -r)" in
 9*|1[0-9]*)
-    ifconfig_cxgb0_ipv6="inet6 -ifdisabled"
-    ifconfig_cxgb1_ipv6="inet6 -ifdisabled"
-    ifconfig_em1_ipv6="inet6 -ifdisabled"
-    ifconfig_igb1_ipv6="inet6 -ifdisabled"
-    ifconfig_ix0_ipv6="inet6 -ifdisabled"
-    ;;
+	ifconfig_cxgb0_ipv6="inet6 -ifdisabled"
+	ifconfig_cxgb1_ipv6="inet6 -ifdisabled"
+	ifconfig_em1_ipv6="inet6 -ifdisabled"
+	ifconfig_igb1_ipv6="inet6 -ifdisabled"
+	ifconfig_ix0_ipv6="inet6 -ifdisabled"
+	;;
 8*)
-    ipv6_ifconfig_cxgb0="-ifdisabled"
-    ipv6_ifconfig_cxgb1="-ifdisabled"
-    ipv6_ifconfig_em1="-ifdisabled"
-    ipv6_ifconfig_igb1="-ifdisabled"
-    ipv6_ifconfig_ix0="-ifdisabled"
-    ipv6_enable="YES"
-    ;;
+	ipv6_ifconfig_cxgb0="-ifdisabled"
+	ipv6_ifconfig_cxgb1="-ifdisabled"
+	ipv6_ifconfig_em1="-ifdisabled"
+	ipv6_ifconfig_igb1="-ifdisabled"
+	ipv6_ifconfig_ix0="-ifdisabled"
+	ipv6_enable="YES"
+	;;
 7*)
-    ipv6_ifconfig_cxgb0="up"
-    ipv6_ifconfig_cxgb1="up"
-    ipv6_ifconfig_em1="up"
-    ipv6_ifconfig_igb1="up"
-    ipv6_ifconfig_ix0="up"
-    ipv6_enable="YES"
-    ;;
+	ipv6_ifconfig_cxgb0="up"
+	ipv6_ifconfig_cxgb1="up"
+	ipv6_ifconfig_em1="up"
+	ipv6_ifconfig_igb1="up"
+	ipv6_ifconfig_ix0="up"
+	ipv6_enable="YES"
+	;;
 esac
 ifconfig_em0="DHCP"
 ifconfig_igb0="DHCP"
@@ -169,7 +169,7 @@ sshd_enable="YES"
 ntpd_enable="YES"
 EOF2
 
-    cat >> sysctl.conf <<EOF2
+	cat >> sysctl.conf <<EOF2
 kern.ipc.nmbjumbo9=262144
 kern.ipc.nmbjumbo16=262144
 kern.ipc.nmbclusters=262144
@@ -191,44 +191,44 @@ net.inet.tcp.sendspace_inc=16384
 #net.inet6.ip6.accept_forwarding=1
 EOF2
 
-    # Speed up baudrate
-    sed -E -i '' -e '/^(sio|uart)/s/9600/115200/' remote
+	# Speed up baudrate
+	sed -E -i '' -e '/^(sio|uart)/s/9600/115200/' remote
 
 }
 customize_cmd setup_nanobsd_etc2
 
 # Copied from nanobsd.sh
 cust_comconsole() {
-    cd $NANO_WORLDDIR
+	cd $NANO_WORLDDIR
 
-    # Speed up baudrate
-    sed -E -i '' -e 's/9600/115200/g' etc/ttys
+	# Speed up baudrate
+	sed -E -i '' -e 's/9600/115200/g' etc/ttys
 
-    # Enable getty on COM1
-    sed -E -i '' -e /tty[du]0/s/off/on/ etc/ttys
+	# Enable getty on COM1
+	sed -E -i '' -e /tty[du]0/s/off/on/ etc/ttys
 
-    # Disable getty on syscons devices apart from /dev/ttyv0
-    sed -E -i '' -e '/^ttyv[1-8]/s/([[:space:]]*)on/\1off/' etc/ttys
+	# Disable getty on syscons devices apart from /dev/ttyv0
+	sed -E -i '' -e '/^ttyv[1-8]/s/([[:space:]]*)on/\1off/' etc/ttys
 
-    # Tell loader to use serial console early.
-    echo "${NANO_BOOT2CFG}" > boot.config
+	# Tell loader to use serial console early.
+	echo "${NANO_BOOT2CFG}" > boot.config
 }
 customize_cmd cust_comconsole
 
 # Copied from nanobsd.sh
 cust_allow_ssh_root() {
-    sed -i '' \
-        -e '/PermitEmptyPasswords/s/.*/PermitEmptyPasswords yes/' \
+	sed -i '' \
+	    -e '/PermitEmptyPasswords/s/.*/PermitEmptyPasswords yes/' \
 	-e '/PermitRootLogin/s/.*/PermitRootLogin yes/' \
-        ${NANO_WORLDDIR}/etc/ssh/sshd_config
+	    ${NANO_WORLDDIR}/etc/ssh/sshd_config
 }
 customize_cmd cust_allow_ssh_root
 
 setup_serial() {
 
-    cd $NANO_WORLDDIR
+	cd "${NANO_WORLDDIR}"
 
-    cat > boot/loader.conf <<"EOF2"
+	cat > boot/loader.conf <<"EOF2"
 # Allow USB devices 30 seconds to quiesce (only on 8.x).
 kern.cam.boot_delay="30000"
 comconsole_speed="115200"
@@ -242,36 +242,29 @@ EOF2
 customize_cmd setup_serial
 
 last_orders() {
-    cp $NANO_OBJ/_.disk.full ${FBSD_BRANCH##*/}.nanobsd.img
+	cp $NANO_OBJ/_.disk.full ${FBSD_BRANCH##*/}.nanobsd.img
 }
 EOF
 
-_svn_url=http://svn.freebsd.org/base/$FBSD_BRANCH
-(
-if [ -d $NANO_SRC/.svn ]
-then
-	cd $NANO_SRC
-	svn cleanup .
-	svn switch $_svn_url
-	svn up
-else
-	mkdir -p $NANO_SRC
-	cd $NANO_SRC
-	svn co $_svn_url .
-fi
-)
+_git_url="http://cgit.freebsd.org/src/${FBSD_BRANCH}"
+git clone "$_git_url}" "${NANO_SRC}"
 
-for module in \
-    cxgb cxgbe em igb ixgb ixgbe \
-; do
-	if [ -d $TMPDIR/src/sys/modules/$module ]
+while read -r module; do
+	if [ -d "${TMPDIR}/src/sys/modules/${module}" ]
 	then
-		NANO_MODULES="$NANO_MODULES $module"
+		NANO_MODULES="$NANO_MODULES ${module}"
 	fi
-done
-if [ -n "$NANO_MODULES" ]
+done <<EOF
+cxgbe
+cxl
+em
+igb
+ixgb
+ixgbe
+EOF
+if [ -n "${NANO_MODULES}" ]
 then
-	echo "NANO_MODULES='$NANO_MODULES'" >> $_nanobsd_conf
+	echo "NANO_MODULES='${NANO_MODULES}'" >> "${_nanobsd_conf}"
 fi
 
 case "$-" in
@@ -280,4 +273,5 @@ case "$-" in
 	;;
 esac
 
-sh $_nanobsd_flags $NANOBSDDIR/nanobsd.sh -c $_nanobsd_conf $*
+# shellcheck disable=SC2048,SC2086
+sh ${_nanobsd_flags} "${NANOBSDDIR}/nanobsd.sh" -c "${_nanobsd_conf}" $*
